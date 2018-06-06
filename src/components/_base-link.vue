@@ -38,13 +38,15 @@ export default {
     // Perform more complex prop validations than is possible
     // inside individual validator functions for each prop.
     validateProps() {
+      if (process.env.NODE_ENV === 'production') return
+
       if (this.href) {
         // Check for non-external URL in href.
         if (!/^\w+:/.test(this.href)) {
           return console.warn(
             `Invalid <BaseLink> href: ${
               this.href
-            }.\nIf you're trying to link to a local URL, specify provide at least a name or to`
+            }.\nIf you're trying to link to a local URL, provide at least a name or to`
           )
         }
         // Check for insecure URL in href.

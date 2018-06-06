@@ -1,6 +1,6 @@
 # Vue Enterprise Boilerplate
 
-**Diverged from the boilerplate on May 01 2018. See [what's been added](https://github.com/chrisvfritz/vue-enterprise-boilerplate/compare/11e94274b67b05cb20fbdfada1de7a554f7a14f7...master) since then.**
+**You diverged from the boilerplate on Jun 06 2018. See [what's been added](https://github.com/chrisvfritz/vue-enterprise-boilerplate/compare/3a96c742e7cb7f73b006932888ff25c47cb3dca4...master) since then.**
 
 > This is an ever-evolving, very opinionated architecture and dev environment for new Vue SPA projects using [Vue CLI 3](https://github.com/vuejs/vue-cli). Questions, feedback, and for now, even bikeshedding are welcome. 😄 If you'd like to increase the time I can spend on this project, as well as other Vue resources, **please consider becoming a [sponsor on Patreon](https://www.patreon.com/roshe)**. :pray:
 
@@ -8,14 +8,14 @@
 
 ## Features
 
-* [**Thorough documentation**](#documentation): Written with the same care as Vue's core docs to quickly train new team members and consolidate knowledge.
-* [**Guaranteed consistency**](docs/linting.md): Opinionated linting for Vue, JavaScript/JSON, SCSS, and Markdown, integrated into Visual Studio Code and run against staged files on pre-commit.
-* [**First-class tests**](docs/tests.md): Practice test-driven development with both unit and end-to-end tests. Unit tests with Jest live as first-class citizens alongside your source files, while Cypress provides reliable end-to-end tests in an intuitive GUI for development.
-* [**Speedy development**](docs/development.md): Between [configurable generators](docs/development.md#generators), [handy aliases](docs/development.md#aliases), and [global base components](docs/development.md#base-components), your productivity will skyrocket.
+- [**Thorough documentation**](#documentation): Written with the same care as Vue's core docs to quickly train new team members and consolidate knowledge.
+- [**Guaranteed consistency**](docs/linting.md): Opinionated linting for Vue, JavaScript/JSON, SCSS, and Markdown, integrated into Visual Studio Code and run against staged files on pre-commit.
+- [**First-class tests**](docs/tests.md): Practice test-driven development with both unit and end-to-end tests. Unit tests with Jest live as first-class citizens alongside your source files, while Cypress provides reliable end-to-end tests in an intuitive GUI for development.
+- [**Speedy development**](docs/development.md): Between [configurable generators](docs/development.md#generators), [handy aliases](docs/development.md#aliases), and [global base components](docs/development.md#base-components), your productivity will skyrocket.
 
 ## Getting started
 
-```sh
+```bash
 # 1. Clone the repository.
 git clone https://github.com/chrisvfritz/vue-enterprise-boilerplate.git my-new-project
 
@@ -64,9 +64,9 @@ If what you're building is very well-defined, with requirements and technical ch
 
 Here's when you might prefer building a project off the boilerplate instead:
 
-* The requirements for the product are very likely to change over time and you want to maintain maximum flexibility and control.
-* You'd like to focus on developing skills that will transfer across _any_ Vue project.
-* You're working in a large team, so need tooling to help everyone avoid common mistakes, write in a consistent style, and avoid bikeshedding in PRs.
+- The requirements for the product are very likely to change over time and you want to maintain maximum flexibility and control.
+- You'd like to focus on developing skills that will transfer across _any_ Vue project.
+- You're working in a large team, so need tooling to help everyone avoid common mistakes, write in a consistent style, and avoid bikeshedding in PRs.
 
 Finally, it's not an either-or situation. This boilerplate demonstrates many useful patterns for building robust applications that can also be applied to Nuxt apps. That means you could build a project with Nuxt, while still using this boilerplate as a study guide.
 
