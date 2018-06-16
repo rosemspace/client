@@ -2,10 +2,10 @@
 
 These are some troubleshooting tips for more common issues people might run into while developing, including more information on what might be happening and how to fix the problem.
 
-- [Errors running scripts (e.g. `yarn dev`)](#errors-running-scripts-eg-yarn-dev)
+- [Errors running scripts (e.g. `npm run dev`)](#errors-running-scripts-eg-npm-run-dev)
 - [Visual Studio (VS) Code formatting issues](#visual-studio-vs-code-formatting-issues)
 
-## Errors running scripts (e.g. `yarn dev`)
+## Errors running scripts (e.g. `npm run dev`)
 
 Make sure you've followed the instructions for [Setup and development](development.md). If you already have, try deleting the `node_modules` folder and installing fresh:
 
@@ -14,26 +14,26 @@ Make sure you've followed the instructions for [Setup and development](developme
 rm -rf node_modules
 
 # 2. Install dependencies fresh.
-yarn install
+npm install
 ```
 
-If that doesn't work, it's possible that a newer version of a dependency is creating a problem. If this is the problem, you can work around it by installing dependencies from the `yarn.lock` file of a previously working branch or commit.
+If that doesn't work, it's possible that a newer version of a dependency is creating a problem. If this is the problem, you can work around it by installing dependencies from the `package-lock.json` file of a previously working branch or commit.
 
 ```bash
 # 1. Delete all previously-installed dependencies.
 rm -rf node_modules
 
-# 2. Use the same yarn.lock as the `origin/master` branch. If the problem
+# 2. Use the same package-lock.json as the `origin/master` branch. If the problem
 # exists on the `origin/master` as well, instead use the last-known
 # working branch or commit.
-git checkout origin/master -- yarn.lock
+git checkout origin/master -- package-lock.json
 
 # 2. Install dependencies fresh, using only the exact versions specified
-# in the `yarn.lock` file.
-yarn install --frozen-lockfile
+# in the `package-lock.json` file.
+npm install --frozen-lockfile
 ```
 
-If this solves your problem, you can use `yarn outdated` to see the packages that may have received updates, then upgrade them one at a time with `yarn upgrade the-package-name` to see which upgrade introduces the problem.
+If this solves your problem, you can use `npm outdated` to see the packages that may have received updates, then upgrade them one at a time with `yarn upgrade the-package-name` to see which upgrade introduces the problem.
 
 ## Visual Studio (VS) Code formatting issues
 

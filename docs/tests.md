@@ -17,7 +17,7 @@
 
 ```bash
 # Run all tests
-yarn test
+npm run test
 ```
 
 ## Unit tests with Jest
@@ -26,10 +26,10 @@ yarn test
 
 ```bash
 # Run unit tests
-yarn unit
+npm run unit
 
 # Run unit tests in watch mode
-yarn unit:watch
+npm run unit:watch
 ```
 
 ### Introduction to Jest
@@ -66,10 +66,10 @@ Jest offers many tools for mocks, including:
 
 ```bash
 # Run end to end tests
-yarn e2e
+npm run e2e
 
 # Run the dev server with the Cypress client
-yarn dev:e2e
+npm run dev:e2e
 ```
 
 ### Introduction to Cypress
@@ -109,11 +109,11 @@ The mock API is an [Express](https://expressjs.com/) server in `tests/mock-api` 
 In some situations, you might prefer to test against a local server while developing, or maybe just during continuous integration. To do so, you can run any development or test command with the `API_BASE_URL` environment variable. For example:
 
 ```bash
-API_BASE_URL=http://localhost:3000 yarn test
+API_BASE_URL=http://localhost:3000 npm run test
 ```
 
 Or similarly, with a live server:
 
 ```bash
-API_BASE_URL=https://staging.example.io yarn test
+API_BASE_URL=https://staging.example.io npm run test
 ```

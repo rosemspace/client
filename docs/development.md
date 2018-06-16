@@ -5,6 +5,7 @@
 - [Dev server](#dev-server)
   - [Developing with the production API](#developing-with-the-production-api)
 - [Generators](#generators)
+- [Webpack](#webpack)
 - [Aliases](#aliases)
 - [Globals](#globals)
   - [Base components](#base-components)
@@ -14,7 +15,7 @@
 Make sure you have the following installed:
 
 - [Node](https://nodejs.org/en/) (at least the latest LTS)
-- [Yarn](https://yarnpkg.com/lang/en/docs/install/) (at least 1.0)
+- [Npm](https://docs.npmjs.com/cli/install/) (at least 6.0)
 
 Then update the following files to suit your application:
 
@@ -25,7 +26,7 @@ Then update the following files to suit your application:
 
 ```bash
 # Install dependencies from package.json
-yarn install
+npm install
 ```
 
 ## Dev server
@@ -34,27 +35,27 @@ yarn install
 
 ```bash
 # Launch the dev server
-yarn dev
+npm run dev
 
 # Launch the dev server and automatically open it in
 # your default browser when ready
-yarn dev --open
+npm run dev --open
 
 # Launch the dev server with the Cypress client for
 # test-driven development in a friendly interface
-yarn dev:e2e
+npm run dev:e2e
 ```
 
 ### Developing with the production API
 
-By default, dev and tests filter requests through [the mock API](#the-mock-api) in `tests/mock-api`. To test directly against a local/live API instead, run dev and test commands with the `API_BASE_URL` environment variable set. For example:
+By default, dev and tests filter requests through [the mock API](/docs/tests.md#the-mock-api) in `tests/mock-api`. To test directly against a local/live API instead, run dev and test commands with the `API_BASE_URL` environment variable set. For example:
 
 ```bash
 # To develop against a local backend server
-API_BASE_URL=http://localhost:3000 yarn dev
+API_BASE_URL=http://localhost:3000 npm run dev
 
 # To test and develop against a production server
-API_BASE_URL=https://example.io yarn dev:e2e
+API_BASE_URL=https://example.io npm run dev:e2e
 ```
 
 ## Generators
@@ -63,25 +64,45 @@ This project includes generators to speed up common development tasks. Commands 
 
 ```bash
 # Generate a new component with adjacent unit test
-yarn new component
+npm run new component
 
 # Generate a new view component with adjacent unit test
-yarn new view
+npm run new view
 
 # Generate a new layout component with adjacent unit test
-yarn new layout
+npm run new layout
 
 # Generate a new Vuex module with adjacent unit test
-yarn new module
+npm run new module
 
 # Generate a new utility function with adjacent unit test
-yarn new util
+npm run new util
 
 # Generate a new end-to-end spec
-yarn new e2e
+npm run new e2e
 ```
 
 Update existing or create new generators in the `_templates` folder, with help from the [Hygen docs](http://www.hygen.io/).
+
+## Webpack
+
+To [resolve the webpack configuration](https://cli.vuejs.org/guide/webpack.html#using-resolved-config-as-a-file) in your IDE you should use the following path:
+
+```bash
+<projectRoot>/node_modules/@vue/cli-service/webpack.config.js
+```
+
+To [see the whole webpack configuration](https://cli.vuejs.org/guide/webpack.html#inspecting-the-project-s-webpack-config) run the `inspect` command:
+
+```bash
+vue inspect
+```
+
+or put it into a file:
+
+```bash
+vue inspect > output.js
+```
 
 ## Aliases
 

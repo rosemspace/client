@@ -1,8 +1,8 @@
-# Vue Enterprise Boilerplate
+# Vue enterprise boilerplate for a web-client
 
 **You diverged from the boilerplate on Jun 06 2018. See [what's been added](https://github.com/chrisvfritz/vue-enterprise-boilerplate/compare/3a96c742e7cb7f73b006932888ff25c47cb3dca4...master) since then.**
 
-> This is an ever-evolving, very opinionated architecture and dev environment for new Vue SPA projects using [Vue CLI 3](https://github.com/vuejs/vue-cli). Questions, feedback, and for now, even bikeshedding are welcome. 😄 If you'd like to increase the time I can spend on this project, as well as other Vue resources, **please consider becoming a [sponsor on Patreon](https://www.patreon.com/roshe)**. :pray:
+> This is an ever-evolving, very opinionated architecture and dev environment for new Vue SPA projects using [Vue CLI 3](https://github.com/vuejs/vue-cli). Questions, feedback, and for now, even bikeshedding are welcome. 😄 If you'd like to increase the time I can spend on this project **please consider becoming a [sponsor on Patreon](https://www.patreon.com/roshe)**. :pray:
 
 **:warning: This project uses Vue CLI 3, which is currently in beta so may not yet be appropriate for production projects.**
 
@@ -69,7 +69,3 @@ Here's when you might prefer building a project off the boilerplate instead:
 - You're working in a large team, so need tooling to help everyone avoid common mistakes, write in a consistent style, and avoid bikeshedding in PRs.
 
 Finally, it's not an either-or situation. This boilerplate demonstrates many useful patterns for building robust applications that can also be applied to Nuxt apps. That means you could build a project with Nuxt, while still using this boilerplate as a study guide.
-
-**Can you build a Nuxt version of this boilerplate?**
-
-I might! I'll be focusing on this Vue CLI version for now, but once I've made most of the improvements on my roadmap and as time allows, I _would_ like to start work on a Nuxt version. The Nuxt team has even generously offered to help!
