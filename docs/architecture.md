@@ -15,7 +15,7 @@
   - [`utils`](#utils)
   - [`app.config.js`](#appconfigjs)
   - [`app.vue`](#appvue)
-  - [`main.js`](#mainjs)
+  - [`index.js`](#indexjs)
 - [`tests`](#tests)
 
 ## `_templates`
@@ -78,7 +78,7 @@ Contains app-specific metadata.
 
 The root Vue component that simply delegates to the router view. This is typically the only component to contain global CSS.
 
-### `main.js`
+### `index.js`
 
 The entry point to our app, were we create our Vue instance and mount it to the DOM.
 

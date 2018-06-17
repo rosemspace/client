@@ -10,6 +10,7 @@ module.exports = {
     ],
   ],
   plugins: [
+    '@babel/plugin-proposal-export-default-from',
     // Support async/await
     // https://babeljs.io/docs/plugins/transform-runtime/
     [

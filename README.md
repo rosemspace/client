@@ -1,4 +1,4 @@
-# Vue enterprise boilerplate for a web-client
+# Vue modular boilerplate
 
 **You diverged from the boilerplate on Jun 06 2018. See [what's been added](https://github.com/chrisvfritz/vue-enterprise-boilerplate/compare/3a96c742e7cb7f73b006932888ff25c47cb3dca4...master) since then.**
 
