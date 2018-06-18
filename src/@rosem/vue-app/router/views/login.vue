@@ -50,12 +50,15 @@ export default {
       :class="$style.form"
       @submit.prevent="tryToLogIn"
     >
-      <BaseInput
+      <RosemInput
         v-model="username"
+        label="example: rosem"
         name="username"
+        autocomplete="off"
       />
-      <BaseInput
+      <RosemInput
         v-model="password"
+        label="Password"
         name="password"
         type="password"
       />
@@ -82,5 +85,9 @@ export default {
 
 .form {
   text-align: center;
+
+  button {
+    margin-top: 20px;
+  }
 }
 </style>

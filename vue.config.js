@@ -1,5 +1,5 @@
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-const appConfig = require('./src/app.config')
+const appConfig = require('./src/@rosem/vue-app/app.config') // TODO: move to config dir
 
 module.exports = {
   configureWebpack: {
@@ -9,6 +9,71 @@ module.exports = {
     // Set up all the aliases we use in our app.
     resolve: {
       alias: require('./aliases.config').webpack,
+    },
+    module: {
+      rules: [
+        {
+          test: /\.postcss$/,
+          oneOf: [
+            {
+              resourceQuery: /module/,
+              use: [
+                {
+                  loader: 'vue-style-loader',
+                  options: {
+                    sourceMap: false,
+                    shadowMode: false,
+                  },
+                },
+                {
+                  loader: 'css-loader',
+                  options: {
+                    minimize: false,
+                    sourceMap: false,
+                    importLoaders: 1,
+                    modules: true,
+                    localIdentName: '[name]_[local]_[hash:base64:5]',
+                  },
+                },
+                {
+                  loader: 'postcss-loader',
+                  options: {
+                    sourceMap: false,
+                  },
+                },
+              ],
+            },
+            {
+              use: [
+                {
+                  loader: 'vue-style-loader',
+                  options: {
+                    sourceMap: false,
+                    shadowMode: false,
+                  },
+                },
+                {
+                  loader: 'css-loader',
+                  options: {
+                    minimize: false,
+                    sourceMap: false,
+                    importLoaders: 1,
+                  },
+                },
+                {
+                  loader: 'postcss-loader',
+                  options: {
+                    sourceMap: false,
+                    config: {
+                      path: '.postcssrc.js',
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
     },
     plugins: [
       // Optionally produce a bundle analysis

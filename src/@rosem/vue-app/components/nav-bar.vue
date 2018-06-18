@@ -54,8 +54,10 @@ export default {
 @import '~\@rosem/design/index.scss';
 
 .container {
-  padding: 0;
-  margin: 0 0 $size-grid-padding;
+  // padding: 0;
+  // margin: 0 0 $size-grid-padding;
+  padding: .6rem 0;
+  margin: .6rem 0;
   text-align: center;
   list-style-type: none;
 

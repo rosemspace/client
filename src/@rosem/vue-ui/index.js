@@ -5,6 +5,9 @@
 import Vue from 'vue'
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
+import uuid from './mixins/uuid';
+
+Vue.use(uuid);
 
 // https://webpack.js.org/guides/dependency-management/#require-context
 const requireComponent = require.context(
@@ -13,7 +16,7 @@ const requireComponent = require.context(
   // Do not look in subdirectories
   false,
   // Only include "_base-" prefixed .vue files
-  /_base-[\w-]+\.vue$/
+  /(_base-|Rosem)[\w-]+\.vue$/
 )
 
 // For each matching file name...

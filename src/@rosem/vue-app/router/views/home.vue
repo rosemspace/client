@@ -13,9 +13,13 @@ export default {
 
 <template>
   <Layout>
+    <rosem-input
+      label="Email"
+      type="email"
+    />
     <h1>Home Page</h1>
     <img
-      src="@rosem/vue-app/assets/images/logo.png"
+      src="~@rosem/vue-app/assets/images/logo.png"
       alt="Logo"
     >
   </Layout>
