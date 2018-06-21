@@ -1,7 +1,7 @@
 <template>
-  <div :class="[$style.input, 'RosemInput', {focused, notEmpty: value}]">
+  <div :class="[$style.input, 'RosemInput', {focused}]">
     <input
-      :id="$_rosem_uuid.getLast()"
+      :id="$_uid"
       :type="type"
       :placeholder="finalPlaceholder"
       :value="value"
@@ -13,7 +13,8 @@
     >
     <label
       v-if="label"
-      :for="$_rosem_uuid.getLast()"
+      :for="$_uid"
+      :data-placeholder="finalPlaceholder"
     >{{ label }}</label>
   </div>
 </template>
@@ -25,6 +26,10 @@ export default {
   inheritAttrs: false,
 
   props: {
+    name: {
+      type: String,
+      default: '',
+    },
     type: {
       type: String,
       default: 'text',
@@ -53,14 +58,22 @@ export default {
   },
 
   created() {
-    this.$_rosem_uuid.generate()
+    this.$_uid = this.name || this.$_rosem_uuid.generate()
   },
 }
 </script>
 
 <style lang="postcss" module>
+@-webkit-keyframes RosemInputAutofill {
+  to {
+    color: var(--autofill-color, inherit);
+    background: var(--autofill-background-color, inherit);
+  }
+}
+
 .input {
   --input-height: 32px;
+  /*--autofill-background-color: #ffc7bd;*/
 
   position: relative;
   display: flex;
@@ -77,55 +90,65 @@ export default {
     background: none;
     border: none;
 
+    &,
+    &::placeholder,
+    & + label {
+      font: inherit;
+    }
+
     &:focus {
       outline: none;
     }
 
     &:-webkit-autofill {
-      color: inherit;
+      -webkit-animation-name: RosemInputAutofill;
+      -webkit-animation-fill-mode: both;
+      /*-webkit-text-fill-color: inherit;*/
+      border-radius: inherit;
     }
 
-    &,
-    &::placeholder,
-    & + label {
-      font-family: inherit;
-      font-size: var(--font-size, 14px);
-      font-weight: var(--font-weight, 500);
-      line-height: 1;
+    &::placeholder {
+      line-height: var(--input-height) !important;
     }
   }
 
   & > label {
+    cursor: pointer;
     display: flex;
     align-items: center;
+    line-height: 1;
     min-height: var(--input-height);
     padding: 0 10px;
   }
 }
 </style>
 
-<style lang="postcss">
+<style lang="postcss" scoped>
 .RosemInput {
   --placeholder-speed: 0.2s;
-  max-width: 300px;
-  margin-top: 26px;
-  margin-right: auto;
-  margin-left: auto;
+  font-size: 16px;
+  font-weight: 300;
+  /*max-width: 300px;*/
+  margin: 2.6rem 2rem;
+  /*margin-right: auto;*/
+  /*margin-left: auto;*/
   color: #666;
-  border: solid 1px #ddd;
+  background-color: white;
+  border: solid 1px #eee;
   border-radius: 3px;
+  transition: box-shadow var(--placeholder-speed);
 
   &.focused {
-    box-shadow: 0 0 0 2px #eee;
+    box-shadow: 0 0 0 2px #ecf1f3;
 
     &::before {
+      content: '';
       position: absolute;
       bottom: -1px;
-      left: 1%;
+      left: 0.5%;
       display: block;
-      width: 98%;
+      width: 99%;
       height: 0;
-      content: '';
       /*border-bottom: solid 1px #6cc1e6;*/
     }
   }
@@ -135,21 +158,11 @@ export default {
     color: var(--placeholder-color, #ccc);
   }
 
-  /*&.placeholderAsLabel {*/
-  &.notEmpty {
-    & > input {
-      &::placeholder {
-        opacity: 0;
-        transition: opacity 0s;
-      }
-    }
-
-    & > label {
+  & > input:not(:placeholder-shown) {
+    & + label {
       font-size: 12px;
+      font-weight: 600;
       pointer-events: auto;
-      opacity: 1;
-      transition: font-size var(--placeholder-speed),
-      color var(--placeholder-speed), transform var(--placeholder-speed);
       transform: translate(-9px, -90%);
       --placeholder-color: #73b5d8;
     }
@@ -160,20 +173,16 @@ export default {
     z-index: 1;
 
     &::placeholder {
-      opacity: 1;
-      transition: opacity 0s var(--placeholder-speed);
+      opacity: 0;
     }
   }
 
   & > label {
     position: absolute;
     pointer-events: none;
-    opacity: 0;
     transition: font-size var(--placeholder-speed),
-      opacity 0s var(--placeholder-speed), color var(--placeholder-speed),
+      font-weight var(--placeholder-speed), color var(--placeholder-speed),
       transform var(--placeholder-speed);
   }
-
-  /*}*/
 }
 </style>

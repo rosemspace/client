@@ -52,9 +52,8 @@ export default {
     >
       <RosemInput
         v-model="username"
-        label="example: rosem"
+        label="Email"
         name="username"
-        autocomplete="off"
       />
       <RosemInput
         v-model="password"
@@ -71,7 +70,7 @@ export default {
           name="sync"
           spin
         />
-        <span v-else>Log in</span>
+        <span>Log in</span>
       </BaseButton>
       <p v-if="authError">
         There was an error logging in to your account.
@@ -84,10 +83,18 @@ export default {
 @import '~\@rosem/design/index.scss';
 
 .form {
+  display: flow-root;
   text-align: center;
+  margin: 0 auto;
+  max-width: 300px;
+  padding: 2rem 0;
+  /*padding: 2rem;*/
+  background-color: #f2f9fb;
+  /*box-shadow: 0 0 10px #e3ecef;*/
+  box-shadow: 0 1px 5px #dce7ea;
 
   button {
-    margin-top: 20px;
+    /*margin-top: 20px;*/
   }
 }
 </style>

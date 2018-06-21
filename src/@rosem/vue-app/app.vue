@@ -43,6 +43,10 @@ export default {
   box-sizing: border-box;
 }
 
+:root {
+  font-size: 10px;
+}
+
 body {
   background: $color-body-bg;
 }
