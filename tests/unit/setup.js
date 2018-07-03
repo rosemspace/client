@@ -34,10 +34,10 @@ Vue.config.productionTip = false
 
 const globalComponentFiles = fs
   .readdirSync(path.join(__dirname, '../../src/@rosem/vue-ui/components'))
-  .filter(fileName => /^_base-.+\.vue$/.test(fileName))
+  .filter(fileName => /^[\w-]+$/.test(fileName))
 
 for (const fileName of globalComponentFiles) {
-  const componentName = _.pascalCase(fileName.match(/^_(base-.+)\.vue$/)[1])
+  const componentName = _.pascalCase(fileName.match(/^[\w-]+$/)[1])
   const componentConfig = require('../../src/@rosem/vue-ui/components/' +
     fileName)
   Vue.component(componentName, componentConfig.default || componentConfig)

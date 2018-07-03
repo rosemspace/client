@@ -1,9 +1,9 @@
-import BaseButton from './_base-button'
+import Button from './Button'
 
-describe('@rosem/vue-ui/components/_base-button', () => {
+describe('@rosem/vue-ui/components/RosemButton', () => {
   it('renders its content', () => {
     const slotContent = '<span>foo</span>'
-    const { element } = shallowMount(BaseButton, {
+    const { element } = shallowMount(Button, {
       slots: {
         default: slotContent,
       },

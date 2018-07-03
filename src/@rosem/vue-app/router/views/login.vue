@@ -50,28 +50,31 @@ export default {
       :class="$style.form"
       @submit.prevent="tryToLogIn"
     >
-      <RosemInput
-        v-model="username"
-        label="Email"
-        name="username"
-      />
+      <div id="test"></div>
+      <RosemPortal to="test">
+        <RosemInput
+          v-model="username"
+          label="Email"
+          name="username"
+        />
+      </RosemPortal>
       <RosemInput
         v-model="password"
         label="Password"
         name="password"
         type="password"
       />
-      <BaseButton
+      <RosemButton
         :disabled="tryingToLogIn"
         type="submit"
       >
-        <BaseIcon
+        <RosemIcon
           v-if="tryingToLogIn"
           name="sync"
           spin
         />
         <span>Log in</span>
-      </BaseButton>
+      </RosemButton>
       <p v-if="authError">
         There was an error logging in to your account.
       </p>

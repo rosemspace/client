@@ -1,8 +1,8 @@
-import BaseIcon from './_base-icon'
+import Icon from './Icon'
 
 describe('@rosem/vue-ui/components/_base-icon', () => {
   it('renders a font-awesome icon', () => {
-    const { element } = mount(BaseIcon, {
+    const { element } = mount(Icon, {
       propsData: {
         name: 'sync',
       },
@@ -13,7 +13,7 @@ describe('@rosem/vue-ui/components/_base-icon', () => {
   })
 
   it('renders a custom icon', () => {
-    const { element } = shallowMount(BaseIcon, {
+    const { element } = shallowMount(Icon, {
       ...createComponentMocks({
         style: {
           iconCustomSomeIcon: 'generated-class-name',

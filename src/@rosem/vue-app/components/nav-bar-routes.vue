@@ -1,6 +1,6 @@
 <script>
-// Allows stubbing BaseLink in unit tests
-const BaseLink = 'BaseLink'
+// Allows stubbing Link in unit tests
+const RosemLink = 'RosemLink'
 
 export default {
   // Functional components are stateless, meaning they can't
@@ -23,14 +23,14 @@ export default {
     // to return an array of children, rather than a single
     // root node.
     return props.routes.map(route => (
-      <BaseLink
+      <RosemLink
         tag="li"
         key={route.name}
         to={route}
         exact-active-class={$style.active}
       >
         <a>{getRouteTitle(route)}</a>
-      </BaseLink>
+      </RosemLink>
     ))
   },
 }

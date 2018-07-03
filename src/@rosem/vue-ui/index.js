@@ -3,36 +3,26 @@
 // PascalCased version of their file name.
 
 import Vue from 'vue'
-import upperFirst from 'lodash/upperFirst'
-import camelCase from 'lodash/camelCase'
-import uuid from './mixins/uuid';
+import uuid from './mixins/uuid'
 
-Vue.use(uuid);
+Vue.use(uuid)
 
 // https://webpack.js.org/guides/dependency-management/#require-context
 const requireComponent = require.context(
   // Look for files in the current directory
   './components',
   // Do not look in subdirectories
-  false,
-  // Only include "_base-" prefixed .vue files
-  /(_base-|Rosem)[\w-]+\.vue$/
+  true,
+  // Only include index.js files of first level subdirectories
+  /^\.\/[\w-]+\/index\.js$/
 )
 
 // For each matching file name...
 requireComponent.keys().forEach(fileName => {
-  // Get the component config
-  const componentConfig = requireComponent(fileName)
-  // Get the PascalCase version of the component name
-  const componentName = upperFirst(
-    camelCase(
-      fileName
-        // Remove the "./_" from the beginning
-        .replace(/^\.\/_/, '')
-        // Remove the file extension from the end
-        .replace(/\.\w+$/, '')
-    )
-  )
+  // Get the component
+  let component = requireComponent(fileName)
+  component = component.default || component;
+  component.name = 'Rosem' + fileName.replace(/^\.\//, '').replace(/\/index\.js$/, '')
   // Globally register the component
-  Vue.component(componentName, componentConfig.default || componentConfig)
+  Vue.component(component.name, component)
 })

@@ -9,6 +9,7 @@ module.exports = {
     // Set up all the aliases we use in our app.
     resolve: {
       alias: require('./aliases.config').webpack,
+      // extensions: ['.wasm', '.mjs', '.js', '.json', '.vue']
     },
     module: {
       rules: [

@@ -13,7 +13,7 @@ export default {
 
 <template>
   <Layout>
-    <rosem-input
+    <RosemInput
       label="Email"
       type="email"
     />

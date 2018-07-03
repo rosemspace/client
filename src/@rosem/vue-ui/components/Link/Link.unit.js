@@ -1,7 +1,7 @@
-import BaseLink from './_base-link'
+import Link from './Link'
 
 const mountBaseLink = (options = {}) => {
-  return mount(BaseLink, {
+  return mount(Link, {
     stubs: {
       'router-link': {
         functional: true,
@@ -31,7 +31,7 @@ describe('@rosem/vue-ui/components/_base-link', () => {
   })
 
   it('exports a valid component', () => {
-    expect(BaseLink).toBeAComponent()
+    expect(Link).toBeAComponent()
   })
 
   it('warns about missing required props', () => {
