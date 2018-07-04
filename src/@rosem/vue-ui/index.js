@@ -20,9 +20,27 @@ const requireComponent = require.context(
 // For each matching file name...
 requireComponent.keys().forEach(fileName => {
   // Get the component
-  let component = requireComponent(fileName)
-  component = component.default || component;
-  component.name = 'Rosem' + fileName.replace(/^\.\//, '').replace(/\/index\.js$/, '')
-  // Globally register the component
-  Vue.component(component.name, component)
+  let module = requireComponent(fileName);
+  let componentList = {};
+  const defaultName = fileName.replace(/^\.\//, '').replace(/\/index\.js$/, '');
+
+  if (module.default) {
+    componentList = Object.assign(componentList, module)
+
+    if (!componentList.default.install) {
+      componentList[defaultName] = componentList.default
+      delete componentList.default
+    }
+  } else {
+    componentList[defaultName] = module
+  }
+
+  for (let [componentName, component] of Object.entries(componentList)) {
+    if (component.install) {
+      Vue.use(component)
+    } else {
+      // Globally register the component
+      Vue.component('Rosem' + componentName, component)
+    }
+  }
 })

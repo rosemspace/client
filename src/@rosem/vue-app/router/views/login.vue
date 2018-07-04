@@ -11,6 +11,7 @@ export default {
   components: { Layout },
   data() {
     return {
+      someText: 'Some text',
       username: '',
       password: '',
       authError: null,
@@ -50,14 +51,21 @@ export default {
       :class="$style.form"
       @submit.prevent="tryToLogIn"
     >
-      <div id="test"></div>
+      <hr>
+      <RosemPortalTarget name="test"/>
+      <hr>
       <RosemPortal to="test">
-        <RosemInput
-          v-model="username"
-          label="Email"
-          name="username"
-        />
+        <input v-model="someText">
+        <ul>
+          <li>1</li>
+          <li>2</li>
+        </ul>
       </RosemPortal>
+      <RosemInput
+        v-model="username"
+        label="Email"
+        name="username"
+      />
       <RosemInput
         v-model="password"
         label="Password"
