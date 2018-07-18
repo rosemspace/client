@@ -27,7 +27,7 @@ There are a few different contexts in which the linters run.
 
 ```bash
 # Lint all files, fixing many violations automatically
-npm run lint
+yarn lint
 ```
 
 See `package.json` to update.

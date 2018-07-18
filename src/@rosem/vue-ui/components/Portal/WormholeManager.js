@@ -10,9 +10,9 @@ export const Wormhole = Vue.extend({
   methods: {
     open(name, payload) {
       if (!this.wormholes[name]) {
-        this.$set(this.wormholes, name, {payload})
-        console.log(this.wormholes[name]);
-        // this.wormholes[name] = {payload, needsRefresh: false};
+        this.$set(this.wormholes, name, payload)
+        // this.wormholes[name] = payload;
+        this.$emit('open', payload)
       }
     },
 

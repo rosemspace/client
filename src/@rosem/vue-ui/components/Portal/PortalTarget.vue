@@ -1,5 +1,5 @@
 <script>
-import WormholeManager from './WormholeManager'
+import WM from './WormholeManager'
 
 export default {
   functional: true,
@@ -13,15 +13,20 @@ export default {
 
   render(createElement, context) {
     console.log('PortalTarget')
-    const wormhole = WormholeManager.wormholes[context.props.name]
+
+    const wormhole = WM.wormholes[context.props.name]
 
     if (wormhole) {
-      wormhole.needsRefresh = true;
-
-      return wormhole.payload
+      return wormhole
     }
 
-    return [];
+    WM.$once('open', function (event) {
+      // WM.$set(WM.wormholes, context.props.name, event);
+      WM.wormholes[context.props.name] = event;
+      console.log('OPENED');
+    })
+
+    return context.children;
   }
 }
 </script>

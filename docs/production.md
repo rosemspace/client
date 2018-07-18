@@ -7,7 +7,7 @@
 
 ```bash
 # Build for production with minification
-npm run build
+yarn build
 ```
 
 This results in your compiled application in a `dist` directory.

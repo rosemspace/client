@@ -1,7 +1,7 @@
 <template>
-    <div :id="`pop-${name}`">
-        <slot :open="open" />
-    </div>
+  <div :id="`pop-${name}`">
+    <slot :open="open" />
+  </div>
 </template>
 
 <script>

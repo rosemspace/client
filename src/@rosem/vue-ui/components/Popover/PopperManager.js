@@ -36,8 +36,8 @@ export default class PopupManager {
 
   _onDocumentClick(event) {
     for (let i = this._activeList.length; --i >= 0; ) {
-      const activePopperName = this._activeList[i],
-        binding = this._bindings[activePopperName];
+      const activePopperName = this._activeList[i];
+      const binding = this._bindings[activePopperName];
 
       if (
         binding.closeOnClickOutside &&

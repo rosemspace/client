@@ -15,7 +15,7 @@
 Make sure you have the following installed:
 
 - [Node](https://nodejs.org/en/) (at least the latest LTS)
-- [Npm](https://docs.npmjs.com/cli/install/) (at least 6.0)
+- [Yarn](https://yarnpkg.com/lang/en/docs/install/) (at least 1.0)
 
 Then update the following files to suit your application:
 
@@ -26,7 +26,7 @@ Then update the following files to suit your application:
 
 ```bash
 # Install dependencies from package.json
-npm install
+yarn install
 ```
 
 ## Dev server
@@ -35,15 +35,15 @@ npm install
 
 ```bash
 # Launch the dev server
-npm run dev
+yarn dev
 
 # Launch the dev server and automatically open it in
 # your default browser when ready
-npm run dev --open
+yarn dev --open
 
 # Launch the dev server with the Cypress client for
 # test-driven development in a friendly interface
-npm run dev:e2e
+yarn dev:e2e
 ```
 
 ### Developing with the production API
@@ -52,10 +52,10 @@ By default, dev and tests filter requests through [the mock API](/docs/tests.md#
 
 ```bash
 # To develop against a local backend server
-API_BASE_URL=http://localhost:3000 npm run dev
+API_BASE_URL=http://localhost:3000 yarn dev
 
 # To test and develop against a production server
-API_BASE_URL=https://example.io npm run dev:e2e
+API_BASE_URL=https://example.io yarn dev:e2e
 ```
 
 ## Generators
@@ -64,22 +64,22 @@ This project includes generators to speed up common development tasks. Commands 
 
 ```bash
 # Generate a new component with adjacent unit test
-npm run new component
+yarn new component
 
 # Generate a new view component with adjacent unit test
-npm run new view
+yarn new view
 
 # Generate a new layout component with adjacent unit test
-npm run new layout
+yarn new layout
 
 # Generate a new Vuex module with adjacent unit test
-npm run new module
+yarn new module
 
 # Generate a new utility function with adjacent unit test
-npm run new util
+yarn new util
 
 # Generate a new end-to-end spec
-npm run new e2e
+yarn new e2e
 ```
 
 Update existing or create new generators in the `_templates` folder, with help from the [Hygen docs](http://www.hygen.io/).

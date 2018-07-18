@@ -1,8 +1,8 @@
 <template>
-    <div :class="$options.name">
-        <slot />
-        <div x-arrow></div>
-    </div>
+  <div :class="$options.name">
+    <slot/>
+    <div x-arrow/>
+  </div>
 </template>
 
 <script>

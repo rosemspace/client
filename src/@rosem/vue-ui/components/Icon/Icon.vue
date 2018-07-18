@@ -21,8 +21,8 @@ export default {
     fontAwesomeIcon() {
       return {
         // Add new icons to this list as you need them
-        sync: require('@fortawesome/fontawesome-free-solid/faSync'),
-        user: require('@fortawesome/fontawesome-free-solid/faUser'),
+        sync: require('@fortawesome/free-solid-svg-icons/faSync'),
+        user: require('@fortawesome/free-solid-svg-icons/faUser'),
       }[this.name]
     },
     // Gets a CSS module class, e.g. iconCustomLogo

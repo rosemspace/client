@@ -189,8 +189,8 @@ export default {
         });
       }
 
-      const timeFraction = this.timePassed / this.duration,
-        deformation = this.timingFunction(timeFraction, this.params);
+      const timeFraction = this.timePassed / this.duration;
+      const deformation = this.timingFunction(timeFraction, this.params);
       this.motionValue =
         this.startValue + this._approximate(this.intervalValue * deformation);
       this.progress = timeFraction;
