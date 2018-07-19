@@ -1,5 +1,5 @@
 <script>
-import { authComputed } from '@rosem/vue-app/state/helpers'
+import { authComputed } from '../state/helpers'
 import NavBarRoutes from './nav-bar-routes.vue'
 
 export default {

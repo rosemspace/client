@@ -1,15 +1,15 @@
-import store from '@rosem/vue-app/state/store'
+import store from '../state/store'
 
 export default [
   {
     path: '/',
     name: 'home',
-    component: () => lazyLoadView(import('@rosem/vue-app/router/views/home')),
+    component: () => lazyLoadView(import('../router/views/home')),
   },
   {
     path: '/login',
     name: 'login',
-    component: () => lazyLoadView(import('@rosem/vue-app/router/views/login')),
+    component: () => lazyLoadView(import('../router/views/login')),
     beforeEnter(routeTo, routeFrom, next) {
       // If the user is already logged in
       if (store.getters['auth/loggedIn']) {
@@ -25,7 +25,7 @@ export default [
     path: '/profile',
     name: 'profile',
     component: () =>
-      lazyLoadView(import('@rosem/vue-app/router/views/profile')),
+      lazyLoadView(import('../router/views/profile')),
     meta: {
       authRequired: true,
     },
@@ -35,7 +35,7 @@ export default [
     path: '/profile/:username',
     name: 'username-profile',
     component: () =>
-      lazyLoadView(import('@rosem/vue-app/router/views/profile')),
+      lazyLoadView(import('../router/views/profile')),
     meta: {
       authRequired: true,
     },
@@ -78,7 +78,7 @@ export default [
   {
     path: '/404',
     name: '404',
-    component: require('@rosem/vue-app/router/views/404').default,
+    component: require('../router/views/404').default,
     // Allows props to be passed to the 404 page through route
     // params, such as `resource` to define what wasn't found.
     props: true,

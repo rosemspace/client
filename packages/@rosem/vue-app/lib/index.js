@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './app'
-import router from '@rosem/vue-app/router'
-import store from '@rosem/vue-app/state/store'
+import router from './router'
+import store from './state/store'
 import '@rosem/vue-ui'
 
 // Don't warn about using the dev version of Vue in development

@@ -1,0 +1,17 @@
+{
+  "name": "@rosem/design",
+  "version": "0.0.1",
+  "description": "Rosem design library",
+  "files": [
+    "lib/index.scss"
+  ],
+  "main": "lib/index.scss",
+  "scripts": {
+    "clean": "./task clean",
+    "compile": "./task compile",
+    "test": "./task test",
+    "lint": "./task lint"
+  },
+  "dependencies": {
+  }
+}

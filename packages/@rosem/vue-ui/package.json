@@ -1,0 +1,17 @@
+{
+  "name": "@rosem/vue-ui",
+  "version": "0.0.1",
+  "description": "Rosem vue ui library",
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "scripts": {
+    "clean": "./task clean",
+    "compile": "./task compile",
+    "test": "./task test",
+    "lint": "./task lint"
+  },
+  "dependencies": {
+  }
+}

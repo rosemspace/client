@@ -11,6 +11,7 @@ module.exports = {
   ],
   plugins: [
     '@babel/plugin-proposal-export-default-from',
+    '@babel/plugin-proposal-object-rest-spread',
     // Support async/await
     // https://babeljs.io/docs/plugins/transform-runtime/
     [

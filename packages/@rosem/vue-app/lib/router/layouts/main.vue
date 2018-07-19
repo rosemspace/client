@@ -1,5 +1,5 @@
 <script>
-import NavBar from '@rosem/vue-app/components/nav-bar'
+import NavBar from '../../components/nav-bar'
 
 export default {
   components: { NavBar },

@@ -2,6 +2,9 @@
   "name": "frontend",
   "version": "0.0.0",
   "private": true,
+  "workspaces": [
+    "packages/@rosem/*"
+  ],
   "scripts": {
     "build": "vue-cli-service build",
     "test": "yarn unit && yarn e2e",
@@ -20,6 +23,7 @@
     "@fortawesome/fontawesome-svg-core": "1.2.1",
     "@fortawesome/free-solid-svg-icons": "5.1.1",
     "@fortawesome/vue-fontawesome": "0.1.1",
+    "@rosem/vue-app": "0.0.x",
     "axios": "0.18.0",
     "lodash": "4.17.10",
     "nanoid": "^1.1.0",
@@ -34,7 +38,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.54",
-    "@babel/plugin-proposal-export-default-from": "^7.0.0-beta.54",
+    "@babel/plugin-proposal-export-default-from": "7.0.0-beta.54",
+    "@babel/plugin-proposal-object-rest-spread": "7.0.0-beta.54",
     "@vue/cli-plugin-babel": "^3.0.0-rc.5",
     "@vue/cli-plugin-e2e-cypress": "^3.0.0-rc.5",
     "@vue/cli-plugin-eslint": "3.0.0-rc.5",
@@ -51,6 +56,7 @@
     "graphql-tag": "^2.9.2",
     "hygen": "^1.6.2",
     "imagemin-lint-staged": "0.3.x",
+    "lerna": "3.0.0-beta.21",
     "lint-staged": "7.2.x",
     "markdownlint-cli": "0.11.x",
     "node-sass": "4.9.x",

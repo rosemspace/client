@@ -1,5 +1,5 @@
 <script>
-import appConfig from '@rosem/vue-app/app.config'
+import appConfig from './app.config'
 
 export default {
   page: {

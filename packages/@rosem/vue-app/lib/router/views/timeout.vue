@@ -1,5 +1,5 @@
 <script>
-import Layout from '@rosem/vue-app/router/layouts/main'
+import Layout from '../../router/layouts/main'
 
 export default {
   page: {

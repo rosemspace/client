@@ -1,14 +1,17 @@
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-const appConfig = require('./src/@rosem/vue-app/app.config') // TODO: move to config dir
+const appConfig = require('@rosem/vue-app/lib/app.config') // TODO: move to config dir
 
 module.exports = {
+  transpileDependencies: [
+    '@rosem/vue-app',
+  ],
   configureWebpack: {
     // We provide the app's title in Webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
     name: appConfig.title,
     // Set up all the aliases we use in our app.
     resolve: {
-      alias: require('./aliases.config').webpack,
+      // alias: require('./aliases.config').webpack,
       // extensions: ['.wasm', '.mjs', '.js', '.json', '.vue']
     },
     module: {

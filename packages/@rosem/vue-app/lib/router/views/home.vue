@@ -1,6 +1,6 @@
 <script>
-import appConfig from '@rosem/vue-app/app.config'
-import Layout from '@rosem/vue-app/router/layouts/main'
+import appConfig from '../../app.config'
+import Layout from '../../router/layouts/main'
 
 export default {
   page: {
@@ -19,7 +19,7 @@ export default {
     />
     <h1>Home Page</h1>
     <img
-      src="~@rosem/vue-app/assets/images/logo.png"
+      src="/assets/images/logo.png"
       alt="Logo"
     >
   </Layout>

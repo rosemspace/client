@@ -1,7 +1,7 @@
 <script>
-import Layout from '@rosem/vue-app/router/layouts/main'
-import { authMethods } from '@rosem/vue-app/state/helpers'
-import appConfig from '@rosem/vue-app/app.config'
+import Layout from '../../router/layouts/main'
+import { authMethods } from '../../state/helpers'
+import appConfig from '../../app.config'
 
 export default {
   page: {
