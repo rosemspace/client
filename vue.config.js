@@ -5,6 +5,15 @@ module.exports = {
   transpileDependencies: [
     '@rosem/vue-app',
   ],
+  chainWebpack: function (config) {
+    var ruleIterator = config.module.rules.store.values();
+    var rule;
+
+    while (rule = ruleIterator.next().value) {
+      rule.include.add('node_modules/@rosem').end();
+    }
+      // console.log(rule);
+  },
   configureWebpack: {
     // We provide the app's title in Webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
@@ -16,6 +25,10 @@ module.exports = {
     },
     module: {
       rules: [
+          // exclude: [
+          //   /node_modules\/(?!@(rosem|roshe)\/)/,
+          //   './node_modules/@vue/cli-service/lib'
+          // ],
         {
           test: /\.postcss$/,
           oneOf: [

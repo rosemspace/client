@@ -4,12 +4,12 @@ export default [
   {
     path: '/',
     name: 'home',
-    component: () => lazyLoadView(import('../router/views/home')),
+    component: () => lazyLoadView(import('./views/home')),
   },
   {
     path: '/login',
     name: 'login',
-    component: () => lazyLoadView(import('../router/views/login')),
+    component: () => lazyLoadView(import('./views/login')),
     beforeEnter(routeTo, routeFrom, next) {
       // If the user is already logged in
       if (store.getters['auth/loggedIn']) {
@@ -25,7 +25,7 @@ export default [
     path: '/profile',
     name: 'profile',
     component: () =>
-      lazyLoadView(import('../router/views/profile')),
+      lazyLoadView(import('./views/profile')),
     meta: {
       authRequired: true,
     },
@@ -35,7 +35,7 @@ export default [
     path: '/profile/:username',
     name: 'username-profile',
     component: () =>
-      lazyLoadView(import('../router/views/profile')),
+      lazyLoadView(import('./views/profile')),
     meta: {
       authRequired: true,
     },
@@ -78,7 +78,7 @@ export default [
   {
     path: '/404',
     name: '404',
-    component: require('../router/views/404').default,
+    component: require('./views/404').default,
     // Allows props to be passed to the 404 page through route
     // params, such as `resource` to define what wasn't found.
     props: true,
@@ -110,10 +110,10 @@ function lazyLoadView(AsyncView) {
   const AsyncHandler = () => ({
     component: AsyncView,
     // A component to use while the component is loading.
-    loading: require('@rosem/vue-app/router/views/loading').default,
+    loading: require('./views/loading').default,
     // A fallback component in case the timeout is exceeded
     // when loading the component.
-    error: require('@rosem/vue-app/router/views/timeout').default,
+    error: require('./views/timeout').default,
     // Delay before showing the loading component.
     // Default: 200 (milliseconds).
     delay: 400,

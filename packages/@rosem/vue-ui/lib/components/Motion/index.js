@@ -1,53 +1,53 @@
 import {
-  easeInElastic
+  easeInElastic,
   // easeOutElastic,
   // easeOutExpo,
   // easeOutBounce
-} from "./timingFunction";
-// import { circleIn, circleOut, circleInOut } from "./timingFunction/circle";
+} from './timingFunction'
+// import { circleIn, circleOut, circleInOut } from "./timingFunction_old/circle";
 
 // const msPerFrame = 1000 / 60,
 const requestAnimationFrame =
-  typeof window !== "undefined"
+  typeof window !== 'undefined'
     ? window.requestAnimationFrame.bind(window)
-    : () => {};
+    : () => {}
 
 export default {
-  name: "RosemMotion",
+  name: 'RosemMotion',
 
   render(h) {
     return this.$scopedSlots.default({
       running: this.running,
       value: this.motionValue,
       progress: this.progress,
-      progression: this.progression
-    });
+      oscillation: this.oscillation,
+    })
   },
 
   props: {
     value: {
       type: Number | String | Array,
-      default: 0
+      default: 0,
     },
     deep: {
       type: Boolean,
-      default: false
+      default: false,
     },
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     delay: {
       type: Number,
-      default: 300
+      default: 300,
     },
     duration: {
       type: Number,
-      default: 300
+      default: 300,
     },
     precision: {
       type: Number,
-      default: Infinity
+      default: Infinity,
     },
     timingFunction: {
       type: Function,
@@ -56,71 +56,49 @@ export default {
       // default: circleOut,
       // default: circleInOut,
       // default: easeOutBounce,
-      default: easeInElastic
+      default: easeInElastic,
       // default: easeOutElastic,
       // default: easeOutExpo,
     },
     reverse: {
       type: Boolean,
-      default: false
+      default: false,
     },
     params: {
-      type: Object
+      type: Object,
     },
     process: {
       type: Function,
-      default() {}
-    }
+      default() {},
+    },
   },
 
   watch: {
     value(newValue, oldValue) {
-      if (this.value !== this.startValue + this.intervalValue) {
+      if (this.value !== this.initialValue + this.intervalValue) {
         if (this.running) {
-          this.startValue = this.motionValue;
+          this.initialValue = this.motionValue
           this.intervalValue =
-            (this.reverse ? oldValue : newValue) - this.startValue;
-
-          this.intervalProgression = this.intervalValue / this.value;
+            (this.reverse ? oldValue : newValue) - this.initialValue
         } else {
           if (this.reverse) {
-            this.startValue = newValue;
-            this.intervalValue = oldValue - this.startValue;
+            this.initialValue = newValue
+            this.intervalValue = oldValue - this.initialValue
           } else {
-            this.startValue = oldValue;
-            this.intervalValue = newValue - this.startValue;
+            this.initialValue = oldValue
+            this.intervalValue = newValue - this.initialValue
           }
-
-          this.intervalProgression = this.startValue / this.value;
         }
 
-        // if (this.reverse) {
-        //     if (this.running) {
-        //         this.startValue = this.motionValue;
-        //     } else {
-        //         this.startValue = newValue;
-        //     }
-        //
-        //     this.intervalValue = oldValue - this.startValue;
-        // } else {
-        //     if (this.running) {
-        //         this.startValue = this.motionValue;
-        //     } else {
-        //         this.startValue = oldValue;
-        //     }
-        //
-        //     this.intervalValue = newValue - this.startValue;
-        // }
-
-        this.run();
+        this.run()
       }
-    }
+    },
   },
 
   computed: {
     precisionFactor() {
-      return Math.pow(10, this.precision);
-    }
+      return Math.pow(10, this.precision)
+    },
   },
 
   data() {
@@ -129,80 +107,87 @@ export default {
       timePassed: 0,
       progress: 0,
       oscillation: 0,
-      running: false
-    };
+      running: false,
+    }
   },
 
   methods: {
     enable() {},
 
-    _getEvent() {
+    $_createEvent() {
       return {
         timePassed: this.timePassed,
         delay: this.delay,
         duration: this.duration,
-        from: this.startValue,
-        to: this.value,
-        oscillation: this.oscillation
-      };
+        initialValue: this.initialValue,
+        value: this.value,
+        progress: this.progress,
+        oscillation: this.oscillation,
+      }
     },
 
-    _approximate(value) {
+    approximate(value) {
       return Number.isFinite(this.precision)
         ? Math.round(value * this.precisionFactor) / this.precisionFactor
-        : value;
+        : value
     },
 
     run() {
-      this.cancel();
-      this.running = true;
+      this.cancel()
+      this.running = true
       this.animationId = requestAnimationFrame(time => {
-        this.startTime = time;
-        this.$emit("start", this._getEvent());
-        this.nextFrame(time);
-      });
+        this.startTime = time
+        this.$emit('start', this.$_createEvent())
+        this.$_computeFrame(time)
+      })
     },
 
     cancel() {
       if (this.running) {
-        cancelAnimationFrame(this.animationId);
-        this.running = false;
-        this.$emit("cancelled", this._getEvent());
+        cancelAnimationFrame(this.animationId)
+        this.running = false
+        this.$emit('cancelled', this.$_createEvent())
+      }
+    },
+
+    pause() {
+      if (this.running) {
+        cancelAnimationFrame(this.animationId)
+        this.running = false
+        this.$emit('cancelled', this.$_createEvent())
       }
     },
 
     stop() {
-      this.cancel();
-      this.motionValue = this.startValue;
+      this.cancel()
+      this.motionValue = this.initialValue
     },
 
-    nextFrame(time) {
-      this.timePassed = time - this.startTime;
+    $_computeFrame(time) {
+      this.timePassed = time - this.startTime
 
       if (this.timePassed < this.duration) {
-        this.animationId = requestAnimationFrame(this.nextFrame);
+        this.animationId = requestAnimationFrame(this.$_computeFrame)
       } else {
-        this.timePassed = this.duration;
+        this.timePassed = this.duration
         this.$nextTick(() => {
-          this.running = false;
-          this.$emit("end", this._getEvent());
-        });
+          this.running = false
+          this.$emit('end', this.$_createEvent())
+        })
       }
 
-      const timeFraction = this.timePassed / this.duration;
-      const deformation = this.timingFunction(timeFraction, this.params);
+      const timeFraction = this.timePassed / this.duration
+      const deformation = this.timingFunction(timeFraction, this.params)
       this.motionValue =
-        this.startValue + this._approximate(this.intervalValue * deformation);
-      this.progress = timeFraction;
-      this.progression = this.intervalProgression * deformation;
-      this.process(timeFraction, deformation);
-    }
+        this.initialValue + this.approximate(this.intervalValue * deformation)
+      this.progress = timeFraction
+      this.oscillation = this.process(timeFraction, deformation)
+    },
   },
 
   created() {
-    this.startTime = 0;
-    this.startValue = this.value;
-    this.intervalValue = this.value;
-    this.intervalProgression = 0;
-  }
-};
+    this.startTime = 0
+    this.initialValue = this.value
+    this.intervalValue = this.value
+  },
+}

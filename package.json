@@ -6,6 +6,9 @@
     "packages/@rosem/*"
   ],
   "scripts": {
+    "bootstrap": "./node_modules/.bin/lerna bootstrap",
+    "packages": "./node_modules/.bin/lerna ls",
+    "compile": "lerna run compile",
     "build": "vue-cli-service build",
     "test": "yarn unit && yarn e2e",
     "e2e": "vue-cli-service test:e2e --headless",
@@ -40,6 +43,7 @@
     "@babel/core": "^7.0.0-beta.54",
     "@babel/plugin-proposal-export-default-from": "7.0.0-beta.54",
     "@babel/plugin-proposal-object-rest-spread": "7.0.0-beta.54",
+    "@babel/plugin-syntax-dynamic-import": "7.0.0-beta.54",
     "@vue/cli-plugin-babel": "^3.0.0-rc.5",
     "@vue/cli-plugin-e2e-cypress": "^3.0.0-rc.5",
     "@vue/cli-plugin-eslint": "3.0.0-rc.5",

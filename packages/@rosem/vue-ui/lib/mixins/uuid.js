@@ -1,10 +1,10 @@
-import uuidv1 from 'uuid/v1'
+import nanoid from 'nanoid'
 
 export class Uuid {
   _uuid
 
   generate() {
-    this._uuid = uuidv1()
+    this._uuid = nanoid()
 
     return this.getLast()
   }
