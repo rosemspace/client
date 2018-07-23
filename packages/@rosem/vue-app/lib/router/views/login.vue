@@ -6,7 +6,7 @@ import appConfig from '../../app.config'
 export default {
   page: {
     title: 'Log in',
-    meta: [{ name: 'description', content: `Log in to ${appConfig.title}` }],
+    meta: [{ name: 'description', content: `Log in to ${appConfig.meta.title}` }],
   },
   components: { Layout },
   data() {
@@ -91,7 +91,7 @@ export default {
 </template>
 
 <style lang="scss" module>
-@import '~\@rosem/design/index.scss';
+@import '~\@rosem/design';
 
 .form {
   display: flow-root;

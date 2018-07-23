@@ -104,6 +104,13 @@ or put it into a file:
 vue inspect > output.js
 ```
 
+::: warning
+output.js isn't a valid webpack configuration because of
+```js
+function () { /* omitted long function */ }
+```
+:::
+
 ## Aliases
 
 To simplify referencing local modules and refactoring, you can set aliases to be shared between dev and unit tests in `aliases.config.js`. As a convention, this project uses an `@` prefix to denote aliases.

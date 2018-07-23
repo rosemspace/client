@@ -37,7 +37,7 @@ export default {
 </script>
 
 <style lang="scss" module>
-@import '~\@rosem/design/index.scss';
+@import '~\@rosem/design';
 
 .active a {
   font-weight: 600;

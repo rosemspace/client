@@ -1,24 +1,9 @@
 module.exports = {
   presets: [
-    [
-      '@vue/app',
-      {
-        // Disable Babel's polyfills, replaced by the
-        // polyfill.io service in index.html
-        useBuiltIns: false,
-      },
-    ],
+    '@vue/app',
   ],
   plugins: [
     '@babel/plugin-proposal-export-default-from',
-    '@babel/plugin-proposal-object-rest-spread',
-    '@babel/plugin-syntax-dynamic-import',
-    // Support async/await
-    // https://babeljs.io/docs/plugins/transform-runtime/
-    [
-      '@babel/transform-runtime',
-      { helpers: true, polyfill: false, regenerator: true },
-    ],
   ],
   env: {
     test: {

@@ -51,7 +51,7 @@ export default {
 </template>
 
 <style lang="scss" module>
-@import '~\@rosem/design/index.scss';
+@import '~\@rosem/design';
 
 .container {
   // padding: 0;

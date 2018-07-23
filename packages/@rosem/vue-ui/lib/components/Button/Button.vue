@@ -8,7 +8,7 @@
 </template>
 
 <style lang="scss" module>
-@import '~\@rosem/design/index.scss';
+@import '~\@rosem/design';
 
 .button {
   @extend %typography-small;

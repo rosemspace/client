@@ -14,7 +14,7 @@ export default {
 </template>
 
 <style lang="scss" module>
-@import '~\@rosem/design/index.scss';
+@import '~\@rosem/design';
 
 .container {
   min-width: $size-content-width-min;

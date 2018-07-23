@@ -5,7 +5,7 @@ import Layout from '../../router/layouts/main'
 export default {
   page: {
     title: 'Home',
-    meta: [{ name: 'description', content: appConfig.description }],
+    meta: [{ name: 'description', content: appConfig.meta.description }],
   },
   components: { Layout },
 }
@@ -19,7 +19,7 @@ export default {
     />
     <h1>Home Page</h1>
     <img
-      src="/assets/images/logo.png"
+      src="../../assets/images/logo.png"
       alt="Logo"
     >
   </Layout>

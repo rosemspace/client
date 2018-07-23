@@ -1,105 +1,25 @@
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-const appConfig = require('@rosem/vue-app/lib/app.config') // TODO: move to config dir
+const appConfig = require('./src/app.config')
+const packageJson = require('./package.json');
+const workspaces = Array.isArray(packageJson.workspaces)
+  ? packageJson.workspaces
+  : packageJson.workspaces.packages;
 
 module.exports = {
   transpileDependencies: [
-    '@rosem/vue-app',
-  ],
+    // add your modules here need to be transpiled
+  ].concat(workspaces.map(workspace => new RegExp(`(\\\\|\\/)${workspace.replace(/^[\w-]+\/|\/\*$/, '')}\\1`))),
   chainWebpack: function (config) {
-    var ruleIterator = config.module.rules.store.values();
-    var rule;
-
-    while (rule = ruleIterator.next().value) {
-      rule.include.add('node_modules/@rosem').end();
-    }
-      // console.log(rule);
+    // chain your configuration here
   },
   configureWebpack: {
     // We provide the app's title in Webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
-    name: appConfig.title,
+    name: appConfig.meta.title,
     // Set up all the aliases we use in our app.
     resolve: {
-      // alias: require('./aliases.config').webpack,
-      // extensions: ['.wasm', '.mjs', '.js', '.json', '.vue']
+      alias: require('./aliases.config').webpack,
+      extensions: ['.wasm', '.mjs']
     },
-    module: {
-      rules: [
-          // exclude: [
-          //   /node_modules\/(?!@(rosem|roshe)\/)/,
-          //   './node_modules/@vue/cli-service/lib'
-          // ],
-        {
-          test: /\.postcss$/,
-          oneOf: [
-            {
-              resourceQuery: /module/,
-              use: [
-                {
-                  loader: 'vue-style-loader',
-                  options: {
-                    sourceMap: false,
-                    shadowMode: false,
-                  },
-                },
-                {
-                  loader: 'css-loader',
-                  options: {
-                    minimize: false,
-                    sourceMap: false,
-                    importLoaders: 1,
-                    modules: true,
-                    localIdentName: '[name]_[local]_[hash:base64:5]',
-                  },
-                },
-                {
-                  loader: 'postcss-loader',
-                  options: {
-                    sourceMap: false,
-                  },
-                },
-              ],
-            },
-            {
-              use: [
-                {
-                  loader: 'vue-style-loader',
-                  options: {
-                    sourceMap: false,
-                    shadowMode: false,
-                  },
-                },
-                {
-                  loader: 'css-loader',
-                  options: {
-                    minimize: false,
-                    sourceMap: false,
-                    importLoaders: 1,
-                  },
-                },
-                {
-                  loader: 'postcss-loader',
-                  options: {
-                    sourceMap: false,
-                    config: {
-                      path: '.postcssrc.js',
-                    },
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    plugins: [
-      // Optionally produce a bundle analysis
-      // TODO: Remove once this feature is built into Vue CLI
-      new BundleAnalyzerPlugin({
-        analyzerMode: process.env.ANALYZE ? 'static' : 'disabled',
-        openAnalyzer: process.env.CI !== 'true',
-      }),
-    ],
   },
   css: {
     // Enable CSS source maps.

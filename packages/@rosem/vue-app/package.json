@@ -2,15 +2,25 @@
   "name": "@rosem/vue-app",
   "version": "0.0.1",
   "description": "Rosem vue app library",
+  "keywords": [
+    "app"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
   "files": [
     "lib"
   ],
-  "main": "lib/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "clean": "./task clean",
-    "build": "./task build",
-    "test": "./task test",
-    "lint": "./task lint"
+    "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
     "@rosem/vue-ui": "0.0.x"

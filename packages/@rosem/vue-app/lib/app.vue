@@ -5,8 +5,11 @@ export default {
   page: {
     // All subcomponent titles will be injected into this template.
     titleTemplate(title) {
-      title = typeof title === 'function' ? title(this.$store) : title
-      return title ? `${title} | ${appConfig.title}` : appConfig.title
+      if (typeof title === 'function') {
+        title = title(this.$store)
+      }
+
+      return title ? `${appConfig.meta.prefix}${title}${appConfig.meta.suffix}` : appConfig.meta.title
     },
   },
 }
@@ -34,8 +37,8 @@ export default {
 // https://github.com/rstacruz/nprogress
 @import '~nprogress/nprogress.css';
 
-// Design variables and utilities from src/design.
-@import '~\@rosem/design/index.scss';
+// Design variables and utilities from @rosem/design.
+@import '~\@rosem/design';
 
 *,
 *::before,

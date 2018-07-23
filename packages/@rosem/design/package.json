@@ -2,16 +2,24 @@
   "name": "@rosem/design",
   "version": "0.0.1",
   "description": "Rosem design library",
-  "files": [
-    "lib/index.scss"
+  "keywords": [
+    "design"
   ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
   "main": "lib/index.scss",
-  "scripts": {
-    "clean": "./task clean",
-    "compile": "./task compile",
-    "test": "./task test",
-    "lint": "./task lint"
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
   },
-  "dependencies": {
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
   }
 }

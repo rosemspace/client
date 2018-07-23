@@ -1,8 +1,5 @@
 {
   "version": "independent",
-  "packages": [
-    "packages/@rosem/*"
-  ],
   "npmClient": "yarn",
   "useWorkspaces": true
 }
