@@ -6,7 +6,7 @@
 // coefficient of restitution
 // https://en.wikipedia.org/wiki/Coefficient_of_restitution
 
-export default (timeFraction, { restitution = 0.25 } = {}) => {
+export function bounceOut(timeFraction, { restitution = 0.25 } = {}) {
   const computedRestitution = Math.sqrt(restitution),
     gravity = 2 / (1 - computedRestitution),
     normalizedTimeFraction = timeFraction - (timeFraction - 1) / gravity,
@@ -27,6 +27,10 @@ export default (timeFraction, { restitution = 0.25 } = {}) => {
       (currentRestitution * deltaTimeFraction -
         (gravity / 2) * deltaTimeFraction ** 2)
   )
+}
+
+export function bounceIn(timeFraction, { restitution = 0.25 } = {}) {
+  return 1 - bounceOut(1 - timeFraction, {restitution})
 }
 
 // export default timeFraction =>

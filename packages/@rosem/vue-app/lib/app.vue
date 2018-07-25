@@ -51,6 +51,7 @@ export default {
 }
 
 body {
+  overflow-y: scroll;
   background: $color-body-bg;
 }
 

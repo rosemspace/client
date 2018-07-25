@@ -1,19 +1,17 @@
 <script>
 export default {
-  name: "RosemMotionVisualiser",
+  name: 'RosemMotionCurve',
 
-  render(h) {
-    return this.$scopedSlots.default({
-      draw: this.draw,
-      clear: this.clear
+  render(createElement) {
+    return createElement('canvas', {
+      attrs: {
+        width: 300,
+        height: 300,
+      }
     });
   },
 
   props: {
-    canvasId: {
-      type: String | Number,
-      required: true
-    },
     rotate: {
       type: Boolean,
       default: false
@@ -142,10 +140,9 @@ export default {
 
   mounted() {
     this.$nextTick(() => {
-      const canvas = document.getElementById(this.canvasId);
-      this.context = canvas.getContext("2d");
-      this.width = canvas.width;
-      this.height = canvas.height;
+      this.context = this.$el.getContext('2d');
+      this.width = this.$el.width;
+      this.height = this.$el.height;
       this.drawAreaWidth = this.width - 2 * this.boundaryOffsetX;
       this.drawAreaHeight = this.height - 2 * this.boundaryOffsetY;
       this.clear();

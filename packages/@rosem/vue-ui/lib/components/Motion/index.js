@@ -1,8 +1,14 @@
 import {
-  easeInElastic,
+  ease,
+  easeIn,
+  easeOut,
+  easeInOut,
+  // easeInElastic,
   // easeOutElastic,
   // easeOutExpo,
-  // easeOutBounce
+  circleInOut,
+  bounceIn,
+  bounceOut
 } from './timingFunction'
 // import { circleIn, circleOut, circleInOut } from "./timingFunction_old/circle";
 
@@ -12,15 +18,17 @@ const requestAnimationFrame =
     ? window.requestAnimationFrame.bind(window)
     : () => {}
 
+export MotionCurve from './MotionCurve'
+
 export default {
   name: 'RosemMotion',
 
-  render(h) {
+  render() {
     return this.$scopedSlots.default({
       running: this.running,
       value: this.motionValue,
-      progress: this.progress,
       oscillation: this.oscillation,
+      progress: this.progress,
     })
   },
 
@@ -52,11 +60,16 @@ export default {
     timingFunction: {
       type: Function,
       // default: timeFraction => timeFraction,
+      // default: ease,
+      // default: easeIn,
+      // default: easeOut,
+      // default: easeInOut,
       // default: circleIn,
       // default: circleOut,
       // default: circleInOut,
-      // default: easeOutBounce,
-      default: easeInElastic,
+      // default: bounceIn,
+      default: bounceOut,
+      // default: easeInElastic,
       // default: easeOutElastic,
       // default: easeOutExpo,
     },
@@ -77,6 +90,7 @@ export default {
     value(newValue, oldValue) {
       if (this.value !== this.initialValue + this.intervalValue) {
         if (this.running) {
+          this.cancel()
           this.initialValue = this.motionValue
           this.intervalValue =
             (this.reverse ? oldValue : newValue) - this.initialValue
@@ -90,6 +104,7 @@ export default {
           }
         }
 
+        this.finalValue = this.value
         this.run()
       }
     },
@@ -105,8 +120,8 @@ export default {
     return {
       motionValue: this.value,
       timePassed: 0,
-      progress: 0,
       oscillation: 0,
+      progress: 0,
       running: false,
     }
   },
@@ -120,9 +135,10 @@ export default {
         delay: this.delay,
         duration: this.duration,
         initialValue: this.initialValue,
-        value: this.value,
-        progress: this.progress,
+        finalValue: this.finalValue,
+        value: this.motionValue,
         oscillation: this.oscillation,
+        progress: this.progress,
       }
     },
 
@@ -137,20 +153,15 @@ export default {
       this.running = true
       this.animationId = requestAnimationFrame(time => {
         this.startTime = time
+        this.timePassed = 0
+        this.oscillation = 0
+        this.progress = 0
         this.$emit('start', this.$_createEvent())
         this.$_computeFrame(time)
       })
     },
 
     cancel() {
-      if (this.running) {
-        cancelAnimationFrame(this.animationId)
-        this.running = false
-        this.$emit('cancelled', this.$_createEvent())
-      }
-    },
-
-    pause() {
       if (this.running) {
         cancelAnimationFrame(this.animationId)
         this.running = false
@@ -177,17 +188,26 @@ export default {
       }
 
       const timeFraction = this.timePassed / this.duration
-      const deformation = this.timingFunction(timeFraction, this.params)
+      // this.oscillation = this.timingFunction(timeFraction, this.params)
+      this.oscillation = this.timingFunction(timeFraction, this.params)
+
+      if (!Array.isArray(this.oscillation)) {
+        this.oscillation = [this.oscillation]
+      }
+
       this.motionValue =
-        this.initialValue + this.approximate(this.intervalValue * deformation)
+        // this.initialValue + this.approximate(this.intervalValue * this.oscillation)
+      this.initialValue + this.approximate(this.intervalValue * this.oscillation[0]) // 0 - dimension
       this.progress = timeFraction
-      this.oscillation = this.process(timeFraction, deformation)
+      // this.process(timeFraction, this.oscillation)
+      this.process(timeFraction, ...this.oscillation)
     },
   },
 
   created() {
     this.startTime = 0
     this.initialValue = this.value
+    this.finalValue = this.value
     this.intervalValue = this.value
   },
 }

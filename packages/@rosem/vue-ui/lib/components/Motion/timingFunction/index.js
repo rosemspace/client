@@ -1,10 +1,8 @@
-export bezier from "./bezier";
-export bezier2d from "./bezier2d";
-export cubicBezier2d from "./cubicBezier2d";
-export easeIn from "./easeIn";
-export easeInElastic from "./easeInElastic";
-export easeOutBounce from "./easeOutBounce";
-export easeOutElastic from "./easeOutElastic";
-export easeOutExpo from "./easeOutExpo";
-export linear from "./linear";
-export quardBezier from "./quardBezier";
+export linear from './linear'
+export bezier, { quardBezier, cubicBezier } from './bezier'
+export { circleIn, circleOut, circleInOut } from './circle'
+export ease, { easeIn, easeOut, easeInOut } from './ease'
+export { bounceIn, bounceOut } from './bounce'
+export easeInElastic from './easeInElastic'
+export easeOutElastic from './easeOutElastic'
+export easeOutExpo from './easeOutExpo'
