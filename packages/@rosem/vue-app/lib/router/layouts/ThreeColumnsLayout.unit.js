@@ -1,9 +1,9 @@
-import MainLayout from './main'
+import ThreeColumnsLayout from './ThreeColumnsLayout'
 
-describe('@rosem/vue-app/router/layouts/main', () => {
+describe('@rosem/vue-app/router/layouts/DefaultLayout', () => {
   it('renders its content', () => {
     const slotContent = '<p>Hello!</p>'
-    const { element } = shallowMount(MainLayout, {
+    const { element } = shallowMount(ThreeColumnsLayout, {
       slots: {
         default: slotContent,
       },

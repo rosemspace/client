@@ -1,6 +1,4 @@
 <script>
-import Layout from '../../router/layouts/main'
-
 export default {
   page: {
     title: 'Page timeout',
@@ -8,16 +6,13 @@ export default {
       { name: 'description', content: 'The page timed out while loading.' },
     ],
   },
-  components: { Layout },
 }
 </script>
 
 <template>
-  <Layout>
-    <h1 :class="$style.title">
-      The page timed out while loading
-    </h1>
-  </Layout>
+  <h1 :class="$style.title">
+    The page timed out while loading
+  </h1>
 </template>
 
 <style lang="scss" module>

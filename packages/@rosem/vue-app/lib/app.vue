@@ -1,7 +1,28 @@
+<template>
+  <div id="app">
+    <component :is="layout">
+      <keep-alive>
+        <!--
+        Even when routes use the same component, treat them
+        as distinct and create the component again.
+        -->
+        <router-view :key="$route.fullPath"/>
+      </keep-alive>
+    </component>
+  </div>
+</template>
+
 <script>
 import appConfig from './app.config'
+import OneColumnLayout from './router/layouts/OneColumnLayout'
+import ThreeColumnsLayout from './router/layouts/ThreeColumnsLayout'
 
 export default {
+  components: {
+    OneColumnLayout,
+    ThreeColumnsLayout,
+  },
+
   page: {
     // All subcomponent titles will be injected into this template.
     titleTemplate(title) {
@@ -9,21 +30,26 @@ export default {
         title = title(this.$store)
       }
 
-      return title ? `${appConfig.meta.prefix}${title}${appConfig.meta.suffix}` : appConfig.meta.title
+      return title
+        ? `${appConfig.meta.prefix}${title}${appConfig.meta.suffix}`
+        : appConfig.meta.title
     },
+  },
+
+  data() {
+    return {
+      layout: '',
+    }
+  },
+
+  mounted() {
+    this.$nextTick(() => {
+      this.layout =
+        this.$route.meta.layout || appConfig.defaultLayout || 'OneColumnLayout'
+    })
   },
 }
 </script>
-
-<template>
-  <div id="app">
-    <!--
-    Even when routes use the same component, treat them
-    as distinct and create the component again.
-    -->
-    <router-view :key="$route.fullPath"/>
-  </div>
-</template>
 
 <!-- This should generally be the only global CSS in the app. -->
 <style lang="scss">
@@ -48,10 +74,16 @@ export default {
 
 :root {
   font-size: 10px;
+  height: 100%;
+  overflow: hidden;
+}
+
+:root, body, #app, #app > div:first-of-type {
+  height: 100%;
 }
 
 body {
-  overflow-y: scroll;
+  overflow: hidden scroll;
   background: $color-body-bg;
 }
 

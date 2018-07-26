@@ -1,3 +1,17 @@
+<template>
+  <ul :class="$style.container">
+    <NavBarRoutes :routes="persistentNavRoutes"/>
+    <NavBarRoutes
+      v-if="loggedIn"
+      :routes="loggedInNavRoutes"
+    />
+    <NavBarRoutes
+      v-else
+      :routes="loggedOutNavRoutes"
+    />
+  </ul>
+</template>
+
 <script>
 import { authComputed } from '../state/helpers'
 import NavBarRoutes from './nav-bar-routes.vue'
@@ -35,20 +49,6 @@ export default {
   },
 }
 </script>
-
-<template>
-  <ul :class="$style.container">
-    <NavBarRoutes :routes="persistentNavRoutes"/>
-    <NavBarRoutes
-      v-if="loggedIn"
-      :routes="loggedInNavRoutes"
-    />
-    <NavBarRoutes
-      v-else
-      :routes="loggedOutNavRoutes"
-    />
-  </ul>
-</template>
 
 <style lang="scss" module>
 @import '~\@rosem/design';

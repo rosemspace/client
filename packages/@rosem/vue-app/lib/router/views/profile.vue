@@ -1,6 +1,4 @@
 <script>
-import Layout from '../../router/layouts/main'
-
 export default {
   page() {
     return {
@@ -13,7 +11,6 @@ export default {
       ],
     }
   },
-  components: { Layout },
   props: {
     user: {
       type: Object,
@@ -24,12 +21,12 @@ export default {
 </script>
 
 <template>
-  <Layout>
+  <div class="view-profile">
     <h1>
       <BaseIcon name="user"/>
       {{ user.name }}
       Profile
     </h1>
     <pre>{{ user }}</pre>
-  </Layout>
+  </div>
 </template>

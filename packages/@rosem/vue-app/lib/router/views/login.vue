@@ -1,5 +1,4 @@
 <script>
-import Layout from '../../router/layouts/main'
 import { authMethods } from '../../state/helpers'
 import appConfig from '../../app.config'
 
@@ -8,7 +7,6 @@ export default {
     title: 'Log in',
     meta: [{ name: 'description', content: `Log in to ${appConfig.meta.title}` }],
   },
-  components: { Layout },
   data() {
     return {
       someText: 'Some text',
@@ -46,21 +44,11 @@ export default {
 </script>
 
 <template>
-  <Layout>
+  <div>
     <form
       :class="$style.form"
       @submit.prevent="tryToLogIn"
     >
-      <hr>
-      <RosemPortalTarget name="test"/>
-      <hr>
-      <RosemPortal to="test">
-        <input v-model="someText">
-        <ul>
-          <li>1</li>
-          <li>2</li>
-        </ul>
-      </RosemPortal>
       <RosemInput
         v-model="username"
         label="Email"
@@ -87,7 +75,17 @@ export default {
         There was an error logging in to your account.
       </p>
     </form>
-  </Layout>
+    <hr>
+    <RosemPortalTarget name="test"/>
+    <hr>
+    <RosemPortal to="test">
+      <input v-model="someText">
+      <ul>
+        <li>1</li>
+        <li>2</li>
+      </ul>
+    </RosemPortal>
+  </div>
 </template>
 
 <style lang="scss" module>

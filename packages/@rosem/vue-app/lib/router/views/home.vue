@@ -1,9 +1,5 @@
 <template>
-  <Layout>
-    <RosemInput
-      label="Email"
-      type="email"
-    />
+  <div class="view-home">
     <h1>Home Page</h1>
     <img
       src="../../assets/images/logo.png"
@@ -15,26 +11,24 @@
         :value="value"
         :duration="1000"
         @start="$refs.motionCurve.clear()"
-        :process="(t, osc1, osc2) => $refs.motionCurve.draw(1 - t, osc1)"
+        :process="(t, osc1, osc2) => $refs.motionCurve.draw(1 - t, 1 - osc1)"
         :params="{restitution: .25}"
       >
         <div class="ball" slot-scope="{ value }" :style="`transform: translateY(${value}px)`"></div>
       </rosem-motion>
       <rosem-motion-curve ref="motionCurve"/>
     </div>
-  </Layout>
+  </div>
 </template>
 
 <script>
 import appConfig from '../../app.config'
-import Layout from '../../router/layouts/main'
 
 export default {
   page: {
     title: 'Home',
     meta: [{ name: 'description', content: appConfig.meta.description }],
   },
-  components: { Layout },
   data() {
     return {
       value: 0,
@@ -44,6 +38,11 @@ export default {
 </script>
 
 <style lang="pcss">
+body {
+  perspective: 1px;
+  transform-style: preserve-3d;
+}
+
 .motion-preview {
   display: flex;
   align-items: flex-start;
