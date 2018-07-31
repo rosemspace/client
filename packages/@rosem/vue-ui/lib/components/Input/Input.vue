@@ -1,5 +1,5 @@
 <template>
-  <div :class="[$style.input, 'RosemInput', {focused}]">
+  <div :class="[$style.input, 'RosemInput']">
     <input
       :id="$_uid"
       :type="type"
@@ -7,8 +7,6 @@
       :value="value"
       v-bind="$attrs"
       v-on="$listeners"
-      @focus="focused = true"
-      @blur="focused = false"
       @input="value = $event.target.value"
     >
     <label
@@ -47,7 +45,6 @@ export default {
   data() {
     return {
       value: '',
-      focused: false,
     }
   },
 
@@ -138,7 +135,7 @@ export default {
   border-radius: 3px;
   transition: box-shadow var(--placeholder-speed);
 
-  &.focused {
+  &:focus-within {
     box-shadow: 0 0 0 2px #ecf1f3;
 
     &::before {

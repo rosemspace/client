@@ -21,5 +21,11 @@
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "focus-within": "^2.0.0"
+  },
+  "devDependencies": {
+    "postcss-focus-within": "^2.0.0"
   }
 }
