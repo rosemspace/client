@@ -88,22 +88,24 @@ export default {
   </div>
 </template>
 
-<style lang="scss" module>
+<style lang="postcss" module>
 @import '~\@rosem/design';
 
 .form {
   display: flow-root;
-  text-align: center;
-  margin: 0 auto;
   max-width: 300px;
+
+  /* padding: 2rem; */
   padding: 2rem 0;
-  /*padding: 2rem;*/
+  margin: 0 auto;
+  text-align: center;
   background-color: #f2f9fb;
-  /*box-shadow: 0 0 10px #e3ecef;*/
+
+  /* box-shadow: 0 0 10px #e3ecef; */
   box-shadow: 0 1px 5px #dce7ea;
 
-  button {
-    /*margin-top: 20px;*/
+  & button {
+    /* margin-top: 20px; */
   }
 }
 </style>

@@ -29,15 +29,17 @@ export default {
 </template>
 
 <style lang="postcss" module>
-/*@import '~\@rosem/design';*/
+/* @import '~\@rosem/design'; */
 
 .container {
   display: grid;
   grid-template: "header     header  header"      auto
                  "aside-left content aside-right" 1fr
                  "footer     footer  footer"      auto / 20% 1fr 20%;
-  /*min-width: $size-content-width-min;*/
-  /*max-width: $size-content-width-max;*/
+
+  /* min-width: $size-content-width-min; */
+
+  /* max-width: $size-content-width-max; */
   max-width: 100%;
   margin: 0 auto;
 

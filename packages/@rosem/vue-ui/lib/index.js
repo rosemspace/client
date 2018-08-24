@@ -20,22 +20,16 @@ const requireComponent = require.context(
 // For each matching file name...
 requireComponent.keys().forEach(fileName => {
   // Get the component
-  let module = requireComponent(fileName);
-  let componentList = {};
-  const defaultName = fileName.replace(/^\.\//, '').replace(/\/index\.js$/, '');
+  const module = requireComponent(fileName);
+  let components = {};
+  components = Object.assign(components, module)
 
-  if (module.default) {
-    componentList = Object.assign(componentList, module)
-
-    if (!componentList.default.install) {
-      componentList[defaultName] = componentList.default
-      delete componentList.default
-    }
-  } else {
-    componentList[defaultName] = module
+  if (components.default) {
+    components[fileName.replace(/^\.\//, '').replace(/\/index\.js$/, '')] = components.default
+    delete components.default
   }
 
-  for (let [componentName, component] of Object.entries(componentList)) {
+  for (let [componentName, component] of Object.entries(components)) {
     if (component.install) {
       Vue.use(component)
     } else {

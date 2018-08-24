@@ -7,28 +7,30 @@
   </button>
 </template>
 
-<style lang="scss" module>
+<style lang="postcss" module>
 @import '~\@rosem/design';
 
 .button {
-  @extend %typography-small;
-  font-size: 14px;
-  line-height: 2rem;
-  font-weight: 300;
-  text-transform: uppercase;
+  /* @extend %typography-small; */
   justify-self: center;
   min-width: 160px;
-  border-radius: 3px;
-
-  padding: $size-button-padding;
-  color: $color-button-text;
+  padding: var(--size-button-padding);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 2rem;
+  color: var(--color-button-text);
+  text-transform: uppercase;
   cursor: pointer;
-  background: $color-button-bg;
-  /*background: #7fc2e8;*/
-  /*background: #6b9fbd;*/
+  background: var(--color-button-bg);
+
+  /* background: #7fc2e8; */
+
+  /* background: #6b9fbd; */
   background: #4c8fb5;
   border: none;
-  /*border-bottom: solid 2px #698da2;*/
+  border-radius: 3px;
+
+  /* border-bottom: solid 2px #698da2; */
   transition: box-shadow .2s;
 
   &:focus {
@@ -38,7 +40,8 @@
 
   &:disabled {
     cursor: not-allowed;
-    /*background: $color-button-disabled-bg;*/
+
+    /* background: $color-button-disabled-bg; */
     background: #80b8da;
   }
 }

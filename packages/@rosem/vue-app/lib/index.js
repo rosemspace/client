@@ -3,6 +3,7 @@ import App from './app'
 import router from './router'
 import store from './state/store'
 import appConfig from './app.config'
+import '@rosem/design'
 import '@rosem/vue-ui'
 
 // Don't warn about using the dev version of Vue in development

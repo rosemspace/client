@@ -52,19 +52,22 @@ export default {
 </script>
 
 <!-- This should generally be the only global CSS in the app. -->
-<style lang="scss">
-// Allow element/type selectors, because this is global CSS.
-// stylelint-disable selector-max-type, selector-class-pattern
+<style lang="postcss">
+/*
+Allow element/type selectors, because this is global CSS.
+stylelint-disable selector-max-type, selector-class-pattern
 
-// Normalize default styles across browsers,
-// https://necolas.github.io/normalize.css/
+Normalize default styles across browsers,
+https://necolas.github.io/normalize.css/
 @import '~normalize.css/normalize.css';
-// Style loading bar between pages.
-// https://github.com/rstacruz/nprogress
+Style loading bar between pages.
+https://github.com/rstacruz/nprogress
 @import '~nprogress/nprogress.css';
 
-// Design variables and utilities from @rosem/design.
+Design variables and utilities from @rosem/design.
 @import '~\@rosem/design';
+*/
+@import './style/transitions.pcss';
 
 *,
 *::before,
@@ -73,59 +76,60 @@ export default {
 }
 
 :root {
-  font-size: 10px;
   height: 100%;
   overflow: hidden;
+  font-size: 10px;
 }
 
-:root, body, #app, #app > div:first-of-type {
+:root, #app, #app > div:first-of-type {
   height: 100%;
 }
 
 body {
+  height: 100%;
   overflow: hidden scroll;
-  background: $color-body-bg;
+  background: var(--color-body-bg);
 }
 
 #app {
-  @extend %typography-small;
+  /* @extend %typography-small; */
 }
 
-// ===
-// Base element styles
-// ===
+/* ===
+/* Base element styles
+/* === */
 
 a,
 a:visited {
-  color: $color-link-text;
+  color: var(--color-link-text);
 }
 
 h1 {
-  @extend %typography-xxlarge;
+  /* @extend %typography-xxlarge; */
 }
 
 h2 {
-  @extend %typography-xlarge;
+  /* @extend %typography-xlarge; */
 }
 
 h3 {
-  @extend %typography-large;
+  /* @extend %typography-large; */
 }
 
 h4 {
-  @extend %typography-medium;
+  /* @extend %typography-medium; */
 }
 
 h5,
 h6 {
-  @extend %typography-small;
+  /* @extend %typography-small; */
 }
 
-// ===
-// Vendor
-// ===
+/* ===
+/* Vendor
+/* === */
 
 #nprogress .bar {
-  background: $color-link-text;
+  background: var(--color-link-text);
 }
 </style>

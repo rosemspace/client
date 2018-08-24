@@ -5,6 +5,9 @@ export default [
     path: '/',
     name: 'home',
     component: () => lazyLoadView(import('./views/home')),
+    meta: {
+      layout: 'ThreeColumnsLayout'
+    }
   },
   {
     path: '/login',

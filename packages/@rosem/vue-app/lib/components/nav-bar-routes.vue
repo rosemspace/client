@@ -4,7 +4,7 @@ const RosemLink = 'RosemLink'
 
 export default {
   // Functional components are stateless, meaning they can't
-  // have data, computed properties, etc and they have no
+  // have stagesData, computed properties, etc and they have no
   // `this` context.
   functional: true,
   props: {
@@ -41,7 +41,7 @@ export default {
 
 .active a {
   font-weight: 600;
-  color: $color-link-text-active;
+  color: var(--color-link-text-active);
   text-decoration: none;
   cursor: default;
 }

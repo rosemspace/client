@@ -39,10 +39,8 @@ export default class PopupManager {
       const activePopperName = this._activeList[i];
       const binding = this._bindings[activePopperName];
 
-      if (
-        binding.closeOnClickOutside &&
-        (!binding.popperElement.contains(event.target) ||
-          binding.closeOnSelfClick) &&
+      if (binding.closeOnClickOutside &&
+        (!binding.popperElement.contains(event.target) || binding.closeOnSelfClick) &&
         !binding.targetElement.contains(event.target)
       ) {
         this.close(activePopperName);

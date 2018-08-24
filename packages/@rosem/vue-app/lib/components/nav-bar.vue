@@ -50,20 +50,21 @@ export default {
 }
 </script>
 
-<style lang="scss" module>
+<style lang="postcss" module>
 @import '~\@rosem/design';
 
 .container {
-  // padding: 0;
-  // margin: 0 0 $size-grid-padding;
+  /* padding: 0; */
+
+  /* margin: 0 0 $size-grid-padding; */
   padding: .6rem 0;
   margin: .6rem 0;
   text-align: center;
   list-style-type: none;
 
-  > li {
+  & > li {
     display: inline-block;
-    margin-right: $size-grid-padding;
+    margin-right: var(--size-grid-padding);
   }
 }
 </style>

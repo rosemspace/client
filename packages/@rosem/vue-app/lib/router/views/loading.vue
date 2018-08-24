@@ -17,20 +17,20 @@ export default {
   </transition>
 </template>
 
-<style lang="scss" module>
+<style lang="postcss" module>
 @import '~\@rosem/design';
 
 .loadingIcon {
-  @extend %typography-xxlarge;
+  /* @extend %typography-xxlarge; */
 
   display: block;
   margin: 0 auto;
 
-  // stylelint-disable-next-line selector-class-pattern
+  /* stylelint-disable-next-line selector-class-pattern */
   &:global(.v-enter-active) {
     transition: opacity 1s;
   }
-  // stylelint-disable-next-line selector-class-pattern
+  /* stylelint-disable-next-line selector-class-pattern */
   &:global(.v-enter) {
     opacity: 0;
   }
