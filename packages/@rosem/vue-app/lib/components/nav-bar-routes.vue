@@ -4,7 +4,7 @@ const RosemLink = 'RosemLink'
 
 export default {
   // Functional components are stateless, meaning they can't
-  // have stagesData, computed properties, etc and they have no
+  // have stages, computed properties, etc and they have no
   // `this` context.
   functional: true,
   props: {

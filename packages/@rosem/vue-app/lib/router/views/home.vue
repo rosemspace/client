@@ -1,7 +1,8 @@
 <template>
   <div class="view-home">
-    <rosem-auto-transition>
-      <div v-show="autoTransition">
+    <!--<rosem-auto-transition>-->
+      <!--<div v-show="autoTransition">-->
+      <div>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet aspernatur, culpa cum dolores eaque eum ex
           harum, iste iure laboriosam magni neque nihil, nulla numquam quia sapiente sequi suscipit vel!
         </p>
@@ -9,7 +10,7 @@
           rem sit tenetur, voluptas. Accusantium beatae dolorem eaque earum eius id laudantium quisquam temporibus?
         </p>
       </div>
-    </rosem-auto-transition>
+    <!--</rosem-auto-transition>-->
     <button @click="autoTransition = !autoTransition">Toggle transition</button>
     <!--<div class="parallax">-->
       <!--<h1>Home Page</h1>-->
