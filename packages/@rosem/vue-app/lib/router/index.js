@@ -14,6 +14,7 @@ Vue.use(VueMeta, {
 })
 
 const router = new VueRouter({
+  // routes: resolveViews(routes, path => import(`./views/${path}`)),
   routes,
   // Use the HTML5 history API (i.e. normal-looking routes)
   // instead of routes with hashes (e.g. example.com/#/about).
