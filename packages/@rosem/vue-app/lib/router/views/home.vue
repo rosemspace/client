@@ -1,6 +1,15 @@
 <template>
   <div class="view-home">
     <!--<rosem-auto-transition>-->
+    <div>
+      <button id="toggle">Toggle transition</button>
+      <button id="toggle2">Toggle transition</button>
+    </div>
+    <ul>
+      <li>1</li>
+      <li>2</li>
+      <li>3</li>
+    </ul>
       <!--<div v-show="autoTransition">-->
       <div>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet aspernatur, culpa cum dolores eaque eum ex
@@ -11,7 +20,7 @@
         </p>
       </div>
     <!--</rosem-auto-transition>-->
-    <button @click="autoTransition = !autoTransition">Toggle transition</button>
+    <!--<button @click="autoTransition = !autoTransition">Toggle transition</button>-->
     <!--<div class="parallax">-->
       <!--<h1>Home Page</h1>-->
     <!--</div>-->
@@ -20,13 +29,23 @@
       alt="Logo"
     >
     <div class="motionPreview">
+      <form>
+        <label>
+          duration
+          <input type="number" v-model.number="motionDuration">
+        </label>
+        <label>
+          restitution
+          <input type="number" v-model.number="motionBouncingRestitution">
+        </label>
+      </form>
       <button @click="value = value === 200 ? 0 : 200">Toggle</button>
       <rosem-motion
         :value="value"
-        :duration="1000"
+        :duration="motionDuration"
         @start="$refs.motionCurve.clear()"
         :process="(t, osc1, osc2) => $refs.motionCurve.draw(1 - t, 1 - osc1)"
-        :params="{restitution: .25}"
+        :params="{restitution: motionBouncingRestitution}"
       >
         <div class="ball" slot-scope="{ value }" :style="`transform: translateY(${value}px)`"></div>
       </rosem-motion>
@@ -47,12 +66,23 @@ export default {
     return {
       autoTransition: false,
       value: 0,
+      motionDuration: 1000,
+      motionBouncingRestitution: 0.25
     }
   },
 }
 </script>
 
 <style lang="postcss">
+form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  & label {
+    display: contents;
+  }
+}
+
 .body {
   perspective: 1px;
   transform-style: preserve-3d;

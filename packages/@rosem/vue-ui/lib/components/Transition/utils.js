@@ -1,16 +1,20 @@
-// Properties to auto check when set to `all`
-// - width
-// - height
-// - top
-// - right
-// - bottom
-// - left
-// - margin-top
-// - margin-right
-// - margin-bottom
-// - margin-left
+// properties to auto check when set to `all`
+export const AUTO_PROPERTIES_RECT = [
+  'height',
+  'width',
+  'top',
+  'left',
+  'right',
+  'bottom',
+]
 
-export function noop() {}
+export const AUTO_PROPERTIES_STYLE = [
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'z-index',
+]
 
 export function isDefined(value) {
   return value !== null && typeof value !== 'undefined'
@@ -39,6 +43,7 @@ export function getTransitionInfo(computedStyle) {
   let durations = computedStyle.transitionDuration.split(', ')
 
   return {
+    endEvent: 'transitionend',
     properties: computedStyle.transitionProperty.split(', '),
     delays,
     durations,
@@ -61,6 +66,7 @@ export function getAnimationInfo(computedStyle) {
   let durations = computedStyle.animationDuration.split(', ')
 
   return {
+    endEvent: 'animationend',
     names: computedStyle.animationName.split(', '),
     delays,
     durations,
