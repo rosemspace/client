@@ -1,102 +1,83 @@
-// element
-// stageIndex
-// running
-// CSSinfo
-// frameId
-// timerId
-// endEventListener
-
 import LeaveEnterTransition from './LeaveEnterTransition'
+import { isDefined } from './utils'
 
-class CapturedLeaveEnterTransition extends LeaveEnterTransition {
-  static THREAD_BEFORE_START = 0
-  static THREAD_START = 1
-  static THREAD_AFTER_END = 2
+export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
+  transitions = []
 
-  captures = [
-    [],
-    [],
-    [],
-  ]
+  constructor(target, name, options) {
+    super(target, name, options)
+  }
 
-  capture(thread) {
-    this.captures[thread].push({
-      element: this.element,
-      stageIndex: this.stageIndex,
-      running: this.running,
-      CSSinfo: this.CSSinfo,
-      frameId: this.frameId,
-      timerId: this.timerId,
-      endEventListener: this.endEventListener,
+  get running() {
+    return this.transitions.some(transition => transition.running)
+  }
+
+  setLeaveDoneClass() {
+    Array.prototype.forEach.call(this.currentTarget.children, target => {
+      target.classList.add(
+        this.stages[LeaveEnterTransition.STAGE_LEAVE_ORDER].middlewareList[
+          LeaveEnterTransition.CSS_LEAVE_MIDDLEWARE_ORDER
+        ].doneClass
+      )
     })
   }
 
-  apply(thread) {
-    const previousThread = (thread + this.captures.length - 1) % this.captures.length
-
-    if (this.captures[previousThread].length) {
-      const capture = this.captures[previousThread].shift();
-      this.element = capture.element
-      this.stageIndex = capture.stageIndex
-      this.running = capture.running
-      this.CSSinfo = capture.CSSinfo
-      this.frameId = capture.frameId
-      this.timerId = capture.timerId
-      thread < 2 && this.captures[thread].push(capture)
-    }
+  setEnterDoneClass() {
+    Array.prototype.forEach.call(this.currentTarget.children, target => {
+      target.classList.add(
+        this.stages[LeaveEnterTransition.STAGE_ENTER_ORDER].middlewareList[
+          LeaveEnterTransition.CSS_ENTER_MIDDLEWARE_ORDER
+        ].doneClass
+      )
+    })
   }
 
-  beforeStart() {
-    this.apply(CapturedLeaveEnterTransition.THREAD_BEFORE_START)
-    super.beforeStart()
+  hide() {
+    this.targetInitialDisplay = []
+    Array.prototype.forEach.call(this.currentTarget.children, target => {
+      this.targetInitialDisplay.push(target.style.display)
+      this.stages[LeaveEnterTransition.STAGE_LEAVE_ORDER].middlewareList[
+        LeaveEnterTransition.HIDE_AFTER_LEAVE_MIDDLEWARE_ORDER
+      ].hide(target)
+    })
   }
 
-  start() {
-    this.apply(CapturedLeaveEnterTransition.THREAD_START)
-    super.start()
-  }
-
-  afterEnd() {
-    this.apply(CapturedLeaveEnterTransition.THREAD_AFTER_END)
-    super.afterEnd()
-  }
-}
-
-export default class LeaveEnterTransitionGroup {
-  element
-  transitions = []
-
-  constructor(element, name, options) {
-    this.element = element
-    this.transitions.push(new LeaveEnterTransition(element, name, options))
-
-    if (this.transition.css) {
-      element.classList.add(this.doneClass)
+  getTransition(index) {
+    if (!this.transitions[index]) {
+      this.transitions[index] = Object.assign(
+        Object.create(LeaveEnterTransition.prototype),
+        this,
+        {
+          running: false,
+          currentTarget: this.currentTarget,
+          targetInitialDisplay: this.targetInitialDisplay[index],
+        }
+      )
     }
 
-    if (!this.transition.stageIndex && this.transition.hideAfterLeave) {
-      element.style.display = ''
-    }
-  }
+    this.transitions[index].target = this.currentTarget.children[index]
 
-  get transition() {
-    return this.transitions
-  }
-
-  enter(index) {
-    this.element = this.rootElement.children[index]
-
-    return this.dispatch(1)
+    return this.transitions[index]
   }
 
   leave(index) {
-    this.element = this.rootElement.children[index]
-    // debugger
-
-    return this.dispatch(0)
+    return this.getTransition(index).dispatch(
+      LeaveEnterTransition.STAGE_LEAVE_ORDER
+    )
   }
 
-  toggle(index) {
-    return this.stageIndex ? this.leave(index) : this.enter(index)
+  enter(index) {
+    return this.getTransition(index).dispatch(
+      LeaveEnterTransition.STAGE_ENTER_ORDER
+    )
+  }
+
+  toggle(index, stageIndex) {
+    const transition = this.getTransition(index)
+
+    return (isDefined(stageIndex) ? stageIndex : transition.stageIndex) !==
+      LeaveEnterTransition.STAGE_LEAVE_ORDER
+      ? transition.leave()
+      : transition.enter()
   }
 }

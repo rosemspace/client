@@ -2,7 +2,10 @@
 export default {
   name: 'RosemTransition',
   inheritAttrs: false,
-  render() {},
+  render() {
+    console.log(this);
+    return this.$slots.default
+  },
   methods: {
     beforeEnter(event) {
       console.log('beforeEnter', event);
