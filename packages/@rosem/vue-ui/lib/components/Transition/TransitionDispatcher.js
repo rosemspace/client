@@ -3,10 +3,14 @@ import {
   getTransitionInfo,
   isAnimationMaxTimeout,
   isDefined,
+  resolveTarget,
   isTransitionMaxTimeout,
 } from './utils'
 
 export default class TransitionDispatcher {
+  currentTarget
+  target
+  delegateTarget
   name
   stages
   stageIndex = 0
@@ -15,8 +19,18 @@ export default class TransitionDispatcher {
   resolve = () => {}
 
   constructor(target, name, stages = [], stageIndex = 0) {
-    this.target = target
-    this.currentTarget = target
+    this.targets = target; // TODO
+
+    if (target === Object(target)) {
+      this.currentTarget = resolveTarget(target.currentTarget || target.target)
+      this.target = this.currentTarget
+      this.delegateTarget = this.resolveDelegateTarget(target.delegateTarget)
+    } else {
+      this.currentTarget = resolveTarget(target)
+      this.target = this.currentTarget
+      this.delegateTarget = this.target
+    }
+
     this.name = name
     this.stages = stages
     this.stageIndex = stageIndex
@@ -42,6 +56,10 @@ export default class TransitionDispatcher {
     return this.stage.isExplicitDuration
   }
 
+  resolveDelegateTarget(delegateTarget) {
+    return delegateTarget ? resolveTarget(delegateTarget) : this.target
+  }
+
   nextFrame(cb) {
     this.frameId = window.requestAnimationFrame(() => {
       this.frameId = window.requestAnimationFrame(cb)
@@ -62,7 +80,7 @@ export default class TransitionDispatcher {
     this.CSSInfo = { timeout: 0 }
 
     if (!this.isExplicitDuration) {
-      const computedStyle = window.getComputedStyle(this.target)
+      const computedStyle = window.getComputedStyle(this.delegateTarget)
       const transitionInfo = getTransitionInfo(computedStyle)
       const animationInfo = getAnimationInfo(computedStyle)
 
@@ -78,7 +96,7 @@ export default class TransitionDispatcher {
       }
 
       if (this.CSSInfo.timeout) {
-        this.target.addEventListener(
+        this.delegateTarget.addEventListener(
           this.CSSInfo.endEvent,
           this.endEventListener
         )
@@ -88,7 +106,7 @@ export default class TransitionDispatcher {
 
   removeEndEventListener() {
     if (!this.isExplicitDuration) {
-      this.target.removeEventListener(
+      this.delegateTarget.removeEventListener(
         this.CSSInfo.names ? 'animationend' : 'transitionend',
         this.endEventListener
       )
@@ -98,7 +116,7 @@ export default class TransitionDispatcher {
   onTransitionEnd(event) {
     if (
       this.running &&
-      event.target === this.target &&
+      event.target === this.delegateTarget &&
       isTransitionMaxTimeout(this.CSSInfo, event.propertyName)
     ) {
       this.afterEnd()
@@ -108,7 +126,7 @@ export default class TransitionDispatcher {
   onAnimationEnd(event) {
     if (
       this.running &&
-      event.target === this.target &&
+      event.target === this.delegateTarget &&
       isAnimationMaxTimeout(this.CSSInfo, event.animationName)
     ) {
       this.afterEnd()
@@ -121,8 +139,9 @@ export default class TransitionDispatcher {
       Object.assign(
         {
           name: this.name,
-          target: this.target,
-          currentTarget: this.currentTarget || this.target,
+          currentTarget: this.currentTarget,
+          target: this.delegateTarget,
+          delegateTarget: this.target,
           stageIndex: this.stageIndex,
           stageName: this.stageName,
           duration: this.duration || 0,
@@ -132,28 +151,32 @@ export default class TransitionDispatcher {
     )
   }
 
-  beforeStart() {
+  beforeStart(details = {}) {
     this.running = true
-    this.process('beforeStart')
+    this.process('beforeStart', details)
   }
 
-  start() {
-    this.process('start', { done: () => this.afterEnd() })
+  start(details = {}) {
+    this.process('start', { ...details, done: () => this.afterEnd() })
   }
 
-  afterEnd() {
+  afterEnd(details = {}) {
     this.removeEndEventListener()
     this.running = false
-    this.resolve(this.process('afterEnd'))
+    this.resolve(this.process('afterEnd', details))
   }
 
-  cancel() {
+  cancel(details = {}) {
     this.removeEndEventListener()
     this.cancelNextFrame()
-    this.process('cancelled')
+    this.process('cancelled', details)
   }
 
-  dispatch(stageIndex) {
+  dispatch(stageIndex, delegateTarget = null) {
+    if (isDefined(delegateTarget) && delegateTarget !== '') {
+      this.delegateTarget = resolveTarget(delegateTarget, this.target)
+    }
+
     this.running && this.cancel()
     this.stageIndex = stageIndex
     this.beforeStart()

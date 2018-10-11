@@ -5,11 +5,11 @@
       <button id="toggle">Toggle transition</button>
       <button id="toggle2">Toggle transition</button>
     </div>
-    <ul>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-    </ul>
+    <aside>
+      <div><div>1</div></div>
+      <div><div>2</div></div>
+      <div><div>3</div></div>
+    </aside>
       <!--<div v-show="autoTransition">-->
       <div>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet aspernatur, culpa cum dolores eaque eum ex

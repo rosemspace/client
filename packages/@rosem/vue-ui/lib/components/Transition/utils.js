@@ -20,6 +20,22 @@ export function isDefined(value) {
   return value !== null && typeof value !== 'undefined'
 }
 
+export function resolveTarget(target, context = document) {
+  return target instanceof Element
+    ? context
+      ? context.contains(target)
+        ? target
+        : context
+      : target
+    : target instanceof String || typeof target === 'string'
+      ? context.querySelector(target)
+      : Array.isArray(target)
+        ? target[0]
+        : target instanceof Function
+          ? resolveTarget(target(context), context)
+          : Array.from(target)[0]
+}
+
 export function toMs(value) {
   return Number(value.slice(0, -1)) * 1000
 }

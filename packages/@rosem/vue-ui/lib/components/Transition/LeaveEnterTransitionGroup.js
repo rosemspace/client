@@ -1,5 +1,5 @@
 import LeaveEnterTransition from './LeaveEnterTransition'
-import { isDefined } from './utils'
+import { resolveTarget } from './utils'
 
 export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
   transitions = []
@@ -12,9 +12,13 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
     return this.transitions.some(transition => transition.running)
   }
 
+  resolveDelegateTarget(delegateTarget) {
+    return delegateTarget
+  }
+
   setLeaveDoneClass() {
     Array.prototype.forEach.call(this.currentTarget.children, target => {
-      target.classList.add(
+      resolveTarget(this.delegateTarget, target).classList.add(
         this.stages[LeaveEnterTransition.STAGE_LEAVE_ORDER].middlewareList[
           LeaveEnterTransition.CSS_LEAVE_MIDDLEWARE_ORDER
         ].doneClass
@@ -24,7 +28,7 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
 
   setEnterDoneClass() {
     Array.prototype.forEach.call(this.currentTarget.children, target => {
-      target.classList.add(
+      resolveTarget(this.delegateTarget, target).classList.add(
         this.stages[LeaveEnterTransition.STAGE_ENTER_ORDER].middlewareList[
           LeaveEnterTransition.CSS_ENTER_MIDDLEWARE_ORDER
         ].doneClass
@@ -35,10 +39,11 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
   hide() {
     this.targetInitialDisplay = []
     Array.prototype.forEach.call(this.currentTarget.children, target => {
-      this.targetInitialDisplay.push(target.style.display)
+      const delegateTarget = resolveTarget(this.delegateTarget, target)
+      this.targetInitialDisplay.push(delegateTarget.style.display)
       this.stages[LeaveEnterTransition.STAGE_LEAVE_ORDER].middlewareList[
         LeaveEnterTransition.HIDE_AFTER_LEAVE_MIDDLEWARE_ORDER
-      ].hide(target)
+      ].hide(delegateTarget)
     })
   }
 
@@ -56,28 +61,32 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
     }
 
     this.transitions[index].target = this.currentTarget.children[index]
+    this.transitions[index].delegateTarget = resolveTarget(
+      this.delegateTarget,
+      this.transitions[index].target
+    )
 
     return this.transitions[index]
   }
 
-  leave(index) {
-    return this.getTransition(index).dispatch(
-      LeaveEnterTransition.STAGE_LEAVE_ORDER
-    )
+  leave(index, delegateTarget = null) {
+    return this.getTransition(index).leave(delegateTarget)
   }
 
-  enter(index) {
-    return this.getTransition(index).dispatch(
-      LeaveEnterTransition.STAGE_ENTER_ORDER
-    )
+  enter(index, delegateTarget = null) {
+    return this.getTransition(index).enter(delegateTarget)
   }
 
-  toggle(index, stageIndex) {
+  toggle(index, stageIndex, delegateTarget = null) {
     const transition = this.getTransition(index)
 
-    return (isDefined(stageIndex) ? stageIndex : transition.stageIndex) !==
-      LeaveEnterTransition.STAGE_LEAVE_ORDER
-      ? transition.leave()
-      : transition.enter()
+    if (!Number.isInteger(stageIndex)) {
+      delegateTarget = stageIndex
+      stageIndex = transition.stageIndex
+    }
+
+    return stageIndex !== LeaveEnterTransition.STAGE_LEAVE_ORDER
+      ? transition.leave(delegateTarget)
+      : transition.enter(delegateTarget)
   }
 }

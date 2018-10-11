@@ -2,7 +2,7 @@ import LeaveEnterTransition from './LeaveEnterTransition'
 import LeaveEnterTransitionGroup from './LeaveEnterTransitionGroup'
 
 window.addEventListener('load', function () {
-  let el = document.querySelector('.view-home > ul')
+  let el = document.querySelector('.view-home > aside')
   // let el = document.querySelector('.view-home > div:nth-child(2)')
   el.addEventListener("before-enter", event => console.log(event))
   el.addEventListener("enter", event => {
@@ -15,7 +15,10 @@ window.addEventListener('load', function () {
   el.addEventListener("leave", event => console.log(event))
   el.addEventListener("after-leave", event => console.log(event))
   el.addEventListener("leave-cancelled", event => console.log(event))
-  window.trans = new LeaveEnterTransitionGroup(el, 'height', {
+  window.trans = new LeaveEnterTransitionGroup({
+    target: el,
+    delegateTarget: 'div'
+  }, 'height', {
     auto: ['height', 'width'],
     // css: false,
     // duration: 200
@@ -35,7 +38,7 @@ window.addEventListener('load', function () {
     });
   })
   btn2.addEventListener("click", () => {
-    trans.toggle(++count % 3).then(detail => {
+    trans.toggle(++count % 3, 'div').then(detail => {
       console.log('toggled', detail);
     });
   })

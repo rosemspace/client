@@ -48,7 +48,7 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
     super(target, name, [leaveStage, enterStage], stageIndex)
     this.css = css
     this.hideAfterLeave = hideAfterLeave
-    this.targetInitialDisplay = target.style.display
+    this.targetInitialDisplay = this.target.style.display
 
     if (css) {
       const leaveCSSMiddleware = new CSSTransitionMiddleware(
@@ -79,9 +79,15 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
       }
     }
 
-    if (Array.isArray(auto) && auto.length) {
-      leaveStage.use(new LeaveRectAutoValueTransitionMiddleware(auto))
-      enterStage.use(new EnterRectAutoValueTransitionMiddleware(auto))
+    if (isDefined(auto)) {
+      if (!Array.isArray(auto)) {
+        auto = [auto]
+      }
+
+      if (auto.length) {
+        leaveStage.use(new LeaveRectAutoValueTransitionMiddleware(auto))
+        enterStage.use(new EnterRectAutoValueTransitionMiddleware(auto))
+      }
     }
 
     if (hideAfterLeave) {
@@ -127,38 +133,42 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
     ].hide(this.target)
   }
 
-  beforeStart() {
+  beforeStart(details = {}) {
     this.target.style.display = ''
-    super.beforeStart()
+    super.beforeStart(details)
   }
 
-  dispatch(stageIndex) {
+  dispatch(stageIndex, delegateTarget = null) {
     if (this.css) {
       // clear classes of previous stage
       stageIndex === LeaveEnterTransition.STAGE_LEAVE_ORDER
         ? this.stage.middlewareList[
             LeaveEnterTransition.CSS_ENTER_MIDDLEWARE_ORDER
-          ].clear(this.target)
+          ].clear(this.delegateTarget)
         : this.stage.middlewareList[
             LeaveEnterTransition.CSS_LEAVE_MIDDLEWARE_ORDER
-          ].clear(this.target)
+          ].clear(this.delegateTarget)
     }
 
-    return super.dispatch(stageIndex)
+    return super.dispatch(stageIndex, delegateTarget)
   }
 
-  leave() {
-    return this.dispatch(LeaveEnterTransition.STAGE_LEAVE_ORDER)
+  leave(delegateTarget = null) {
+    return this.dispatch(LeaveEnterTransition.STAGE_LEAVE_ORDER, delegateTarget)
   }
 
-  enter() {
-    return this.dispatch(LeaveEnterTransition.STAGE_ENTER_ORDER)
+  enter(delegateTarget = null) {
+    return this.dispatch(LeaveEnterTransition.STAGE_ENTER_ORDER, delegateTarget)
   }
 
-  toggle(stageIndex) {
-    return (isDefined(stageIndex) ? stageIndex : this.stageIndex) !==
-      LeaveEnterTransition.STAGE_LEAVE_ORDER
-      ? this.leave()
-      : this.enter()
+  toggle(stageIndex, delegateTarget = null) {
+    if (!Number.isInteger(stageIndex)) {
+      delegateTarget = stageIndex
+      stageIndex = this.stageIndex
+    }
+
+    return stageIndex !== LeaveEnterTransition.STAGE_LEAVE_ORDER
+      ? this.leave(delegateTarget)
+      : this.enter(delegateTarget)
   }
 }
