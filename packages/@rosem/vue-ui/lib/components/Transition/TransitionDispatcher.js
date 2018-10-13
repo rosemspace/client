@@ -12,6 +12,7 @@ export default class TransitionDispatcher {
   currentTarget
   target
   delegateTarget
+  delegateTargetResolver
   name
   stages
   stageIndex = 0
@@ -50,13 +51,13 @@ export default class TransitionDispatcher {
     if (target === Object(target)) {
       this.currentTarget = resolveTarget(target.target)
       this.target = this.currentTarget
-      this.delegateTarget = target.delegateTarget
+      this.delegateTargetResolver = target.delegateTarget
         ? target.delegateTarget
         : this.target
     } else {
       this.currentTarget = resolveTarget(target)
       this.target = this.currentTarget
-      this.delegateTarget = this.target
+      this.delegateTargetResolver = this.target
     }
   }
 
@@ -172,14 +173,13 @@ export default class TransitionDispatcher {
     this.process('cancelled', details)
   }
 
-  dispatch(stageIndex, delegateTarget = null, all = false) {
-    if (isDefined(delegateTarget) && delegateTarget !== '') {
-      this.delegateTarget = all
-        ? resolveTargets(delegateTarget, this.target)
-        : resolveTarget(delegateTarget, this.target)
-    } else {
-      this.delegateTarget = resolveTarget(this.delegateTarget)
-    }
+  dispatch(stageIndex, delegateTarget = null) {
+    this.delegateTarget = resolveTarget(
+      isDefined(delegateTarget) && delegateTarget !== ''
+        ? delegateTarget
+        : this.delegateTargetResolver,
+      this.target
+    )
 
     this.running && this.cancel()
     this.stageIndex = stageIndex

@@ -60,7 +60,7 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
     const targets =
       index != null ? [this.target.children[index]] : this.target.children
 
-    if (this.css || this.hideAfterLeave) {
+    if (this.options.css || this.options.hideAfterLeave) {
       this.targetInitialDisplay = []
       Array.prototype.forEach.call(targets, target => {
         const resolvedTarget = resolveTarget(
@@ -68,11 +68,11 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
           target
         )
 
-        if (this.css) {
+        if (this.options.css) {
           resolvedTarget.classList.add(this.leaveCSSClassMiddleware.doneClass)
         }
 
-        if (this.hideAfterLeave) {
+        if (this.options.hideAfterLeave) {
           this.targetInitialDisplay.push(resolvedTarget.style.display)
           this.hideAfterLeaveMiddleware.hide(resolvedTarget)
         }
@@ -84,7 +84,7 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
     const targets =
       index != null ? [this.target.children[index]] : this.target.children
 
-    if (this.css) {
+    if (this.options.css) {
       Array.prototype.forEach.call(targets, target => {
         resolveTarget(this.delegateTarget, target).classList.add(
           this.enterCSSClassMiddleware.doneClass

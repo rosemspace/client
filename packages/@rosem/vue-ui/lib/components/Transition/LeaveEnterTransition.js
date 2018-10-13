@@ -18,48 +18,38 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
   constructor(
     target,
     name,
-    {
-      css = true,
-      duration = null,
-      events = true,
-      eventParams = { cancelable: true },
-      stageIndex = 0,
-      auto = [],
-      hideAfterLeave = true,
-      enterClass,
-      enterActiveClass,
-      enterToClass,
-      enterDoneClass,
-      leaveClass,
-      leaveActiveClass,
-      leaveToClass,
-      leaveDoneClass,
-    }
+    options
   ) {
-    const leaveStage = new TransitionStage('leave', duration)
-    const enterStage = new TransitionStage('enter', duration)
-    super(target, name, [leaveStage, enterStage], stageIndex)
-    this.css = css
-    this.hideAfterLeave = hideAfterLeave
+    const leaveStage = new TransitionStage('leave', options.duration)
+    const enterStage = new TransitionStage('enter', options.duration)
+    super(target, name, [leaveStage, enterStage], options.stageIndex)
+    this.options = Object.assign({
+      css: true,
+      duration: null,
+      events: true,
+      stageIndex: 0,
+      auto: [],
+      hideAfterLeave: true
+    }, options)
     this.targetInitialDisplay = this.target.style.display
 
-    if (css) {
+    if (this.options.css) {
       const leaveCSSMiddleware = new CSSClassTransitionMiddleware(
         `${this.name}-${leaveStage.name}`,
         {
-          fromClass: leaveClass,
-          activeClass: leaveActiveClass,
-          toClass: leaveToClass,
-          doneClass: leaveDoneClass,
+          fromClass: this.options.leaveClass,
+          activeClass: this.options.leaveActiveClass,
+          toClass: this.options.leaveToClass,
+          doneClass: this.options.leaveDoneClass,
         }
       )
       const enterCSSMiddleware = new CSSClassTransitionMiddleware(
         `${this.name}-${enterStage.name}`,
         {
-          fromClass: enterClass,
-          activeClass: enterActiveClass,
-          toClass: enterToClass,
-          doneClass: enterDoneClass,
+          fromClass: this.options.enterClass,
+          activeClass: this.options.enterActiveClass,
+          toClass: this.options.enterToClass,
+          doneClass: this.options.enterDoneClass,
         }
       )
       leaveStage.use(leaveCSSMiddleware)
@@ -68,7 +58,9 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
       this.enterCSSClassMiddleware = enterCSSMiddleware
     }
 
-    if (isDefined(auto)) {
+    if (isDefined(this.options.auto)) {
+      let auto = this.options.auto
+
       if (!Array.isArray(auto)) {
         auto = [auto]
       }
@@ -79,7 +71,7 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
       }
     }
 
-    if (hideAfterLeave) {
+    if (this.options.hideAfterLeave) {
       const hideAfterLeaveMiddleware = new HideAfterEndTransitionMiddleware()
       leaveStage.use(hideAfterLeaveMiddleware)
       this.hideAfterLeaveMiddleware = hideAfterLeaveMiddleware
@@ -91,7 +83,7 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
       })
     }
 
-    if (events) {
+    if (this.options.events) {
       leaveStage.use(new DispatchEventTransitionMiddleware(leaveStage.name))
       enterStage.use(new DispatchEventTransitionMiddleware(enterStage.name))
     }
@@ -109,7 +101,7 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
   }
 
   dispatch(stageIndex, delegateTarget = null) {
-    if (this.css) {
+    if (this.options.css) {
       // clear classes of previous stage
       stageIndex === LeaveEnterTransition.STAGE_LEAVE_ORDER
         ? this.enterCSSClassMiddleware.clear(
@@ -124,19 +116,19 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
   }
 
   forceLeave() {
-    if (this.css) {
+    if (this.options.css) {
       this.target.classList.add(
         this.leaveCSSClassMiddleware.doneClass
       )
     }
 
-    if (this.hideAfterLeave) {
+    if (this.options.hideAfterLeave) {
       this.hideAfterLeaveMiddleware.hide(this.target)
     }
   }
 
   forceEnter() {
-    if (this.css) {
+    if (this.options.css) {
       this.target.classList.add(
         this.enterCSSClassMiddleware.doneClass
       )
