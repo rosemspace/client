@@ -3,8 +3,9 @@ import {
   getTransitionInfo,
   isAnimationMaxTimeout,
   isDefined,
-  resolveTarget,
   isTransitionMaxTimeout,
+  resolveTarget,
+  resolveTargets,
 } from './utils'
 
 export default class TransitionDispatcher {
@@ -15,22 +16,11 @@ export default class TransitionDispatcher {
   stages
   stageIndex = 0
   running = false
-  CSSInfo = { timeout: 0 }
+  motionInfo = { timeout: 0 }
   resolve = () => {}
 
   constructor(target, name, stages = [], stageIndex = 0) {
-    this.targets = target; // TODO
-
-    if (target === Object(target)) {
-      this.currentTarget = resolveTarget(target.currentTarget || target.target)
-      this.target = this.currentTarget
-      this.delegateTarget = this.resolveDelegateTarget(target.delegateTarget)
-    } else {
-      this.currentTarget = resolveTarget(target)
-      this.target = this.currentTarget
-      this.delegateTarget = this.target
-    }
-
+    this.resolveTarget(target)
     this.name = name
     this.stages = stages
     this.stageIndex = stageIndex
@@ -49,15 +39,25 @@ export default class TransitionDispatcher {
       ? isDefined(this.stage.duration)
         ? this.stage.duration
         : 0
-      : this.CSSInfo.timeout
+      : this.motionInfo.timeout
   }
 
   get isExplicitDuration() {
     return this.stage.isExplicitDuration
   }
 
-  resolveDelegateTarget(delegateTarget) {
-    return delegateTarget ? resolveTarget(delegateTarget) : this.target
+  resolveTarget(target) {
+    if (target === Object(target)) {
+      this.currentTarget = resolveTarget(target.target)
+      this.target = this.currentTarget
+      this.delegateTarget = target.delegateTarget
+        ? target.delegateTarget
+        : this.target
+    } else {
+      this.currentTarget = resolveTarget(target)
+      this.target = this.currentTarget
+      this.delegateTarget = this.target
+    }
   }
 
   nextFrame(cb) {
@@ -77,7 +77,7 @@ export default class TransitionDispatcher {
   }
 
   addEndEventListener() {
-    this.CSSInfo = { timeout: 0 }
+    this.motionInfo = { timeout: 0 }
 
     if (!this.isExplicitDuration) {
       const computedStyle = window.getComputedStyle(this.delegateTarget)
@@ -88,16 +88,16 @@ export default class TransitionDispatcher {
         transitionInfo.timeout &&
         transitionInfo.timeout >= animationInfo.timeout
       ) {
-        this.CSSInfo = transitionInfo
+        this.motionInfo = transitionInfo
         this.endEventListener = event => this.onTransitionEnd(event)
       } else if (animationInfo.timeout) {
-        this.CSSInfo = animationInfo
+        this.motionInfo = animationInfo
         this.endEventListener = event => this.onAnimationEnd(event)
       }
 
-      if (this.CSSInfo.timeout) {
+      if (this.motionInfo.timeout) {
         this.delegateTarget.addEventListener(
-          this.CSSInfo.endEvent,
+          this.motionInfo.endEventName,
           this.endEventListener
         )
       }
@@ -107,7 +107,7 @@ export default class TransitionDispatcher {
   removeEndEventListener() {
     if (!this.isExplicitDuration) {
       this.delegateTarget.removeEventListener(
-        this.CSSInfo.names ? 'animationend' : 'transitionend',
+        this.motionInfo.endEventName,
         this.endEventListener
       )
     }
@@ -117,7 +117,7 @@ export default class TransitionDispatcher {
     if (
       this.running &&
       event.target === this.delegateTarget &&
-      isTransitionMaxTimeout(this.CSSInfo, event.propertyName)
+      isTransitionMaxTimeout(this.motionInfo, event.propertyName)
     ) {
       this.afterEnd()
     }
@@ -127,7 +127,7 @@ export default class TransitionDispatcher {
     if (
       this.running &&
       event.target === this.delegateTarget &&
-      isAnimationMaxTimeout(this.CSSInfo, event.animationName)
+      isAnimationMaxTimeout(this.motionInfo, event.animationName)
     ) {
       this.afterEnd()
     }
@@ -172,9 +172,13 @@ export default class TransitionDispatcher {
     this.process('cancelled', details)
   }
 
-  dispatch(stageIndex, delegateTarget = null) {
+  dispatch(stageIndex, delegateTarget = null, all = false) {
     if (isDefined(delegateTarget) && delegateTarget !== '') {
-      this.delegateTarget = resolveTarget(delegateTarget, this.target)
+      this.delegateTarget = all
+        ? resolveTargets(delegateTarget, this.target)
+        : resolveTarget(delegateTarget, this.target)
+    } else {
+      this.delegateTarget = resolveTarget(this.delegateTarget)
     }
 
     this.running && this.cancel()
@@ -186,7 +190,7 @@ export default class TransitionDispatcher {
 
       if (this.isExplicitDuration) {
         this.timerId = window.setTimeout(() => this.afterEnd(), this.duration)
-      } else if (this.CSSInfo.timeout <= 0) {
+      } else if (this.motionInfo.timeout <= 0) {
         // if zero duration end event won't be fired
         this.afterEnd()
       }

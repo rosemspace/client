@@ -1,11 +1,14 @@
 export default class HideAfterEndTransitionMiddleware {
-  constructor(css = { display: 'none' }) {
-    this.css = css
+  constructor(className = '', style = { display: 'none' }) {
+    this.className = className
+    this.style = style
     this.disabled = false
   }
 
   hide(target) {
-    for (const [property, value] of Object.entries(this.css)) {
+    this.className !== '' && target.classList.add(...this.className.split(' '))
+
+    for (const [property, value] of Object.entries(this.style)) {
       target.style[property] = value
     }
   }
@@ -17,7 +20,10 @@ export default class HideAfterEndTransitionMiddleware {
   getDetails() {
     return {
       hideAfterEnd: !this.disabled,
-      hideCSS: this.css,
+      hideCSS: {
+        className: this.className,
+        style: this.style,
+      },
     }
   }
 }

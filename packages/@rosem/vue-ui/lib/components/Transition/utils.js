@@ -17,7 +17,7 @@ export const AUTO_PROPERTIES_STYLE = [
 ]
 
 export function isDefined(value) {
-  return value !== null && typeof value !== 'undefined'
+  return value != null
 }
 
 export function resolveTarget(target, context = document) {
@@ -34,6 +34,22 @@ export function resolveTarget(target, context = document) {
         : target instanceof Function
           ? resolveTarget(target(context), context)
           : Array.from(target)[0]
+}
+
+export function resolveTargets(targets, context = document) {
+  return targets instanceof Element
+    ? context
+      ? context.contains(targets)
+        ? [targets]
+        : [context]
+      : [targets]
+    : targets instanceof String || typeof targets === 'string'
+      ? context.querySelectorAll(targets)
+      : Array.isArray(targets)
+        ? targets
+        : targets instanceof Function
+          ? resolveTargets(targets(context), context)
+          : Array.from(targets)
 }
 
 export function toMs(value) {
@@ -59,7 +75,7 @@ export function getTransitionInfo(computedStyle) {
   let durations = computedStyle.transitionDuration.split(', ')
 
   return {
-    endEvent: 'transitionend',
+    endEventName: 'transitionend',
     properties: computedStyle.transitionProperty.split(', '),
     delays,
     durations,
@@ -82,7 +98,7 @@ export function getAnimationInfo(computedStyle) {
   let durations = computedStyle.animationDuration.split(', ')
 
   return {
-    endEvent: 'animationend',
+    endEventName: 'animationend',
     names: computedStyle.animationName.split(', '),
     delays,
     durations,

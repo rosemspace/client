@@ -6,9 +6,18 @@
       <button id="toggle2">Toggle transition</button>
     </div>
     <aside>
-      <div><div>1</div></div>
-      <div><div>2</div></div>
-      <div><div>3</div></div>
+      <div>
+        <div>1</div>
+        <div>1</div>
+      </div>
+      <div>
+        <div>2</div>
+        <div>2</div>
+      </div>
+      <div>
+        <div>3</div>
+        <div>3</div>
+      </div>
     </aside>
       <!--<div v-show="autoTransition">-->
       <div>

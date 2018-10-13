@@ -9,64 +9,88 @@ export default class LeaveEnterTransitionGroup extends LeaveEnterTransition {
   }
 
   get running() {
-    return this.transitions.some(transition => transition.running)
-  }
-
-  resolveDelegateTarget(delegateTarget) {
-    return delegateTarget
-  }
-
-  setLeaveDoneClass() {
-    Array.prototype.forEach.call(this.currentTarget.children, target => {
-      resolveTarget(this.delegateTarget, target).classList.add(
-        this.stages[LeaveEnterTransition.STAGE_LEAVE_ORDER].middlewareList[
-          LeaveEnterTransition.CSS_LEAVE_MIDDLEWARE_ORDER
-        ].doneClass
-      )
+    return this.transitions.some(function(transition) {
+      return transition.running
     })
   }
 
-  setEnterDoneClass() {
-    Array.prototype.forEach.call(this.currentTarget.children, target => {
-      resolveTarget(this.delegateTarget, target).classList.add(
-        this.stages[LeaveEnterTransition.STAGE_ENTER_ORDER].middlewareList[
-          LeaveEnterTransition.CSS_ENTER_MIDDLEWARE_ORDER
-        ].doneClass
-      )
+  set running(value) {
+    return this.transitions.some(function(transition) {
+      transition.running = value
     })
   }
 
-  hide() {
-    this.targetInitialDisplay = []
-    Array.prototype.forEach.call(this.currentTarget.children, target => {
-      const delegateTarget = resolveTarget(this.delegateTarget, target)
-      this.targetInitialDisplay.push(delegateTarget.style.display)
-      this.stages[LeaveEnterTransition.STAGE_LEAVE_ORDER].middlewareList[
-        LeaveEnterTransition.HIDE_AFTER_LEAVE_MIDDLEWARE_ORDER
-      ].hide(delegateTarget)
-    })
+  resolveTarget(target) {
+    if (target === Object(target)) {
+      this.target = resolveTarget(target.currentTarget || target.target)
+      this.delegateTargetResolver = target.delegateTarget
+    } else {
+      this.target = resolveTarget(target)
+      this.delegateTargetResolver = null
+    }
   }
 
   getTransition(index) {
-    if (!this.transitions[index]) {
-      this.transitions[index] = Object.assign(
+    let transition = this.transitions[index]
+
+    if (!transition) {
+      transition = this.transitions[index] = Object.assign(
         Object.create(LeaveEnterTransition.prototype),
         this,
         {
           running: false,
-          currentTarget: this.currentTarget,
+          currentTarget: this.target,
           targetInitialDisplay: this.targetInitialDisplay[index],
         }
       )
     }
 
-    this.transitions[index].target = this.currentTarget.children[index]
-    this.transitions[index].delegateTarget = resolveTarget(
-      this.delegateTarget,
-      this.transitions[index].target
-    )
+    transition.target = this.target.children[index]
+    transition.delegateTarget = this.delegateTargetResolver
+      ? resolveTarget(
+          this.delegateTargetResolver,
+          this.transitions[index].target
+        )
+      : transition.target
 
-    return this.transitions[index]
+    return transition
+  }
+
+  forceLeave(index) {
+    const targets =
+      index != null ? [this.target.children[index]] : this.target.children
+
+    if (this.css || this.hideAfterLeave) {
+      this.targetInitialDisplay = []
+      Array.prototype.forEach.call(targets, target => {
+        const resolvedTarget = resolveTarget(
+          this.delegateTargetResolver,
+          target
+        )
+
+        if (this.css) {
+          resolvedTarget.classList.add(this.leaveCSSClassMiddleware.doneClass)
+        }
+
+        if (this.hideAfterLeave) {
+          this.targetInitialDisplay.push(resolvedTarget.style.display)
+          this.hideAfterLeaveMiddleware.hide(resolvedTarget)
+        }
+      })
+    }
+  }
+
+  forceEnter(index) {
+    const targets =
+      index != null ? [this.target.children[index]] : this.target.children
+
+    if (this.css) {
+      Array.prototype.forEach.call(targets, target => {
+        resolveTarget(this.delegateTarget, target).classList.add(
+          this.enterCSSClassMiddleware.doneClass
+        )
+      })
+    }
   }
 
   leave(index, delegateTarget = null) {
