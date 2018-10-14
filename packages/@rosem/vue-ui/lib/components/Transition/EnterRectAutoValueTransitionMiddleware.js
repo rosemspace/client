@@ -17,7 +17,7 @@ export default class EnterRectAutoValueTransitionMiddleware {
       })
       boundingClientRect = target.getBoundingClientRect()
       this.autoProperties.forEach((property, index) => {
-        details.autoValues[property] = target.getBoundingClientRect()[property]
+        details.autoValues[property] = boundingClientRect[property]
         target.style[property] = `${values[index]}px`
       })
     }

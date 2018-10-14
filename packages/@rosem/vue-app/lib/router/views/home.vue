@@ -84,7 +84,7 @@ export default {
 
 <style lang="postcss">
 aside > div > div {
-  width: fit-content;
+  /*width: fit-content;*/
 }
 form {
   display: grid;

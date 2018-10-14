@@ -118,3 +118,46 @@ export function isAnimationMaxTimeout(info, name) {
     info.timeout
   )
 }
+
+export function parseTransform(element) {
+  //add sanity check
+  return window
+    .getComputedStyle(element)
+    .transform.split(/[(,)]/)
+    .slice(1, -1)
+    .map(function(v) {
+      return parseFloat(v)
+    })
+}
+
+export function getBoundingClientRectWithoutTransform(element) {
+  // add sanity checks and default values
+  const { top, left, width, height } = element.getBoundingClientRect()
+  const t = parseTransform(element)
+
+  if (t.length === 6) {
+    // 2D matrix
+    // need some math to apply inverse of matrix
+    // that is the matrix of the transformation of the element
+    // a scale x
+    // b shear y
+    // c shear x
+    // d scale y
+    // tx translate x
+    // tx translate y
+    const det = t[0] * t[3] - t[1] * t[2]
+    console.log(height, t[3])
+
+    return {
+      width: width / -t[0],
+      height: height / -t[3],
+      left: (left * t[3] - top * t[2] + t[2] * t[5] - t[4] * t[3]) / det,
+      top: (-left * t[1] + top * t[0] + t[4] * t[1] - t[0] * t[5]) / det,
+    }
+  } else {
+    // if (t.length > 6)
+    // 3D matrix
+    // haven't done the calculation to apply inverse of 4x4 matrix
+    return { top, left, width, height }
+  }
+}
