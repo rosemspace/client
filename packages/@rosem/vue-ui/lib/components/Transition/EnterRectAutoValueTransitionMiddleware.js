@@ -1,12 +1,13 @@
 export default class EnterRectAutoValueTransitionMiddleware {
   constructor(autoProperties) {
     this.autoProperties = autoProperties
-    this.autoValues = {}
     this.disabled = false
   }
 
-  beforeStart({ target }) {
+  beforeStart(details) {
     if (this.autoProperties.length) {
+      details.autoValues = {}
+      const target = details.target
       target.style.display = ''
       let boundingClientRect = target.getBoundingClientRect()
       const values = []
@@ -16,15 +17,15 @@ export default class EnterRectAutoValueTransitionMiddleware {
       })
       boundingClientRect = target.getBoundingClientRect()
       this.autoProperties.forEach((property, index) => {
-        this.autoValues[property] = target.getBoundingClientRect()[property]
+        details.autoValues[property] = target.getBoundingClientRect()[property]
         target.style[property] = `${values[index]}px`
       })
     }
   }
 
-  start({ target }) {
+  start({ target, autoValues }) {
     this.autoProperties.forEach(property => {
-      target.style[property] = `${this.autoValues[property]}px`
+      target.style[property] = `${autoValues[property]}px`
     })
   }
 
@@ -38,7 +39,6 @@ export default class EnterRectAutoValueTransitionMiddleware {
     return {
       auto: !this.disabled,
       autoProperties: this.autoProperties,
-      autoValues: this.autoValues,
     }
   }
 }

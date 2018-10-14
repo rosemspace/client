@@ -27,13 +27,15 @@ export function resolveTarget(target, context = document) {
         ? target
         : context
       : target
-    : target instanceof String || typeof target === 'string'
-      ? context.querySelector(target)
-      : Array.isArray(target)
-        ? target[0]
-        : target instanceof Function
-          ? resolveTarget(target(context), context)
-          : Array.from(target)[0]
+    : target instanceof NodeList || target instanceof HTMLCollection
+      ? resolveTarget(Array.from(target)[0])
+      : target instanceof String || typeof target === 'string'
+        ? context.querySelector(target)
+        : Array.isArray(target)
+          ? target[0]
+          : target instanceof Function
+            ? resolveTarget(target(context), context)
+            : context
 }
 
 export function resolveTargets(targets, context = document) {

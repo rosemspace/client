@@ -22,24 +22,39 @@
 }
 
 
-.height-enter-active, .height-leave-active {
+.rotate-180-enter-active, .rotate-180-leave-active {
   overflow: hidden;
-  transition: width 1s, height 1s;
+  transform-origin: center;
+  transition: transform 1s, height 1s;
 }
 
-.height-enter, .height-leave-to {
-  width: 0;
+.rotate-180-enter, .rotate-180-leave-to {
+  transform: rotate(180deg);
   height: 0;
 }
 
-.height-enter-to, .height-leave {
+.rotate-180-enter-done {
+  overflow: hidden;
+}
+
+
+.expand-height-enter-active, .expand-height-leave-active {
+  overflow: hidden;
+  transition: height 1s;
+}
+
+.expand-height-enter, .expand-height-leave-to {
+  height: 0;
+}
+
+.expand-height-enter-to, .expand-height-leave {
   /* height: 100px; */
 }
 
-.height-leave-done {
+.expand-height-leave-done {
   display: none;
 }
 
-.height-enter-done {
+.expand-height-enter-done {
   overflow: hidden;
 }

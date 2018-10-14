@@ -83,6 +83,9 @@ export default {
 </script>
 
 <style lang="postcss">
+aside > div > div {
+  width: fit-content;
+}
 form {
   display: grid;
   grid-template-columns: 1fr 1fr;

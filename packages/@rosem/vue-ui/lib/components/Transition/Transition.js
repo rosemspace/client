@@ -7,35 +7,32 @@ import EnterRectAutoValueTransitionMiddleware from './EnterRectAutoValueTransiti
 import DispatchEventTransitionMiddleware from './DispatchEventTransitionMiddleware'
 import { isDefined } from './utils'
 
-export default class LeaveEnterTransition extends TransitionDispatcher {
+export default class Transition extends TransitionDispatcher {
   static STAGE_LEAVE_ORDER = 0
   static STAGE_ENTER_ORDER = 1
 
   css
   hideAfterLeave
-  targetInitialDisplay
+  middlewareReferences = {}
 
-  constructor(
-    target,
-    name,
-    options
-  ) {
+  constructor(options) {
     const leaveStage = new TransitionStage('leave', options.duration)
     const enterStage = new TransitionStage('enter', options.duration)
-    super(target, name, [leaveStage, enterStage], options.stageIndex)
-    this.options = Object.assign({
-      css: true,
-      duration: null,
-      events: true,
-      stageIndex: 0,
-      auto: [],
-      hideAfterLeave: true
-    }, options)
-    this.targetInitialDisplay = this.target.style.display
+    super([leaveStage, enterStage], options)
+    this.options = Object.assign(
+      {
+        css: true,
+        duration: null,
+        events: true,
+        auto: [],
+        hideAfterLeave: true,
+      },
+      this.options
+    )
 
     if (this.options.css) {
       const leaveCSSMiddleware = new CSSClassTransitionMiddleware(
-        `${this.name}-${leaveStage.name}`,
+        `${this.options.name}-${leaveStage.name}`,
         {
           fromClass: this.options.leaveClass,
           activeClass: this.options.leaveActiveClass,
@@ -44,7 +41,7 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
         }
       )
       const enterCSSMiddleware = new CSSClassTransitionMiddleware(
-        `${this.name}-${enterStage.name}`,
+        `${this.options.name}-${enterStage.name}`,
         {
           fromClass: this.options.enterClass,
           activeClass: this.options.enterActiveClass,
@@ -54,8 +51,8 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
       )
       leaveStage.use(leaveCSSMiddleware)
       enterStage.use(enterCSSMiddleware)
-      this.leaveCSSClassMiddleware = leaveCSSMiddleware
-      this.enterCSSClassMiddleware = enterCSSMiddleware
+      this.middlewareReferences.leaveCSSClassMiddleware = leaveCSSMiddleware
+      this.middlewareReferences.enterCSSClassMiddleware = enterCSSMiddleware
     }
 
     if (isDefined(this.options.auto)) {
@@ -74,13 +71,7 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
     if (this.options.hideAfterLeave) {
       const hideAfterLeaveMiddleware = new HideAfterEndTransitionMiddleware()
       leaveStage.use(hideAfterLeaveMiddleware)
-      this.hideAfterLeaveMiddleware = hideAfterLeaveMiddleware
-    } else {
-      leaveStage.use({
-        afterEnd: ({ target }) => {
-          target.style.display = this.targetInitialDisplay
-        },
-      })
+      this.middlewareReferences.hideAfterLeaveMiddleware = hideAfterLeaveMiddleware
     }
 
     if (this.options.events) {
@@ -88,26 +79,21 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
       enterStage.use(new DispatchEventTransitionMiddleware(enterStage.name))
     }
 
-    if (this.stageIndex === LeaveEnterTransition.STAGE_LEAVE_ORDER) {
+    if (this.stageIndex === Transition.STAGE_LEAVE_ORDER) {
       this.forceLeave()
-    } else if (this.stageIndex === LeaveEnterTransition.STAGE_ENTER_ORDER) {
+    } else if (this.stageIndex === Transition.STAGE_ENTER_ORDER) {
       this.forceEnter()
     }
-  }
-
-  beforeStart(details = {}) {
-    this.target.style.display = ''
-    super.beforeStart(details)
   }
 
   dispatch(stageIndex, delegateTarget = null) {
     if (this.options.css) {
       // clear classes of previous stage
-      stageIndex === LeaveEnterTransition.STAGE_LEAVE_ORDER
-        ? this.enterCSSClassMiddleware.clear(
+      stageIndex === Transition.STAGE_LEAVE_ORDER
+        ? this.middlewareReferences.enterCSSClassMiddleware.clear(
             this.delegateTarget
           )
-        : this.leaveCSSClassMiddleware.clear(
+        : this.middlewareReferences.leaveCSSClassMiddleware.clear(
             this.delegateTarget
           )
     }
@@ -118,39 +104,39 @@ export default class LeaveEnterTransition extends TransitionDispatcher {
   forceLeave() {
     if (this.options.css) {
       this.target.classList.add(
-        this.leaveCSSClassMiddleware.doneClass
+        this.middlewareReferences.leaveCSSClassMiddleware.doneClass
       )
     }
 
     if (this.options.hideAfterLeave) {
-      this.hideAfterLeaveMiddleware.hide(this.target)
+      this.middlewareReferences.hideAfterLeaveMiddleware.hide(this.target)
     }
   }
 
   forceEnter() {
     if (this.options.css) {
       this.target.classList.add(
-        this.enterCSSClassMiddleware.doneClass
+        this.middlewareReferences.enterCSSClassMiddleware.doneClass
       )
     }
   }
 
   leave(delegateTarget = null) {
-    return this.dispatch(LeaveEnterTransition.STAGE_LEAVE_ORDER, delegateTarget)
+    return this.dispatch(Transition.STAGE_LEAVE_ORDER, delegateTarget)
   }
 
   enter(delegateTarget = null) {
-    return this.dispatch(LeaveEnterTransition.STAGE_ENTER_ORDER, delegateTarget)
+    return this.dispatch(Transition.STAGE_ENTER_ORDER, delegateTarget)
   }
 
   toggle(stageIndex, delegateTarget = null) {
     if (!Number.isInteger(stageIndex)) {
       delegateTarget = stageIndex
-      stageIndex = this.stageIndex
+      stageIndex = Number(!this.stageIndex)
     }
 
-    return stageIndex !== LeaveEnterTransition.STAGE_LEAVE_ORDER
-      ? this.leave(delegateTarget)
-      : this.enter(delegateTarget)
+    return stageIndex !== Transition.STAGE_LEAVE_ORDER
+      ? this.enter(delegateTarget)
+      : this.leave(delegateTarget)
   }
 }

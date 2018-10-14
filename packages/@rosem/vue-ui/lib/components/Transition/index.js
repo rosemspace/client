@@ -1,5 +1,6 @@
-import LeaveEnterTransition from './LeaveEnterTransition'
-import LeaveEnterTransitionGroup from './LeaveEnterTransitionGroup'
+import Transition from './Transition'
+import TransitionGroup from './TransitionGroup'
+import TransitionGroupComposition from './TransitionGroupComposition'
 
 window.addEventListener('load', function () {
   let el = document.querySelector('.view-home > aside')
@@ -15,14 +16,22 @@ window.addEventListener('load', function () {
   el.addEventListener("leave", event => console.log(event))
   el.addEventListener("after-leave", event => console.log(event))
   el.addEventListener("leave-cancelled", event => console.log(event))
-  window.trans = new LeaveEnterTransitionGroup({
-    target: el,
-    delegateTarget: 'div'
-  }, 'height', {
-    auto: ['height', 'width'],
+  window.trans = new TransitionGroupComposition({
+    currentTarget: el,
     // css: false,
     // duration: 200
-  });
+  }, [
+    {
+      target: 'div:first-child',
+      name: 'rotate-180',
+      auto: 'height'
+    },
+    {
+      target: 'div:last-child',
+      name: 'expand-height',
+      auto: 'height',
+    },
+  ]);
   let btn = document.querySelector("#toggle")
   // btn.addEventListener("click", () => {
   //   trans.toggle().then(detail => {
@@ -31,7 +40,7 @@ window.addEventListener('load', function () {
   // })
 
   let btn2 = document.querySelector("#toggle2")
-  let count = 0;
+  let count = -1;
   btn.addEventListener("click", () => {
     trans.toggle(++count % 3).then(detail => {
       console.log('toggled', detail);
