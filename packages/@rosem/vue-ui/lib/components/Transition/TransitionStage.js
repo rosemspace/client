@@ -19,11 +19,11 @@ export default class TransitionStage {
     this.middlewareList.push(middleware)
   }
 
-  dispatch(period, details = {}) {
+  dispatch(moment, details = {}) {
     this.middlewareList.forEach(middleware => {
       middleware.getDetails &&
         Object.assign(details, middleware.getDetails(details))
-      middleware[period] && middleware[period](details)
+      middleware[moment] && middleware[moment](details)
     })
 
     return details

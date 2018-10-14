@@ -52,7 +52,7 @@ export function resolveTargets(targets, context = document) {
           : Array.from(targets)
 }
 
-export function toMs(value) {
+export function sStringToMsNumber(value) {
   return Number(value.slice(0, -1)) * 1000
 }
 
@@ -65,7 +65,7 @@ export function getTimeout(delays, durations) {
   return Math.max.apply(
     null,
     durations.map(function(duration, index) {
-      return toMs(duration) + toMs(delays[index])
+      return sStringToMsNumber(duration) + sStringToMsNumber(delays[index])
     })
   )
 }
@@ -88,7 +88,8 @@ export function isTransitionMaxTimeout(info, property) {
     info.properties[0] !== 'all' ? info.properties.indexOf(property) : 0
 
   return (
-    toMs(info.delays[propertyIndex]) + toMs(info.durations[propertyIndex]) ===
+    sStringToMsNumber(info.delays[propertyIndex]) +
+      sStringToMsNumber(info.durations[propertyIndex]) ===
     info.timeout
   )
 }
@@ -110,7 +111,8 @@ export function isAnimationMaxTimeout(info, name) {
   let nameIndex = info.names.indexOf(name)
 
   return (
-    toMs(info.delays[nameIndex]) + toMs(info.durations[nameIndex]) ===
+    sStringToMsNumber(info.delays[nameIndex]) +
+      sStringToMsNumber(info.durations[nameIndex]) ===
     info.timeout
   )
 }

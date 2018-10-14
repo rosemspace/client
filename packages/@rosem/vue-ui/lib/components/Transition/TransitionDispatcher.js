@@ -134,9 +134,9 @@ export default class TransitionDispatcher {
     }
   }
 
-  process(period, details = {}) {
+  processMoment(moment, details = {}) {
     return this.stage.dispatch(
-      period,
+      moment,
       Object.assign(
         {
           name: this.name,
@@ -154,23 +154,23 @@ export default class TransitionDispatcher {
 
   beforeStart(details = {}) {
     this.running = true
-    this.process('beforeStart', details)
+    this.processMoment('beforeStart', details)
   }
 
   start(details = {}) {
-    this.process('start', { ...details, done: () => this.afterEnd() })
+    this.processMoment('start', { ...details, done: () => this.afterEnd() })
   }
 
   afterEnd(details = {}) {
     this.removeEndEventListener()
     this.running = false
-    this.resolve(this.process('afterEnd', details))
+    this.resolve(this.processMoment('afterEnd', details))
   }
 
   cancel(details = {}) {
     this.removeEndEventListener()
     this.cancelNextFrame()
-    this.process('cancelled', details)
+    this.processMoment('cancelled', details)
   }
 
   dispatch(stageIndex, delegateTarget = null) {
