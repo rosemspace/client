@@ -20,6 +20,10 @@ export function isDefined(value) {
   return value != null
 }
 
+export default function isString(value) {
+  return toString.call(value) === '[object String]';
+};
+
 export function resolveTarget(target, context = document) {
   return target instanceof Element
     ? context
@@ -54,8 +58,12 @@ export function resolveTargets(targets, context = document) {
           : Array.from(targets)
 }
 
+// Old versions of Chromium (below 61.0.3163.100) formats floating pointer numbers
+// in a locale-dependent way, using a comma instead of a dot.
+// If comma is not replaced with a dot, the input will be rounded down (i.e. acting
+// as a floor function) causing unexpected behaviors
 export function sStringToMsNumber(value) {
-  return Number(value.slice(0, -1)) * 1000
+  return Number(value.slice(0, -1).replace(',', '.')) * 1000
 }
 
 export function getTimeout(delays, durations) {

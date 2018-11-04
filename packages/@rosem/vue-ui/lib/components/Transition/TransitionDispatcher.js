@@ -8,18 +8,22 @@ import {
 } from './utils'
 
 export default class TransitionDispatcher {
-  currentTarget
+  element
   target
-  delegateTarget
   delegateTargetResolver
+  delegateTarget
+  options
   name
   stages
-  stageIndex = 0
+  stageIndex
   running = false
   motionInfo = { timeout: 0 }
   resolve
 
-  constructor(stages = [], options = {}) {
+  constructor(element, stages = [], options = {}) {
+    this.element = resolveTarget(element)
+    this.target = this.element
+    this.delegateTargetResolver = options.target
     this.stages = stages
     this.options = Object.assign(
       {
@@ -29,7 +33,6 @@ export default class TransitionDispatcher {
       options
     )
     this.stageIndex = this.options.stageIndex
-    this.resolveTarget()
   }
 
   get stage() {
@@ -52,20 +55,12 @@ export default class TransitionDispatcher {
     return this.stage.isExplicitDuration
   }
 
-  resolveTarget() {
-    this.currentTarget = resolveTarget(
-      this.options.currentTarget || this.options.target
-    )
-    this.target = this.currentTarget
-    this.delegateTargetResolver = this.options.delegateTarget
-      ? this.options.delegateTarget
-      : this.target
-  }
-
   nextFrame(cb) {
-    this.frameId = window.requestAnimationFrame(() => {
-      this.frameId = window.requestAnimationFrame(cb)
-    })
+    // todo: need more tests
+    this.frameId = window.requestAnimationFrame(cb)
+    // this.frameId = window.requestAnimationFrame(() => {
+    //   this.frameId = window.requestAnimationFrame(cb)
+    // })
   }
 
   cancelNextFrame() {
@@ -174,7 +169,7 @@ export default class TransitionDispatcher {
     )
     const details = {
       name: this.options.name,
-      currentTarget: this.currentTarget,
+      currentTarget: this.element,
       target: this.delegateTarget,
       delegateTarget: this.target,
       stageIndex: this.stageIndex,
@@ -204,10 +199,14 @@ export default class TransitionDispatcher {
     })
   }
 
-  playFromStage(stageIndex = 0) {
-    return this.dispatch(stageIndex).then(details => {
-      return ++stageIndex < this.stages.length
-        ? this.playFromStage(stageIndex)
+  play(startStageIndex = 0, endStageIndex = null) {
+    endStageIndex = isDefined(endStageIndex)
+      ? endStageIndex
+      : this.stages.length
+
+    return this.dispatch(startStageIndex).then(details => {
+      return ++startStageIndex < endStageIndex
+        ? this.play(startStageIndex, endStageIndex)
         : details
     })
   }

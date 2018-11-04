@@ -16,16 +16,26 @@ window.addEventListener('load', function () {
   el.addEventListener("leave", event => console.log(event))
   el.addEventListener("after-leave", event => console.log(event))
   el.addEventListener("leave-cancelled", event => console.log(event))
-  window.trans = new TransitionGroupComposition({
-    currentTarget: el,
+  // window.trans = new TransitionGroup(el, {
+  //   name: 'expand-height',
+  //   auto: 'height',
+  // });
+  window.trans = new TransitionGroupComposition(el, {
     // css: false,
     // duration: 200
   }, [
     {
       target: 'div:first-child',
       name: 'rotate-180',
-      auto: 'height'
+      auto: 'height',
     },
+    // concept
+    // {
+    //   target: 'div:first-child',
+    //   name: 'expand-height',
+    //   auto: 'height',
+    //   merge: true,
+    // },
     {
       target: 'div:last-child',
       name: 'expand-height',

@@ -1,4 +1,4 @@
-export default class CSSClassTransitionMiddleware {
+export default class CSSClassesTransitionMiddleware {
   static CLASS_PREFIX_FROM = ''
   static CLASS_PREFIX_ACTIVE = ''
   static CLASS_PREFIX_TO = ''
@@ -17,36 +17,36 @@ export default class CSSClassTransitionMiddleware {
   get fromClass() {
     return (
       this.options.fromClass ||
-      CSSClassTransitionMiddleware.CLASS_PREFIX_FROM +
+      CSSClassesTransitionMiddleware.CLASS_PREFIX_FROM +
         this.name +
-        CSSClassTransitionMiddleware.CLASS_SUFFIX_FROM
+        CSSClassesTransitionMiddleware.CLASS_SUFFIX_FROM
     )
   }
 
   get activeClass() {
     return (
       this.options.activeClass ||
-      CSSClassTransitionMiddleware.CLASS_PREFIX_ACTIVE +
+      CSSClassesTransitionMiddleware.CLASS_PREFIX_ACTIVE +
         this.name +
-        CSSClassTransitionMiddleware.CLASS_SUFFIX_ACTIVE
+        CSSClassesTransitionMiddleware.CLASS_SUFFIX_ACTIVE
     )
   }
 
   get toClass() {
     return (
       this.options.toClass ||
-      CSSClassTransitionMiddleware.CLASS_PREFIX_TO +
+      CSSClassesTransitionMiddleware.CLASS_PREFIX_TO +
         this.name +
-        CSSClassTransitionMiddleware.CLASS_SUFFIX_TO
+        CSSClassesTransitionMiddleware.CLASS_SUFFIX_TO
     )
   }
 
   get doneClass() {
     return (
       this.options.doneClass ||
-      CSSClassTransitionMiddleware.CLASS_PREFIX_DONE +
+      CSSClassesTransitionMiddleware.CLASS_PREFIX_DONE +
         this.name +
-        CSSClassTransitionMiddleware.CLASS_SUFFIX_DONE
+        CSSClassesTransitionMiddleware.CLASS_SUFFIX_DONE
     )
   }
 
