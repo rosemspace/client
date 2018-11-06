@@ -10,8 +10,6 @@ import {
 export default class TransitionDispatcher {
   element
   target
-  delegateTargetResolver
-  delegateTarget
   options
   name
   stages
@@ -23,16 +21,23 @@ export default class TransitionDispatcher {
   constructor(element, stages = [], options = {}) {
     this.element = resolveTarget(element)
     this.target = this.element
-    this.delegateTargetResolver = options.target
     this.stages = stages
     this.options = Object.assign(
       {
         name: 'transition',
         stageIndex: 0,
       },
-      options
+      options || {}
     )
     this.stageIndex = this.options.stageIndex
+  }
+
+  get delegatedTarget() {
+    // todo remove ternary
+    return this.options.target ? resolveTarget(
+      this.options.target,
+      this.target
+    ) : this.target
   }
 
   get stage() {
@@ -57,10 +62,10 @@ export default class TransitionDispatcher {
 
   nextFrame(cb) {
     // todo: need more tests
-    this.frameId = window.requestAnimationFrame(cb)
-    // this.frameId = window.requestAnimationFrame(() => {
-    //   this.frameId = window.requestAnimationFrame(cb)
-    // })
+    // this.frameId = window.requestAnimationFrame(cb)
+    this.frameId = window.requestAnimationFrame(() => {
+      this.frameId = window.requestAnimationFrame(cb)
+    })
   }
 
   cancelNextFrame() {
@@ -77,7 +82,7 @@ export default class TransitionDispatcher {
     this.motionInfo = { timeout: 0 }
 
     if (!this.isExplicitDuration) {
-      const computedStyle = window.getComputedStyle(this.delegateTarget)
+      const computedStyle = window.getComputedStyle(this.delegatedTarget)
       const transitionInfo = getTransitionInfo(computedStyle)
       const animationInfo = getAnimationInfo(computedStyle)
 
@@ -93,7 +98,7 @@ export default class TransitionDispatcher {
       }
 
       if (this.motionInfo.timeout) {
-        this.delegateTarget.addEventListener(
+        this.delegatedTarget.addEventListener(
           this.motionInfo.endEventName,
           this.endEventListener
         )
@@ -103,7 +108,7 @@ export default class TransitionDispatcher {
 
   removeEndEventListener() {
     if (!this.isExplicitDuration) {
-      this.delegateTarget.removeEventListener(
+      this.delegatedTarget.removeEventListener(
         this.motionInfo.endEventName,
         this.endEventListener
       )
@@ -113,7 +118,7 @@ export default class TransitionDispatcher {
   onTransitionEnd(details, event) {
     if (
       this.running &&
-      event.target === this.delegateTarget &&
+      event.target === this.delegatedTarget &&
       isTransitionMaxTimeout(this.motionInfo, event.propertyName)
     ) {
       this.afterEnd(details)
@@ -123,7 +128,7 @@ export default class TransitionDispatcher {
   onAnimationEnd(details, event) {
     if (
       this.running &&
-      event.target === this.delegateTarget &&
+      event.target === this.delegatedTarget &&
       isAnimationMaxTimeout(this.motionInfo, event.animationName)
     ) {
       this.afterEnd(details)
@@ -136,7 +141,7 @@ export default class TransitionDispatcher {
 
   beforeStart(details = {}) {
     this.running = true
-    this.delegateTarget.style.display = ''
+    this.delegatedTarget.style.display = ''
     this.processMoment('beforeStart', details)
   }
 
@@ -150,8 +155,8 @@ export default class TransitionDispatcher {
   afterEnd(details = {}) {
     this.removeEndEventListener()
     delete details.done
-    this.resolve(this.processMoment('afterEnd', details))
     this.running = false
+    this.resolve(this.processMoment('afterEnd', details))
   }
 
   cancel(details = {}) {
@@ -160,22 +165,32 @@ export default class TransitionDispatcher {
     this.processMoment('cancelled', details)
   }
 
-  dispatch(stageIndex = 0, delegateTarget = null) {
-    this.delegateTarget = resolveTarget(
-      isDefined(delegateTarget) && delegateTarget !== ''
-        ? delegateTarget
-        : this.delegateTargetResolver,
-      this.target
-    )
-    const details = {
+  getDetails() {
+    return {
       name: this.options.name,
       currentTarget: this.element,
-      target: this.delegateTarget,
+      target: this.delegatedTarget,
       delegateTarget: this.target,
       stageIndex: this.stageIndex,
       stageName: this.stageName,
       duration: this.duration || 0,
     }
+  }
+
+  forceDispatch(stageIndex = 0) {
+    const promise = new Promise(resolve => {
+      this.resolve = resolve
+    })
+    const details = this.getDetails()
+    this.running && this.cancel(details)
+    this.stageIndex = details.stageIndex = stageIndex
+    this.afterEnd(details)
+
+    return promise
+  }
+
+  dispatch(stageIndex = 0) {
+    const details = this.getDetails()
     this.running && this.cancel(details)
     this.stageIndex = details.stageIndex = stageIndex
     this.beforeStart(details)

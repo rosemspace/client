@@ -1,14 +1,19 @@
 import TransitionGroup from './TransitionGroup'
 
 export default class TransitionGroupComposition {
+  element
+  options
   tracks = []
 
   constructor(element, options, tracksOptions) {
+    this.element = element
+
     if (Array.isArray(options)) {
       tracksOptions = options
       options = {}
     }
 
+    this.options = options
     tracksOptions.forEach(track => {
       this.tracks.push(
         track instanceof TransitionGroup
@@ -18,26 +23,26 @@ export default class TransitionGroupComposition {
     })
   }
 
-  leave(index = 0, delegateTarget = null) {
+  leave(index = 0) {
     return Promise.all(
       this.tracks.map(track => {
-        return track.leave(index, delegateTarget)
+        return track.leave(index)
       })
     )
   }
 
-  enter(index = 0, delegateTarget = null) {
+  enter(index = 0) {
     return Promise.all(
       this.tracks.map(track => {
-        return track.enter(index, delegateTarget)
+        return track.enter(index)
       })
     )
   }
 
-  toggle(index = 0, stageIndex, delegateTarget = null) {
+  toggle(index = 0, stageIndex) {
     return Promise.all(
       this.tracks.map(track => {
-        return track.toggle(index, stageIndex, delegateTarget)
+        return track.toggle(index, stageIndex)
       })
     )
   }

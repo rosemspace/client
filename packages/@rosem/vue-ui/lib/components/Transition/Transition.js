@@ -89,61 +89,46 @@ export default class Transition extends TransitionDispatcher {
     }
   }
 
-  dispatch(stageIndex, delegateTarget = null) {
+  dispatch(stageIndex) {
     if (this.options.css) {
       // clear classes of previous stage
       stageIndex === Transition.STAGE_LEAVE_ORDER
-        ? this.middleware.enterCSSClasses.clear(
-            this.delegateTarget || this.target
-          )
-        : this.middleware.leaveCSSClasses.clear(
-            this.delegateTarget || this.target
-          )
+        ? this.middleware.enterCSSClasses.clear(this.delegatedTarget)
+        : this.middleware.leaveCSSClasses.clear(this.delegatedTarget)
     }
 
-    return super.dispatch(stageIndex, delegateTarget)
+    return super.dispatch(stageIndex)
+  }
+
+  forceLeave() {
+    return this.forceDispatch(Transition.STAGE_LEAVE_ORDER)
+  }
+
+  forceEnter() {
+    return this.forceDispatch(Transition.STAGE_ENTER_ORDER)
   }
 
   forceUpdate() {
-    if (this.stageIndex === Transition.STAGE_LEAVE_ORDER) {
-      if (this.options.css) {
-        this.target.classList.add(
-          this.middleware.leaveCSSClasses.doneClass
-        )
-      }
-
-      if (this.options.hideAfterLeave) {
-        this.middleware.hideAfterLeave.hide(this.target)
-      }
-    } else if (this.stageIndex === Transition.STAGE_ENTER_ORDER) {
-      if (this.options.css) {
-        this.target.classList.add(
-          this.middleware.enterCSSClasses.doneClass
-        )
-      }
-
-      if (this.options.hideAfterLeave) {
-        this.middleware.showBeforeEnter.show(this.target)
-      }
-    }
+    return this.stageIndex !== Transition.STAGE_LEAVE_ORDER
+      ? this.forceEnter()
+      : this.forceLeave()
   }
 
-  leave(delegateTarget = null) {
-    return this.dispatch(Transition.STAGE_LEAVE_ORDER, delegateTarget)
+  leave() {
+    return this.dispatch(Transition.STAGE_LEAVE_ORDER)
   }
 
-  enter(delegateTarget = null) {
-    return this.dispatch(Transition.STAGE_ENTER_ORDER, delegateTarget)
+  enter() {
+    return this.dispatch(Transition.STAGE_ENTER_ORDER)
   }
 
-  toggle(stageIndex, delegateTarget = null) {
+  toggle(stageIndex) {
     if (!Number.isInteger(stageIndex)) {
-      delegateTarget = stageIndex
       stageIndex = Number(!this.stageIndex)
     }
 
     return stageIndex !== Transition.STAGE_LEAVE_ORDER
-      ? this.enter(delegateTarget)
-      : this.leave(delegateTarget)
+      ? this.enter()
+      : this.leave()
   }
 }

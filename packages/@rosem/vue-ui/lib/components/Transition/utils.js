@@ -20,9 +20,9 @@ export function isDefined(value) {
   return value != null
 }
 
-export default function isString(value) {
+export function isString(value) {
   return toString.call(value) === '[object String]';
-};
+}
 
 export function resolveTarget(target, context = document) {
   return target instanceof Element
@@ -33,29 +33,13 @@ export function resolveTarget(target, context = document) {
       : target
     : target instanceof NodeList || target instanceof HTMLCollection
       ? resolveTarget(Array.from(target)[0])
-      : target instanceof String || typeof target === 'string'
+      : isString(target)
         ? context.querySelector(target)
         : Array.isArray(target)
           ? target[0]
           : target instanceof Function
             ? resolveTarget(target(context), context)
             : context
-}
-
-export function resolveTargets(targets, context = document) {
-  return targets instanceof Element
-    ? context
-      ? context.contains(targets)
-        ? [targets]
-        : [context]
-      : [targets]
-    : targets instanceof String || typeof targets === 'string'
-      ? context.querySelectorAll(targets)
-      : Array.isArray(targets)
-        ? targets
-        : targets instanceof Function
-          ? resolveTargets(targets(context), context)
-          : Array.from(targets)
 }
 
 // Old versions of Chromium (below 61.0.3163.100) formats floating pointer numbers

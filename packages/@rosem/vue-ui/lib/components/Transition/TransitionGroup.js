@@ -1,8 +1,9 @@
 import Transition from './Transition'
-import { resolveTarget } from './utils'
+import { isDefined, resolveTarget } from './utils'
 
 export default class TransitionGroup {
   element
+  targets
   options
   tracks = []
   defaultTransition
@@ -12,13 +13,27 @@ export default class TransitionGroup {
     this.options = Object.assign(
       {
         forceUpdate: true,
+        stageIndexMap: {},
         duration: null,
         css: true,
         events: true,
         auto: [],
         hideAfterLeave: true,
       },
-      options
+      options || {}
+    )
+    const range = this.options.range
+    this.range = range
+      ? Array.isArray(range)
+        ? range.length > 1
+          ? range
+          : [range[0], this.element.children.length]
+        : [range, this.element.children.length]
+      : [0, this.element.children.length]
+    this.targets = Array.prototype.slice.call(
+      this.element.children,
+      this.range[0],
+      this.range[1]
     )
 
     if (this.options.forceUpdate) {
@@ -54,67 +69,64 @@ export default class TransitionGroup {
   }
 
   createDefaultTransition() {
-    return this.defaultTransition = new Transition(
+    return (this.defaultTransition = new Transition(
       this.element,
       Object.assign(this.options, { forceUpdate: false })
-    )
+    ))
   }
 
   cloneDefaultTransition() {
     return Object.assign(
       Object.create(Transition.prototype),
-      this.defaultTransition || this.createDefaultTransition()
+      this.defaultTransition || this.createDefaultTransition(),
+      { target: null }
     )
   }
 
-  getDelegateTarget(target) {
-    return this.options.target
-      ? resolveTarget(this.options.target, target)
-      : target
+  forceLeave(index) {
+    return Promise.all(
+      Array.prototype.map.call(
+        isDefined(index) ? [this.targets[index]] : this.targets,
+        (target, index) => {
+          this.defaultTransition.target = target
+
+          return this.options.stageIndexMap[index] !==
+            Transition.STAGE_ENTER_ORDER
+            ? this.defaultTransition.forceLeave()
+            : this.getTrack(index).forceEnter()
+        }
+      )
+    ).then(data => {
+      this.defaultTransition.target = this.options.target
+
+      return data
+    })
+  }
+
+  forceEnter(index) {
+    return Promise.all(
+      Array.prototype.map.call(
+        isDefined(index) ? [this.targets[index]] : this.targets,
+        target => {
+          this.defaultTransition.target = target
+
+          return this.options.stageIndexMap[index] !==
+            Transition.STAGE_LEAVE_ORDER
+            ? this.defaultTransition.forceEnter()
+            : this.getTrack(index).forceLeave()
+        }
+      )
+    ).then(data => {
+      this.defaultTransition.target = this.options.target
+
+      return data
+    })
   }
 
   forceUpdate(index) {
-    if (this.options.css || this.options.hideAfterLeave) {
-      const targets =
-        index != null ? [this.element.children[index]] : this.element.children
-
-      if (this.stageIndex === Transition.STAGE_LEAVE_ORDER) {
-
-        Array.prototype.forEach.call(targets, target => {
-          const resolvedTarget = this.getDelegateTarget(target)
-
-          if (this.options.css) {
-            resolvedTarget.classList.add(
-              this.defaultTransition.middleware.leaveCSSClasses
-                .doneClass
-            )
-          }
-
-          if (this.options.hideAfterLeave) {
-            this.defaultTransition.middleware.hideAfterLeave.hide(
-              resolvedTarget
-            )
-          }
-        })
-      } else if (this.stageIndex === Transition.STAGE_ENTER_ORDER) {
-        Array.prototype.forEach.call(targets, target => {
-          const resolvedTarget = this.getDelegateTarget(target)
-
-          if (this.options.css) {
-            resolvedTarget.classList.add(
-              this.defaultTransition.middleware.enterCSSClasses
-                .doneClass
-            )
-          }
-
-          if (this.options.hideAfterLeave) {
-            this.defaultTransition.middleware.showBeforeEnter.show(
-              resolvedTarget
-            )
-          }
-        })
-      }
-    }
+    return this.stageIndex !== Transition.STAGE_LEAVE_ORDER
+      ? this.forceEnter(index)
+      : this.forceLeave(index)
   }
 
   getTrack(index) {
@@ -124,34 +136,31 @@ export default class TransitionGroup {
       track = this.tracks[index] = this.cloneDefaultTransition()
     }
 
-    if (track.target !== this.element.children[index]) {
-      track.target = this.element.children[index]
-      track.delegateTarget = this.getDelegateTarget(track.target)
-      track.delegateTargetResolver = track.delegateTarget
+    if (track.target !== this.targets[index]) {
+      track.target = this.targets[index]
     }
 
     return track
   }
 
-  leave(index = 0, delegateTarget = null) {
-    return this.getTrack(index).leave(delegateTarget)
+  leave(index = 0) {
+    return this.getTrack(index).leave()
   }
 
-  enter(index = 0, delegateTarget = null) {
-    return this.getTrack(index).enter(delegateTarget)
+  enter(index = 0) {
+    return this.getTrack(index).enter()
   }
 
-  toggle(index = 0, stageIndex, delegateTarget = null) {
+  toggle(index = 0, stageIndex) {
     const transition = this.getTrack(index)
 
     if (!Number.isInteger(stageIndex)) {
-      delegateTarget = stageIndex
       stageIndex = Number(!transition.stageIndex)
     }
 
     return stageIndex !== Transition.STAGE_LEAVE_ORDER
-      ? transition.enter(delegateTarget)
-      : transition.leave(delegateTarget)
+      ? transition.enter()
+      : transition.leave()
   }
 
   playTrack(trackIndex = 0, stageIndex = 0) {
@@ -159,9 +168,9 @@ export default class TransitionGroup {
   }
 
   play(startStageIndex = 0, endStageIndex = null) {
-    if (this.tracks.length !== this.element.children.length) {
+    if (this.tracks.length !== this.targets.length) {
       this.tracks = Array.from(
-        new Array(this.element.children.length),
+        new Array(this.targets.length),
         (_, index) => this.tracks[index] || this.getTrack(index)
       )
     }

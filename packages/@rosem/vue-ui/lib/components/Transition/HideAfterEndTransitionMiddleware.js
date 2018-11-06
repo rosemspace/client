@@ -25,7 +25,7 @@ export default class HideAfterEndTransitionMiddleware {
     }
 
     for (const [property, value] of this.attributeEntries) {
-      target.setAttribute(property, value === true ? '' : value)
+      target.setAttribute(property, value === true ? property : value)
     }
   }
 
