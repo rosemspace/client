@@ -12,6 +12,7 @@ node_modules/
 /tests/e2e/videos/
 /tests/e2e/screenshots/
 /tests/unit/coverage/
+jsconfig.json
 
 # Local Env Files
 .env.local
@@ -29,3 +30,4 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+*.sw*

@@ -4,5 +4,6 @@ module.exports = {
     'postcss-preset-env': {
       stage: 0,
     },
+    stylelint: {}
   },
 }

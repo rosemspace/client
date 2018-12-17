@@ -1,19 +1,23 @@
 module.exports = {
   '*.js': [
-    'eslint --fix',
-    'prettier --write',
+    'yarn lint:eslint',
+    'yarn lint:prettier',
     'git add',
-    'yarn unit --bail --findRelatedTests',
+    'yarn test:unit:file',
   ],
-  '*.json': ['prettier --write', 'git add'],
+  '{!(package)*.json,*.code-snippets,.*rc}': [
+    'yarn lint:prettier --parser json',
+    'git add',
+  ],
+  'package.json': ['yarn lint:prettier', 'git add'],
   '*.vue': [
-    'eslint --fix',
-    'stylelint --fix',
-    'prettier --write',
+    'yarn lint:eslint',
+    'yarn lint:stylelint',
+    'yarn lint:prettier',
     'git add',
-    'yarn unit --bail --findRelatedTests',
+    'yarn test:unit:file',
   ],
-  '*.scss': ['stylelint --fix', 'prettier --write', 'git add'],
-  '*.md': ['markdownlint', 'prettier --write', 'git add'],
+  '*.pcss': ['yarn lint:stylelint', 'yarn lint:prettier', 'git add'],
+  '*.md': ['yarn lint:markdownlint', 'yarn lint:prettier', 'git add'],
   '*.{png,jpeg,jpg,gif,svg}': ['imagemin-lint-staged', 'git add'],
 }
