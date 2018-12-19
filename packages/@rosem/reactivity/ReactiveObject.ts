@@ -1,87 +1,99 @@
-/**
- * Observer class that is attached to each observed
- * object. Once attached, the observer converts the target
- * object's property keys into getter/setters that
- * collect dependencies and dispatch updates.
- */
 import config from './config'
-import Dependency from './Dependency'
-import defineProperty from './defineProperty'
-import defineReactiveProperty from './defineReactiveProperty'
-import hasProto from '@rosem/util-check/hasProto'
 
-export class ReactiveObject {
-  observable: Object | any[]
-  dependency: Dependency
+interface ReactivePropertyDescriptor {
+  // configurable?: boolean
+  // enumerable?: boolean
+  value?: any
+  shallow?: boolean
+  // writable?: boolean
+  get?(): any
+  set?(value: any): void
+}
 
-  constructor(
-    observable: Object | any[]
-  ) {
-    this.observable = observable
-    this.dependency = new Dependency()
-    defineProperty(observable, config.REACTIVE_OBJECT_KEY, this)
+interface ReactiveComputedPropertyDescriptor
+  extends ReactivePropertyDescriptor {
+  value?: Function
+  lazy?: boolean
+}
 
-    if (Array.isArray(observable)) {
-      if (hasProto) {
-        // protoAugment(observable, arrayMethods)
+export default class ReactiveObject {
+  // protected observable: any
+
+  public constructor(object: any) {
+    // this.observable = object
+    Object.defineProperty(this, config.REACTIVE_OBJECT_KEY, {
+      value: {
+        observable: object,
+        dependencies: {},
+      },
+      enumerable: false,
+      writable: true,
+      configurable: true,
+    })
+
+    for (const [key, value] of Object.entries(object)) {
+      // TODO: remake it because it made just for tests
+      if (typeof value === 'function') {
+        ReactiveObject.defineComputedProperty(this, key, {
+          value,
+        })
       } else {
-        // copyAugment(observable, arrayMethods, arrayKeys)
+        ReactiveObject.defineProperty(this, key, {
+          value,
+        })
       }
-
-      ReactiveObject.observeArray(observable)
-    } else {
-      ReactiveObject.walk(observable)
     }
   }
 
-  /**
-   * Walk through all properties and convert them into
-   * getter/setters. This method should only be called when
-   * value type is Object.
-   */
-  static walk(object: Object) {
-    const keys = Object.keys(object)
+  public static defineProperty(
+    object: any,
+    property: PropertyKey,
+    { value }: ReactivePropertyDescriptor
+  ) {
+    Object.defineProperty(object, property, {
+      enumerable: true,
+      configurable: true,
+      get: function reactiveGetter() {
+        const storage = object[config.REACTIVE_OBJECT_KEY]
 
-    for (let i = 0; i < keys.length; i++) {
-      defineReactiveProperty(object, keys[i])
-    }
+        if (!storage.dependencies[property]) {
+          storage.dependencies[property] = []
+        }
+
+        if (null != storage.target) {
+          storage.dependencies[property].push(storage.target)
+        }
+
+        return value
+      },
+      set: function reactiveSetter(newValue) {
+        /* eslint-disable no-self-compare */
+        if (newValue === value || (newValue !== newValue && value !== value)) {
+          return
+        }
+
+        value = newValue
+
+        const storage = object[config.REACTIVE_OBJECT_KEY]
+        storage.dependencies[property].forEach(
+          (dependentProperty: string | number) => {
+            object[dependentProperty] = storage.observable[dependentProperty].call(object)
+          }
+        )
+      },
+    })
   }
 
-  /**
-   * Observe a list of Array items.
-   */
-  static observeArray(items: any[]) {
-    for (let index = 0, l = items.length; index < l; ++index) {
-      // observe(items[index])
+  public static defineComputedProperty(
+    object: any,
+    property: PropertyKey,
+    { value, lazy }: ReactiveComputedPropertyDescriptor
+  ) {
+    if (null != value && !lazy) {
+      const storage = object[config.REACTIVE_OBJECT_KEY]
+      storage.target = property
+      object[property] = value.call(object)
+      delete storage.target
     }
-  }
-}
-
-// helpers
-
-/**
- * Augment a target Object or Array by intercepting
- * the prototype chain using __proto__
- */
-function protoAugment(target: Object | any[], src: Object) {
-  /* eslint-disable no-proto */
-  // @ts-ignore
-  target.__proto__ = src
-  /* eslint-enable no-proto */
-}
-
-/**
- * Augment a target Object or Array by defining
- * hidden properties.
- */
-/* istanbul ignore next */
-function copyAugment(
-  target: Object,
-  src: { [key: string]: any },
-  keys: Array<string>
-) {
-  for (let index = 0, l = keys.length; index < l; ++index) {
-    const key: string = keys[index]
-    defineProperty(target, key, src[key])
   }
 }

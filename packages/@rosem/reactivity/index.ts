@@ -1,7 +1,28 @@
 import config from './config'
+import ReactiveObject from '@rosem/reactivity/ReactiveObject'
 
 export default class {
   static config: object = config
+
+  static test() {
+    let data = {
+      a: 'rosem',
+      b: 'roshe',
+      computed: function() {
+        // console.log('value a or b changed')
+        return this.a + this.b
+      },
+    }
+
+    let ro = new ReactiveObject(data)
+    console.log(ro.computed)
+    ro.a = 'rosem + '
+    console.log(ro.computed);
+
+    window.ro = ro
+    console.log(ro);
+    return ro
+  }
 }
 
 // var arrayProto = Array.prototype;
@@ -41,4 +62,3 @@ export default class {
 //     }
 //   }
 // });
-

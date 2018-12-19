@@ -2,11 +2,7 @@ const REACTIVE_OBJECT_KEY = '__react__'
 
 const SSR_ATTRIBUTE = 'data-server-rendered'
 
-const ASSET_TYPES = [
-  'component',
-  'directive',
-  'filter'
-]
+const ASSET_TYPES = ['component', 'directive', 'filter']
 
 const LIFECYCLE_HOOKS = [
   'beforeCreate',
@@ -19,12 +15,12 @@ const LIFECYCLE_HOOKS = [
   'destroyed',
   'activated',
   'deactivated',
-  'errorCaptured'
+  'errorCaptured',
 ]
 
 export default {
   REACTIVE_OBJECT_KEY,
   SSR_ATTRIBUTE,
   ASSET_TYPES,
-  LIFECYCLE_HOOKS
+  LIFECYCLE_HOOKS,
 }
