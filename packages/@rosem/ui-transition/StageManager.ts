@@ -6,6 +6,10 @@ import getComputedTransition from '@rosem/util-dom/getComputedTransition'
 import getComputedAnimation from '@rosem/util-dom/getComputedAnimation'
 import isTransitionMaxTimeout from '@rosem/util-dom/isTransitionMaxTimeout'
 import isAnimationMaxTimeout from '@rosem/util-dom/isAnimationMaxTimeout'
+import {
+  requestAnimationFrame,
+  cancelAnimationFrame,
+} from '@rosem/util-dom/animationFrame'
 
 export type StageManagerOptions = {
   target?: string
@@ -80,16 +84,15 @@ export default class StageManager {
   }
 
   protected nextFrame(callback: FrameRequestCallback): void {
-    // todo: need more tests
-    // this.frameId = window.requestAnimationFrame(cb)
-    this.frameId = self.requestAnimationFrame(() => {
-      this.frameId = self.requestAnimationFrame(callback)
+    // Any rAFs queued in a rAF will be executed in the next frame​.
+    this.frameId = requestAnimationFrame(() => {
+      this.frameId = requestAnimationFrame(callback)
     })
   }
 
   protected cancelNextFrame(): void {
     if (this.frameId) {
-      self.cancelAnimationFrame(this.frameId)
+      cancelAnimationFrame(this.frameId)
       this.frameId = undefined
     } else {
       self.clearTimeout(this.timerId)
@@ -104,7 +107,7 @@ export default class StageManager {
       const delegatedTarget = this.delegatedTarget
 
       if (null != delegatedTarget) {
-        const computedStyle = window.getComputedStyle(delegatedTarget)
+        const computedStyle = self.getComputedStyle(delegatedTarget)
         const transitionInfo = getComputedTransition(computedStyle)
         const animationInfo = getComputedAnimation(computedStyle)
 
@@ -249,7 +252,7 @@ export default class StageManager {
       this[Phase.start](details)
 
       if (this.isExplicitDuration) {
-        this.timerId = window.setTimeout(
+        this.timerId = self.setTimeout(
           () => this[Phase.afterEnd](details),
           this.duration
         )

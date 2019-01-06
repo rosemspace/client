@@ -4,9 +4,9 @@ import MiddlewareInterface, { Details, Phase } from './MiddlewareInterface'
 export type StageDurationList = { [stageName: string]: number }
 
 export default class Stage implements MiddlewareRunnerInterface {
-  readonly name: string
-  readonly duration?: number
-  readonly isExplicitDuration: boolean = false
+  public readonly name: string
+  public readonly duration?: number
+  public readonly isExplicitDuration: boolean = false
   private middlewareList: MiddlewareInterface[] = []
 
   constructor(name: string, duration?: number | StageDurationList) {
