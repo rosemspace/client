@@ -7,8 +7,8 @@ export default function defineReactiveProperty(
   shallow?: boolean
 ) {
   const property = Object.getOwnPropertyDescriptor(object, key)
-  let getter: Function | undefined = undefined
-  let setter: Function | undefined = undefined
+  let getter: Function | undefined
+  let setter: Function | undefined
 
   if (property) {
     if (property.configurable === false) {

@@ -3,6 +3,9 @@
 // const t = new Transition(document.body)
 // console.log(t)
 
-import Reactivity from '@rosem/reactivity'
+// import Reaction from '@rosem/reaction'
+import Renderer from '@rosem/vdom-html-dom/Renderer'
 
-Reactivity.test()
+window.Renderer = Renderer
+
+// Reaction.test()

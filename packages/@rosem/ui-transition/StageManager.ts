@@ -1,11 +1,11 @@
 import Stage from './Stage'
 import { Phase, Details } from './MiddlewareInterface'
-import CSSTransitionDeclaration from '@rosem/util-css/CSSTransitionDeclaration'
-import CSSAnimationDeclaration from '@rosem/util-css/CSSAnimationDeclaration'
-import getComputedTransition from '@rosem/util-css/getComputedTransition'
-import getComputedAnimation from '@rosem/util-css/getComputedAnimation'
-import isTransitionMaxTimeout from '@rosem/util-css/isTransitionMaxTimeout'
-import isAnimationMaxTimeout from '@rosem/util-css/isAnimationMaxTimeout'
+import CSSTransitionDeclaration from '@rosem/util-dom/CSSTransitionDeclaration'
+import CSSAnimationDeclaration from '@rosem/util-dom/CSSAnimationDeclaration'
+import getComputedTransition from '@rosem/util-dom/getComputedTransition'
+import getComputedAnimation from '@rosem/util-dom/getComputedAnimation'
+import isTransitionMaxTimeout from '@rosem/util-dom/isTransitionMaxTimeout'
+import isAnimationMaxTimeout from '@rosem/util-dom/isAnimationMaxTimeout'
 
 export type StageManagerOptions = {
   target?: string
@@ -82,17 +82,17 @@ export default class StageManager {
   protected nextFrame(callback: FrameRequestCallback): void {
     // todo: need more tests
     // this.frameId = window.requestAnimationFrame(cb)
-    this.frameId = window.requestAnimationFrame(() => {
-      this.frameId = window.requestAnimationFrame(callback)
+    this.frameId = self.requestAnimationFrame(() => {
+      this.frameId = self.requestAnimationFrame(callback)
     })
   }
 
   protected cancelNextFrame(): void {
     if (this.frameId) {
-      window.cancelAnimationFrame(this.frameId)
+      self.cancelAnimationFrame(this.frameId)
       this.frameId = undefined
     } else {
-      window.clearTimeout(this.timerId)
+      self.clearTimeout(this.timerId)
       this.timerId = undefined
     }
   }

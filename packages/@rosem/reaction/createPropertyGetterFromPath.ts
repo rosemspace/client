@@ -12,9 +12,10 @@ export default function createPropertyGetterFromPath(
   }
 
   const segments = path.split(separator)
+  const length = segments.length
 
   return function(object: any): any {
-    for (let i = 0; i < segments.length; ++i) {
+    for (let i = 0; i < length; ++i) {
       if (!object) return
 
       object = object[segments[i]]

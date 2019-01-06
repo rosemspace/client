@@ -1,25 +1,39 @@
 import config from './config'
-import ReactiveObject from '@rosem/reactivity/ReactiveObject'
+import ReactiveObject from '@rosem/reaction/ReactiveObject'
 
 export default class {
   static config: object = config
 
   static test() {
+    // window.ReactiveObject = ReactiveObject
+    const inputElement = document.createElement('input')
+    document.body.append()
+
     let data = {
       a: 'rosem',
       b: 'roshe',
-      computed: function() {
+      _c: '=<3',
+      get c() {
+        return this._c
+      },
+      set c(value) {
+        this._c = value
+      },
+      computed1: function() {
         // console.log('value a or b changed')
-        return this.a + this.b
+        return this.a + this.b + this._c
+      },
+      computed2: function() {
+        return 'C2: ' + this.computed1
       },
     }
 
     let ro = new ReactiveObject(data)
     console.log(ro.computed)
-    ro.a = 'rosem + '
-    console.log(ro.computed);
+    // ro.a = 'rosem + '
+    // console.log(ro.computed);
 
-    window.ro = ro
+    // window.ro = ro
     console.log(ro);
     return ro
   }

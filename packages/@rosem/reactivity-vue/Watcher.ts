@@ -1,5 +1,5 @@
 import Dependency from './Dependency'
-import createPropertyGetterFromPath from './createPropertyGetterFromPath'
+import createPropertyGetterFromPath from '@rosem/reaction/createPropertyGetterFromPath'
 
 export default class Watcher {
   getter: Function
@@ -59,6 +59,6 @@ export default class Watcher {
   get() {}
 
   update() {
-    console.log('test2');
+    // console.log('test2');
   }
 }

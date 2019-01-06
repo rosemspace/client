@@ -4,11 +4,10 @@
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
-import config from './config'
 import Dependency from './Dependency'
 import defineProperty from './defineProperty'
 import defineReactiveProperty from './defineReactiveProperty'
-import hasProto from '@rosem/util-check/hasProto'
+import hasProto from '@rosem/util-support/supportProto'
 
 export class Observer {
   observable: Object | any[]
@@ -19,13 +18,13 @@ export class Observer {
   ) {
     this.observable = observable
     this.dependency = new Dependency()
-    defineProperty(observable, config.REACTIVE_OBJECT_KEY, this)
+    defineProperty(observable, '__react__', this)
 
     if (Array.isArray(observable)) {
       if (hasProto) {
-        // protoAugment(observable, arrayMethods)
+        // protoAugment(originalObject, arrayMethods)
       } else {
-        // copyAugment(observable, arrayMethods, arrayKeys)
+        // copyAugment(originalObject, arrayMethods, arrayKeys)
       }
 
       Observer.observeArray(observable)

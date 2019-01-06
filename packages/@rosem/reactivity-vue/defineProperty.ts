@@ -9,8 +9,8 @@ export default function defineProperty(
 ) {
   Object.defineProperty(object, key, {
     value: value,
+    configurable: true,
     enumerable: enumerable,
     writable: true,
-    configurable: true,
   })
 }

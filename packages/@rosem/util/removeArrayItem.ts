@@ -5,7 +5,7 @@ export default function removeArrayItem(array: Array<any>, item: any): Array<any
   if (array.length) {
     const index = array.indexOf(item)
 
-    if (index > -1) {
+    if (index >= 0) {
       return array.splice(index, 1)
     }
   }
