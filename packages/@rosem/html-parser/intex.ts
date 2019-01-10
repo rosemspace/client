@@ -55,7 +55,7 @@ export function parseHTML (html, options) {
   const stack = []
   const expectHTML = options.expectHTML
   const isUnaryTag = options.isUnaryTag || no
-  const canBeLeftOpenTag = options.canBeLeftOpenTag || no
+  const isOptionalClosingTag = options.isOptionalClosingTag || no
   let index = 0
   let last, lastTag
   while (html) {
@@ -213,7 +213,7 @@ export function parseHTML (html, options) {
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
         parseEndTag(lastTag)
       }
-      if (canBeLeftOpenTag(tagName) && lastTag === tagName) {
+      if (isOptionalClosingTag(tagName) && lastTag === tagName) {
         parseEndTag(tagName)
       }
     }
