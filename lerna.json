@@ -3,6 +3,7 @@
   "useWorkspaces": true,
   "version": "independent",
   "packages": [
-    "packages/@rosem/*"
+    "packages/@rosem/*",
+    "packages/@rosem-util/*"
   ]
 }

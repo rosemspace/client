@@ -6,7 +6,7 @@ import propertyDescriptor, {
 } from '@rosem/decorator/propertyDescriptor'
 
 type ReactivePropertyKey = string | number
-type ReactivePropertyGetter = ReactivePropertyKey | Function
+// type ReactivePropertyGetter = ReactivePropertyKey | Function
 const reaction = Symbol.for('reaction')
 const isNaN = Number.isNaN
 

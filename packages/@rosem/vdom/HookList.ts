@@ -2,50 +2,50 @@ import VNode from './VNode'
 
 export type PreHook = () => any
 
-export type InitHook<VNodeData, Node> = (vNode: VNode<VNodeData, Node>) => any
+export type InitHook<VNodeProps, Node> = (vNode: VNode<VNodeProps, Node>) => any
 
-export type CreateHook<VNodeData, Node> = (
-  emptyVNode: VNode<VNodeData, Node>,
-  vNode: VNode<VNodeData, Node>
+export type CreateHook<VNodeProps, Node> = (
+  emptyVNode: VNode<VNodeProps, Node>,
+  vNode: VNode<VNodeProps, Node>
 ) => any
 
-export type InsertHook<VNodeData, Node> = (vNode: VNode<VNodeData, Node>) => any
+export type InsertHook<VNodeProps, Node> = (vNode: VNode<VNodeProps, Node>) => any
 
-export type PrePatchHook<VNodeData, Node> = (
-  oldVNode: VNode<VNodeData, Node>,
-  vNode: VNode<VNodeData, Node>
+export type PrePatchHook<VNodeProps, Node> = (
+  oldVNode: VNode<VNodeProps, Node>,
+  vNode: VNode<VNodeProps, Node>
 ) => any
 
-export type UpdateHook<VNodeData, Node> = (
-  oldVNode: VNode<VNodeData, Node>,
-  vNode: VNode<VNodeData, Node>
+export type UpdateHook<VNodeProps, Node> = (
+  oldVNode: VNode<VNodeProps, Node>,
+  vNode: VNode<VNodeProps, Node>
 ) => any
 
-export type PostPatchHook<VNodeData, Node> = (
-  oldVNode: VNode<VNodeData, Node>,
-  vNode: VNode<VNodeData, Node>
+export type PostPatchHook<VNodeProps, Node> = (
+  oldVNode: VNode<VNodeProps, Node>,
+  vNode: VNode<VNodeProps, Node>
 ) => any
 
-export type DestroyHook<VNodeData, Node> = (
-  vNode: VNode<VNodeData, Node>
+export type DestroyHook<VNodeProps, Node> = (
+  vNode: VNode<VNodeProps, Node>
 ) => any
 
-export type RemoveHook<VNodeData, Node> = (
-  vNode: VNode<VNodeData, Node>,
+export type RemoveHook<VNodeProps, Node> = (
+  vNode: VNode<VNodeProps, Node>,
   removeCallback: () => void
 ) => any
 
 export type PostHook = () => any
 
-export default interface HookList<VNodeData, Node> {
+export default interface HookList<VNodeProps, Node> {
   pre?: PreHook // beforeCreate
-  init?: InitHook<VNodeData, Node> // created
-  create?: CreateHook<VNodeData, Node> // beforeMount
-  insert?: InsertHook<VNodeData, Node> // mounted
-  prePatch?: PrePatchHook<VNodeData, Node> // beforeUpdate
-  update?: UpdateHook<VNodeData, Node>
-  postPatch?: PostPatchHook<VNodeData, Node> // updated
-  destroy?: DestroyHook<VNodeData, Node> // beforeDestroy
-  remove?: RemoveHook<VNodeData, Node> // destroyed
+  init?: InitHook<VNodeProps, Node> // created
+  create?: CreateHook<VNodeProps, Node> // beforeMount
+  insert?: InsertHook<VNodeProps, Node> // mounted
+  prePatch?: PrePatchHook<VNodeProps, Node> // beforeUpdate
+  update?: UpdateHook<VNodeProps, Node>
+  postPatch?: PostPatchHook<VNodeProps, Node> // updated
+  destroy?: DestroyHook<VNodeProps, Node> // beforeDestroy
+  remove?: RemoveHook<VNodeProps, Node> // destroyed
   post?: PostHook
 }

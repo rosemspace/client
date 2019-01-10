@@ -1,4 +1,4 @@
-import Dependency from '@rosem/reactivity-vue/Dependency'
+// import Dependency from '@rosem/reactivity-vue/Dependency'
 
 // export default class Observer {
 //   getter: Function

@@ -1,15 +1,15 @@
 import Stage from './Stage'
 import { Phase, Details } from './MiddlewareInterface'
-import CSSTransitionDeclaration from '@rosem/util-dom/CSSTransitionDeclaration'
-import CSSAnimationDeclaration from '@rosem/util-dom/CSSAnimationDeclaration'
-import getComputedTransition from '@rosem/util-dom/getComputedTransition'
-import getComputedAnimation from '@rosem/util-dom/getComputedAnimation'
-import isTransitionMaxTimeout from '@rosem/util-dom/isTransitionMaxTimeout'
-import isAnimationMaxTimeout from '@rosem/util-dom/isAnimationMaxTimeout'
+import CSSTransitionDeclaration from '@rosem-util/dom/CSSTransitionDeclaration'
+import CSSAnimationDeclaration from '@rosem-util/dom/CSSAnimationDeclaration'
+import getComputedTransition from '@rosem-util/dom/getComputedTransition'
+import getComputedAnimation from '@rosem-util/dom/getComputedAnimation'
+import isTransitionMaxTimeout from '@rosem-util/dom/isTransitionMaxTimeout'
+import isAnimationMaxTimeout from '@rosem-util/dom/isAnimationMaxTimeout'
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
-} from '@rosem/util-dom/animationFrame'
+} from '@rosem-util/dom/animationFrame'
 
 export type StageManagerOptions = {
   target?: string

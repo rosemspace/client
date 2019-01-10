@@ -1,31 +1,10 @@
-import VNode from './VNode'
-
-export default interface RendererInterface<
-  VNodeData,
+export default interface HostInterface<
   Node,
   Comment extends Node,
   Text extends Node,
   Element extends Node,
   NativeComponent extends Element = Element
 > {
-  createVNode(
-    selector?: string,
-    data?: VNodeData,
-    children?: Array<VNode<VNodeData, Node> | string>,
-    text?: string | null,
-    realNode?: Element | Text | Comment | Node
-  ): VNode<VNodeData, Node>
-
-  elementToVNode(element: Element): VNode<VNodeData, Node>
-
-  textToVNode(text: Text): VNode<VNodeData, Node>
-
-  commentToVNode(comment: Comment): VNode<VNodeData, Node>
-
-  nodeToVNode(node: Node): VNode<VNodeData, Node>
-
-  toVNode(node: Node): VNode<VNodeData, Node>
-
   createElement(tagName: any): NativeComponent
 
   createElementNS(namespaceURI: string, qualifiedName: string): Element
@@ -33,6 +12,8 @@ export default interface RendererInterface<
   createTextNode(text: string): Text
 
   createComment(text: string): Comment
+
+  childNodes(element: Element): Iterable<Node>
 
   insertBefore(
     parentNode: Node,
