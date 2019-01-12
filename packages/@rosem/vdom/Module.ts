@@ -7,11 +7,11 @@ import {
   PostHook,
 } from './HookList'
 
-export interface Module<VNodeProps, Node> {
+export interface Module<Node> {
   pre: PreHook
-  create: CreateHook<VNodeProps, Node>
-  update: UpdateHook<VNodeProps, Node>
-  destroy: DestroyHook<VNodeProps, Node>
-  remove: RemoveHook<VNodeProps, Node>
+  create: CreateHook<Node>
+  update: UpdateHook<Node>
+  destroy: DestroyHook<Node>
+  remove: RemoveHook<Node>
   post: PostHook
 }

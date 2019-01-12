@@ -1,35 +1,37 @@
+import { AttrMap } from './Attribute'
+
 export type Key = string | number
 
-export type DefaultVNodeProps = {
+export type PrimitiveVNode = string | number | null | undefined
+
+export type VNodeProps = {
+  attributes?: AttrMap
   key?: Key
   namespace?: string
-  [key: string]: any
-  [index: number]: any
-}
+} & Record<string | number | symbol, any>
 
-export type VNodes<VNodeProps, Node> = Array<VNode<VNodeProps, Node>>
-
-export type VNodeChildElement<VNodeProps, Node> =
-  | VNode<VNodeProps, Node>
-  | string
-  | number
-  | null
-  | undefined
-
-type ArrayOrElement<T> = T | T[];
-
-export type VNodeChildren<VNodeData, Node> = ArrayOrElement<
-  VNodeChildElement<VNodeData, Node>
->
-
-export default interface VNode<VNodeProps, Node> {
-  children?: Array<VNode<VNodeProps, Node> | string | number>
+export default interface VNode<Node> {
+  children?: Array<VNode<Node> | PrimitiveVNode>
   props?: VNodeProps
   key?: Key
   realNode?: Node
-  text?: string | number | null
+  text?: PrimitiveVNode
   type?: string
 }
+
+export type VNodeList<Node> = Array<VNode<Node>>
+
+export type VNodeChildElement<Node> =
+  | VNode<Node>
+  | PrimitiveVNode
+
+export type VNodeChildElementList<Node> = Array<
+  VNodeChildElement<Node>
+>
+
+export type VNodeChildren<Node> =
+  | VNodeChildElement<Node>
+  | VNodeChildElementList<Node>
 
 // attributeStyleMap
 interface VDOMStylePropertyMap {}

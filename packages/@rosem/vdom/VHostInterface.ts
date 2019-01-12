@@ -1,50 +1,50 @@
-import VNode, { VNodeChildren } from './VNode'
+import VNode, {
+  PrimitiveVNode,
+  VNodeChildElementList,
+  VNodeChildren,
+  VNodeProps,
+} from './VNode'
 
 export default interface VHostInterface<
-  VNodeProps,
   Node,
   Comment extends Node,
   Text extends Node,
   Element extends Node
 > {
+  createElement(type: string): VNode<Node>
+
+  createElement(
+    type: string,
+    propsOrChildren: VNodeProps | VNodeChildren<Node>
+  ): VNode<Node>
+
+  createElement(
+    type: string,
+    props: VNodeProps,
+    children: VNodeChildren<Node>
+  ): VNode<Node>
+
+  createElement(
+    type: string,
+    propsOrChildren?: VNodeProps | VNodeChildren<Node>,
+    children?: VNodeChildren<Node>
+  ): VNode<Node>
+
   createVNode(
-    type?: string,
+    type: string,
     props?: VNodeProps,
-    children?: Array<VNode<VNodeProps, Node> | string>,
-    text?: string | number | null,
+    children?: VNodeChildElementList<Node>,
+    text?: PrimitiveVNode,
     realNode?: Element | Text | Comment | Node
-  ): VNode<VNodeProps, Node>
+  ): VNode<Node>
 
-  hyperScript(type: string): VNode<VNodeProps, Node>
+  elementToVNode(element: Element): VNode<Node>
 
-  hyperScript(type: string, data: VNodeProps): VNode<VNodeProps, Node>
+  textToVNode(text: Text): VNode<Node>
 
-  hyperScript(
-    type: string,
-    children: VNodeChildren<VNodeProps, Node>
-  ): VNode<VNodeProps, Node>
+  commentToVNode(comment: Comment): VNode<Node>
 
-  hyperScript(
-    type: string,
-    data: VNodeProps,
-    children: VNodeChildren<VNodeProps, Node>
-  ): VNode<VNodeProps, Node>
+  toVNode(node: Node): VNode<Node>
 
-  hyperScript(
-    type: string,
-    dataOrChildrenOrPrimitive?: VNodeProps | VNodeChildren<VNodeProps, Node>,
-    childrenOrPrimitive?: VNodeChildren<VNodeProps, Node>
-  ): VNode<VNodeProps, Node>
-
-  setElementProperties(element: Element, props: VNodeProps): void
-
-  getVNodeProperties(element: Element): VNodeProps
-
-  elementToVNode(element: Element): VNode<VNodeProps, Node>
-
-  textToVNode(text: Text): VNode<VNodeProps, Node>
-
-  commentToVNode(comment: Comment): VNode<VNodeProps, Node>
-
-  toVNode(node: Node): VNode<VNodeProps, Node>
+  toNode(vnode: VNode<Node>): Node
 }

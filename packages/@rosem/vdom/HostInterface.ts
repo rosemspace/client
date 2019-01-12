@@ -13,7 +13,7 @@ export default interface HostInterface<
 
   createComment(text: string): Comment
 
-  childNodes(element: Element): Iterable<Node>
+  getChildNodes(element: Element): Iterable<Node>
 
   insertBefore(
     parentNode: Node,
@@ -27,9 +27,9 @@ export default interface HostInterface<
 
   parentNode(node: Node): Node | null
 
-  nextSibling(node: Node): Node | null
+  getNextSibling(node: Node): Node | null
 
-  tagName(element: Element): string
+  getTagName(element: Element): string
 
   setTextContent(node: Node, text: string | null): void
 

@@ -1,67 +1,74 @@
-/**
- * Not type-checking this file because it's mostly vendor code.
- */
-
 /*!
  * HTML Parser By John Resig (ejohn.org)
  * Modified by Juriy "kangax" Zaytsev
  * Original code by Erik Arvidsson, Mozilla Public License
  * http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
+ * Modified by Evan "yyx990803" You and community
+ * https://github.com/vuejs/vue/blob/d8285c57a613c42eddf2d4f2b75c1cea6aa4703a/
+ * src/compiler/parser/html-parser.js
+ * Modified by Roman "roshecode" Shevchenko
  */
 
-import makeMap from '@rosem-util/common/makeMap'
 import no from '@rosem-util/common/no'
 import isNonPhrasingTag from '@rosem-util/html/isNonPhrasingTag'
 
+const isDev = 'production' !== process.env.NODE_ENV
 // Regular Expressions for parsing tags and attributes
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 // could use https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName
 // but for Vue templates we can enforce a simple charset
-const ncname = '[a-zA-Z_][\\w\\-\\.]*'
-const qnameCapture = `((?:${ncname}\\:)?${ncname})`
-const startTagOpen = new RegExp(`^<${qnameCapture}`)
+// Non-colonized name e.g. "name"
+const ncNameREPart = '[a-zA-Z_][\\w\\-\\.]*'
+// Qualified name e.g. "namespace:name"
+const qNameRECapture = `((?:${ncNameREPart}\\:)?${ncNameREPart})`
+const startTagOpen = new RegExp(`^<${qNameRECapture}`)
 const startTagClose = /^\s*(\/?)>/
-const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+const endTag = new RegExp(`^<\\/${qNameRECapture}[^>]*>`)
 const doctype = /^<!DOCTYPE [^>]+>/i
 // #7298: escape - to avoid being passed as HTML comment when inlined in a page
 const comment = /^<!\--/
 const conditionalComment = /^<!\[/
-
 // Special Elements (can contain anything)
-export const isPlainTextElement = makeMap('script,style,textarea', true)
+const plainTextElementRE = /script|style|textarea/i
 const reCache = {}
 
 const decodingMap = {
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&amp;': '&',
+  '&lt;': '<', // &#60;
+  '&qt;': '>', // &#62;
+  '&quot;': '"', // &34;
+  // '&apos;': '\'', // &39;
+  '&amp;': '&', // &38;
   '&#10;': '\n',
-  '&#9;': '\t'
+  '&#9;': '\t',
+  // '&#60;': '<', // &lt;
+  // '&#62;': '>', // &gt;
+  // '&#34;': '"', // &quot;
+  // '&#39;': '\'', // &apos;
+  // '&#38;': '&', // &amp;
 }
-const encodedAttr = /&(?:lt|gt|quot|amp);/g
+const encodedAttr = /&(?:lt|gt|quot|apos|amp);/g
 const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#10|#9);/g
 
 // #5992
-const isIgnoreNewlineTag = makeMap('pre,textarea', true)
-const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) && html[0] === '\n'
+const shouldIgnoreFirstNewline = (tag: string, html: string) =>
+  tag && /pre,textarea/i.test(tag) && '\n' === html[0]
 
-function decodeAttr (value, shouldDecodeNewlines) {
+function decodeAttr(value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr
-  return value.replace(re, match => decodingMap[match])
+  return value.replace(re, (match) => decodingMap[match])
 }
 
-export function parseHTML (html, options) {
+export function parseHTML(html, options) {
   const stack = []
   const expectHTML = options.expectHTML
-  const isUnaryTag = options.isUnaryTag || no
+  const isUnaryTag = options.isUnaryTag || function() {}
   const isOptionalClosingTag = options.isOptionalClosingTag || no
   let index = 0
   let last, lastTag
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
-    if (!lastTag || !isPlainTextElement(lastTag)) {
+    if (!lastTag || !plainTextElementRE.test(lastTag)) {
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
         // Comment:
@@ -122,7 +129,7 @@ export function parseHTML (html, options) {
           !startTagOpen.test(rest) &&
           !comment.test(rest) &&
           !conditionalComment.test(rest)
-          ) {
+        ) {
           // < in plain text, be forgiving and treat it as text
           next = rest.indexOf('<', 1)
           if (next < 0) break
@@ -144,10 +151,15 @@ export function parseHTML (html, options) {
     } else {
       let endTagLength = 0
       const stackedTag = lastTag.toLowerCase()
-      const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
-      const rest = html.replace(reStackedTag, function (all, text, endTag) {
+      const reStackedTag =
+        reCache[stackedTag] ||
+        (reCache[stackedTag] = new RegExp(
+          '([\\s\\S]*?)(</' + stackedTag + '[^>]*>)',
+          'i'
+        ))
+      const rest = html.replace(reStackedTag, function(all, text, endTag) {
         endTagLength = endTag.length
-        if (!isPlainTextElement(stackedTag) && stackedTag !== 'noscript') {
+        if (!plainTextElementRE.test(stackedTag) && stackedTag !== 'noscript') {
           text = text
             .replace(/<!\--([\s\S]*?)-->/g, '$1') // #7298
             .replace(/<!\[CDATA\[([\s\S]*?)]]>/g, '$1')
@@ -167,7 +179,7 @@ export function parseHTML (html, options) {
 
     if (html === last) {
       options.chars && options.chars(html)
-      if (process.env.NODE_ENV !== 'production' && !stack.length && options.warn) {
+      if (isDev && !stack.length && options.warn) {
         options.warn(`Mal-formatted tag at end of template: "${html}"`)
       }
       break
@@ -177,22 +189,25 @@ export function parseHTML (html, options) {
   // Clean up any remaining tags
   parseEndTag()
 
-  function advance (n) {
+  function advance(n) {
     index += n
     html = html.substring(n)
   }
 
-  function parseStartTag () {
+  function parseStartTag() {
     const start = html.match(startTagOpen)
     if (start) {
       const match = {
         tagName: start[1],
         attrs: [],
-        start: index
+        start: index,
       }
       advance(start[0].length)
       let end, attr
-      while (!(end = html.match(startTagClose)) && (attr = html.match(attribute))) {
+      while (
+        !(end = html.match(startTagClose)) &&
+        (attr = html.match(attribute))
+      ) {
         advance(attr[0].length)
         match.attrs.push(attr)
       }
@@ -205,7 +220,7 @@ export function parseHTML (html, options) {
     }
   }
 
-  function handleStartTag (match) {
+  function handleStartTag(match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash
 
@@ -225,17 +240,22 @@ export function parseHTML (html, options) {
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i]
       const value = args[3] || args[4] || args[5] || ''
-      const shouldDecodeNewlines = tagName === 'a' && args[1] === 'href'
-        ? options.shouldDecodeNewlinesForHref
-        : options.shouldDecodeNewlines
+      const shouldDecodeNewlines =
+        tagName === 'a' && args[1] === 'href'
+          ? options.shouldDecodeNewlinesForHref
+          : options.shouldDecodeNewlines
       attrs[i] = {
         name: args[1],
-        value: decodeAttr(value, shouldDecodeNewlines)
+        value: decodeAttr(value, shouldDecodeNewlines),
       }
     }
 
     if (!unary) {
-      stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs })
+      stack.push({
+        tag: tagName,
+        lowerCasedTag: tagName.toLowerCase(),
+        attrs: attrs,
+      })
       lastTag = tagName
     }
 
@@ -244,7 +264,7 @@ export function parseHTML (html, options) {
     }
   }
 
-  function parseEndTag (tagName, start, end) {
+  function parseEndTag(tagName, start, end) {
     let pos, lowerCasedTagName
     if (start == null) start = index
     if (end == null) end = index
@@ -265,13 +285,8 @@ export function parseHTML (html, options) {
     if (pos >= 0) {
       // Close all the open elements, up the stack
       for (let i = stack.length - 1; i >= pos; i--) {
-        if (process.env.NODE_ENV !== 'production' &&
-          (i > pos || !tagName) &&
-          options.warn
-        ) {
-          options.warn(
-            `tag <${stack[i].tag}> has no matching end tag.`
-          )
+        if (isDev && (i > pos || !tagName) && options.warn) {
+          options.warn(`tag <${stack[i].tag}> has no matching end tag.`)
         }
         if (options.end) {
           options.end(stack[i].tag, start, end)

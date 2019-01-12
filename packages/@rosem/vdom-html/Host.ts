@@ -1,12 +1,7 @@
 import HostInterface from '@rosem/vdom/HostInterface'
 
-export default class Host implements HostInterface<
-  Node,
-  Comment,
-  Text,
-  Element,
-  HTMLElement
-> {
+export default class Host
+  implements HostInterface<Node, Comment, Text, Element, HTMLElement> {
   createElement(tagName: any): HTMLElement {
     return document.createElement(tagName)
   }
@@ -23,7 +18,7 @@ export default class Host implements HostInterface<
     return document.createComment(text)
   }
 
-  childNodes(element: Element): Iterable<Node> {
+  getChildNodes(element: Element): Iterable<Node> {
     return element.childNodes
   }
 
@@ -47,11 +42,11 @@ export default class Host implements HostInterface<
     return node.parentNode
   }
 
-  nextSibling(node: Node): Node | null {
+  getNextSibling(node: Node): Node | null {
     return node.nextSibling
   }
 
-  tagName(elm: Element): string {
+  getTagName(elm: Element): string {
     return elm.tagName
   }
 

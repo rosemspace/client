@@ -4,8 +4,8 @@
 // console.log(t)
 
 // import Reaction from '@rosem/reaction'
-import { h, host, vHost } from '@rosem/vdom-html-dom'
-import { parseHTML } from '@rosem/html-parser/intex'
+import { h, vHost } from '@rosem/vdom-html'
+import { parseHTML } from '@rosem/dom-parser/intex'
 import isUnaryTag from '@rosem-util/html/isUnaryTag'
 import isOptionalClosingTag from '@rosem-util/html/isOptionalClosingTag'
 
@@ -29,7 +29,6 @@ parseHTML(
   }
 )
 window.h = h
-window.host = host
 window.vHost = vHost
 
 // Reaction.test()
