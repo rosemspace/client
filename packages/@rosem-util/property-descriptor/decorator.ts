@@ -1,21 +1,3 @@
-export const NON_CONFIGURABLE = {
-  configurable: false,
-  enumerable: true,
-  writable: true,
-}
-
-export const NON_ENUMERABLE = {
-  configurable: true,
-  enumerable: false,
-  writable: true,
-}
-
-export const NON_WRITABLE = {
-  configurable: false,
-  enumerable: false,
-  writable: false,
-}
-
 export default function propertyDescriptor(descriptor: PropertyDescriptor) {
   return function(target: any, propertyKey: PropertyKey) {
     // first property defined in prototype, that's why we use getters/setters

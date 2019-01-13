@@ -2,13 +2,13 @@ import { AttrMap } from './Attribute'
 
 export type Key = string | number
 
-export type PrimitiveVNode = string | number | null | undefined
+export type PrimitiveVNode = string | number | boolean | null | undefined
 
 export type VNodeProps = {
   attributes?: AttrMap
   key?: Key
   namespace?: string
-} & Record<string | number | symbol, any>
+} & Record<PropertyKey, any>
 
 export default interface VNode<Node> {
   children?: Array<VNode<Node> | PrimitiveVNode>

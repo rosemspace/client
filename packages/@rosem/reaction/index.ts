@@ -1,15 +1,15 @@
 import config from './config'
-import ReactiveObject from '@rosem/reaction/ReactiveObject'
+import ObservableObject, {
+  ObservablePropertyKey,
+} from '@rosem/reaction/ObservableObject'
 
 export default class {
   static config: object = config
 
   static test() {
-    // window.ReactiveObject = ReactiveObject
-    const inputElement = document.createElement('input')
-    document.body.append()
-
     let data = {
+      firstName: '',
+      lastName: '',
       a: 'rosem',
       b: 'roshe',
       _c: '=<3',
@@ -19,23 +19,76 @@ export default class {
       set c(value) {
         this._c = value
       },
-      computed1: function() {
-        // console.log('value a or b changed')
-        return this.a + this.b + this._c
-      },
-      computed2: function() {
-        return 'C2: ' + this.computed1
-      },
     }
+    let oo = ObservableObject.create(data)
+    // window.ReactiveObject = ReactiveObject
 
-    let ro = new ReactiveObject(data)
-    console.log(ro.computed)
-    // ro.a = 'rosem + '
-    // console.log(ro.computed);
+    const inputFirstNameElement = document.createElement('input')
+    const inputLastNameElement = document.createElement('input')
+    const firstNameElement = document.createElement('p')
+    const lastNameElement = document.createElement('p')
+    const fullNameElement = document.createElement('p')
+    inputFirstNameElement.addEventListener('input', function(event) {
+      oo.firstName =
+        (event.target && (<HTMLInputElement>event.target).value) || ''
+    })
+    inputLastNameElement.addEventListener('input', function(event) {
+      oo.lastName =
+        (event.target && (<HTMLInputElement>event.target).value) || ''
+    })
+    document.body.append(inputFirstNameElement)
+    document.body.append(inputLastNameElement)
+    document.body.append(firstNameElement)
+    document.body.append(lastNameElement)
+    document.body.append(fullNameElement)
 
-    // window.ro = ro
-    console.log(ro);
-    return ro
+    ObservableObject.observeProperty(oo, 'firstName', function(
+      newValue: string
+    ) {
+      firstNameElement.textContent = newValue
+    })
+    ObservableObject.observeProperty(oo, 'lastName', function(
+      newValue: string
+    ) {
+      lastNameElement.textContent = newValue
+    })
+    ObservableObject.defineComputedProperty(oo, 'fullName', {
+      get(newVal, oldVal, prop, obj: ObservableObject): string {
+        console.log('GET: ', newVal)
+        return this.firstName + ' ' + this.lastName
+      },
+      set(
+        value: any,
+        oldValue: any,
+        prop: ObservablePropertyKey,
+        obj: ObservableObject
+      ) {
+        console.log('SET: ', value)
+      },
+    })
+    ObservableObject.observeProperty(oo, 'fullName', function(
+      newValue: string
+    ) {
+      fullNameElement.textContent = newValue
+    })
+
+    // ObservableObject.defineComputedProperty(oo, 'computed1', {
+    //   value: function() {
+    //     // console.log('value a or b changed')
+    //     return this.a + this.b + this._c
+    //   }
+    // })
+    // ObservableObject.defineComputedProperty(oo, 'computed2', {
+    //   value: function() {
+    //     return 'C2: ' + this.computed1
+    //   }
+    // })
+
+    // @ts-ignore
+    window.oo = oo
+    console.log(oo)
+    console.log(oo.computed1)
+    return oo
   }
 }
 
