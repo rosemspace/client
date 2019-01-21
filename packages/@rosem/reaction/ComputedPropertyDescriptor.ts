@@ -1,10 +1,10 @@
-import { PropertyDescriptorAblePart } from './property'
-import ObserverFunction from './ObserverFunction'
+import GenericPropertyDescriptor from './GenericPropertyDescriptor'
+import ObserveFunction from './ObserveFunction'
 
 export default interface ComputedPropertyDescriptor
-  extends PropertyDescriptorAblePart {
-  value?: ObserverFunction
-  get?: ObserverFunction
-  set?: ObserverFunction
+  extends GenericPropertyDescriptor {
+  value?: ObserveFunction
+  get?: ObserveFunction
+  set?: ObserveFunction
   noCache?: boolean
 }

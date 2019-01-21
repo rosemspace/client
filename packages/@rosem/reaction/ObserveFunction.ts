@@ -1,11 +1,11 @@
 import { ObservablePropertyKey } from './ObservableObject'
 import ObservableObject from './ObservableObject'
 
-export default interface ObserverFunction extends Function {
+export default interface ObserveFunction extends Function {
   (
     oldValue: any,
     newValue: any,
     property: ObservablePropertyKey,
     observableObject: ObservableObject
-  ): void
+  ): any
 }

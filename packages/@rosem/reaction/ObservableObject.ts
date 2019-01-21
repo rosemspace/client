@@ -1,12 +1,11 @@
-import ObservableObjectStorage from './ObservableObjectStorage'
+import Observer from './Observer'
 import ObservablePropertyDescriptor from './ObservablePropertyDescriptor'
-import ObserverFunction from './ObserverFunction'
+import ObserveFunction from './ObserveFunction'
 import ComputedPropertyDescriptor from './ComputedPropertyDescriptor'
-import {
-  ALL_ABLE,
-  NON_ENUMERABLE,
-  PropertyDescriptorAblePart,
-} from './property'
+import GenericPropertyDescriptor, {
+  NON_ENUMERABLE_DESCRIPTOR,
+  PERMISSIVE_DESCRIPTOR,
+} from './GenericPropertyDescriptor'
 
 const getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
 const getOwnPropertyNames = Object.getOwnPropertyNames
@@ -14,7 +13,7 @@ const nativeDefineProperty = Object.defineProperty
 const hasOwnProperty = Object.prototype.hasOwnProperty
 const isNaN = Number.isNaN
 const storageKey = Symbol.for('observable')
-const DEFAULT_DESCRIPTOR = {
+const DEFAULT_DESCRIPTOR: GenericPropertyDescriptor = {
   configurable: true,
   enumerable: true,
 }
@@ -27,59 +26,52 @@ function canRedefineProperty(object: Object, property: PropertyKey): boolean {
   return null == definedDescriptor || true === definedDescriptor.configurable
 }
 
-function getObservableData(
-  observableObject: ObservableObject,
-  property: ObservablePropertyKey,
-  descriptor?: (ObservablePropertyDescriptor | ComputedPropertyDescriptor) &
-    ThisType<ObservableObject>
-): any {
-  const normalizedDescriptor: PropertyDescriptorAblePart = DEFAULT_DESCRIPTOR
-  let value: any
-  let get: Function | undefined
-  let set: Function | undefined
-
+function normalizeDescriptor(
+  descriptor?: GenericPropertyDescriptor,
+  defaultValue?: any
+): GenericPropertyDescriptor {
   if (null != descriptor && getOwnPropertyNames(descriptor).length > 0) {
     // Cater for pre-defined getter/setters.
-    get = descriptor.get
-    set = descriptor.set
-    value =
-      (!get || set) && !hasOwnProperty.call(descriptor, 'value')
-        ? observableObject[property]
-        : descriptor.value
+    const { writable, get, set } = descriptor
+    const hasValue = hasOwnProperty.call(descriptor, 'value')
 
-    const { enumerable, configurable } = descriptor
-
-    if (null != enumerable) {
-      normalizedDescriptor.enumerable = enumerable
+    if ((get || set) && (hasValue || writable)) {
+      throw new Error(
+        'Invalid property descriptor. Cannot both specify accessors and a value or writable attribute'
+      )
     }
 
-    if (null != configurable) {
-      normalizedDescriptor.configurable = configurable
+    descriptor = { ...DEFAULT_DESCRIPTOR, ...descriptor }
+
+    if (!get && !hasValue && undefined !== defaultValue) {
+      descriptor.value = defaultValue
+    }
+  } else {
+    descriptor = { ...DEFAULT_DESCRIPTOR }
+
+    if (undefined !== defaultValue) {
+      descriptor.value = defaultValue
     }
   }
 
-  return {
-    normalizedDescriptor,
-    value,
-    set,
-    get,
-  }
+  return descriptor
 }
 
 export default class ObservableObject implements Object {
   [index: number]: any
   [key: string]: any
 
-  public static readonly observable: symbol = storageKey
+  public static readonly observable: symbol = storageKey;
 
-  private [storageKey]: ObservableObjectStorage
+  private [storageKey]: Observer
 
   public constructor(object: object) {
     Object.defineProperty(this, storageKey, {
-      ...NON_ENUMERABLE,
-      value: new ObservableObjectStorage(object, this),
+      ...NON_ENUMERABLE_DESCRIPTOR,
+      value: new Observer(object, this),
     })
 
+    // todo improve perf
     for (const [property, value] of Object.entries(object)) {
       const descriptor = getOwnPropertyDescriptor(object, property)
 
@@ -87,7 +79,7 @@ export default class ObservableObject implements Object {
         ObservableObject.defineProperty(
           this,
           property,
-          null == descriptor ? { ...ALL_ABLE, value } : descriptor
+          null == descriptor ? { ...PERMISSIVE_DESCRIPTOR, value } : descriptor
         )
       } else {
         nativeDefineProperty(this, property, descriptor)
@@ -108,23 +100,25 @@ export default class ObservableObject implements Object {
       throw new TypeError(`Cannot redefine property: ${property}`)
     }
 
-    const storage: ObservableObjectStorage = observableObject[storageKey]
-    const data: any = getObservableData(observableObject, property, descriptor)
-    const { normalizedDescriptor, get, set } = data
-    let { value } = data
+    const storage: Observer = observableObject[storageKey]
+    descriptor = normalizeDescriptor(descriptor, observableObject[property])
+    const { enumerable, configurable, get, set } = descriptor
+    let { value } = descriptor
 
     Object.defineProperty(observableObject, property, {
-      ...normalizedDescriptor,
+      ...{
+        enumerable,
+        configurable,
+      },
       get: function reactiveGetter(): any {
-        // Depend on the property
-        if (storage.dependentObserver) {
-          storage.observeProperty(property, storage.dependentObserver)
-        }
+        storage.dependOnProperty(property)
 
         return get ? get.call(observableObject, observableObject) : value
       },
       set: function reactiveSetter(newValue: any): void {
-        const oldValue = get ? get.call(observableObject) : value
+        const oldValue = get
+          ? get.call(observableObject, observableObject)
+          : value
 
         if (
           newValue === oldValue ||
@@ -160,18 +154,14 @@ export default class ObservableObject implements Object {
       )
     }
 
-    const storage: ObservableObjectStorage = observableObject[storageKey]
-    const data: any = getObservableData(
-      observableObject,
-      computedProperty,
-      descriptor
-    )
-    const { normalizedDescriptor, get, set } = data
-    const getter = data.value || get
+    const storage: Observer = observableObject[storageKey]
+    descriptor = normalizeDescriptor(descriptor, observableObject[computedProperty])
+    const { enumerable, configurable, value, get, set } = descriptor
+    const getValue = value || get
 
-    if (!getter) {
+    if (!getValue) {
       throw new TypeError(
-        'Computed property descriptor should have value or getter'
+        'Invalid property descriptor. Computed property descriptor should have value or getter'
       )
     }
 
@@ -180,8 +170,8 @@ export default class ObservableObject implements Object {
       oldValue: any,
       property: ObservablePropertyKey,
       observableObject: ObservableObject
-    ): void {
-      observableObject[computedProperty] = getter.call(
+    ): any {
+      observableObject[computedProperty] = getValue.call(
         observableObject,
         newValue,
         oldValue,
@@ -190,32 +180,33 @@ export default class ObservableObject implements Object {
       )
     }
     // Collect properties on which this computed property dependent
-    let value = getter.call(
+    let computedValue: any = getValue.call(
       observableObject,
       undefined,
       undefined,
       computedProperty,
       observableObject
     )
-
     Object.defineProperty(observableObject, computedProperty, {
-      ...normalizedDescriptor,
+      ...{
+        enumerable,
+        configurable,
+      },
       get: function reactiveGetter(): any {
-        // Depend on the property
-        if (storage.dependentObserver) {
-          storage.observeProperty(computedProperty, storage.dependentObserver)
-        }
+        storage.dependOnProperty(computedProperty)
 
-        return value
+        return computedValue
       },
       set: function reactiveSetter(newValue: any): void {
-        const oldValue = value
+        const oldValue = computedValue
 
         if (newValue === oldValue || (isNaN(newValue) && isNaN(oldValue))) {
           return
         }
 
-        set &&
+        computedValue = newValue
+
+        if (set) {
           set.call(
             observableObject,
             newValue,
@@ -223,8 +214,13 @@ export default class ObservableObject implements Object {
             computedProperty,
             observableObject
           )
-        value = newValue
-        storage.dispatchPropertyObservers(computedProperty, newValue, oldValue)
+
+          storage.dispatchPropertyObservers(
+            computedProperty,
+            newValue,
+            oldValue
+          )
+        }
       },
     })
 
@@ -234,7 +230,7 @@ export default class ObservableObject implements Object {
   public static observeProperty(
     observableObject: ObservableObject,
     property: ObservablePropertyKey,
-    observer: ObserverFunction
+    observer: ObserveFunction
   ): void {
     observableObject[storageKey].observeProperty(property, observer)
   }
@@ -242,7 +238,7 @@ export default class ObservableObject implements Object {
   public static observeProperties(
     observableObject: ObservableObject,
     properties: Array<ObservablePropertyKey>,
-    observer: ObserverFunction
+    observer: ObserveFunction
   ): void {
     properties.forEach(function(property: ObservablePropertyKey): void {
       observableObject[storageKey].observeProperty(property, observer)

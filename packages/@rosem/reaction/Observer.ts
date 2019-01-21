@@ -1,14 +1,14 @@
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
-import ObserverFunction from './ObserverFunction'
+import ObserveFunction from './ObserveFunction'
 
-export default class ObservableObjectStorage {
-  public dependentObserver?: ObserverFunction
+export default class Observer {
+  public dependentObserver?: ObserveFunction
 
   public readonly originalObject: object
 
   private readonly observableObject: ObservableObject
 
-  private observers: { [key: string]: Array<ObserverFunction> } = {}
+  private observers: { [key: string]: Array<ObserveFunction> } = {}
 
   public constructor(
     originalObject: object,
@@ -20,7 +20,7 @@ export default class ObservableObjectStorage {
 
   public observeProperty(
     property: ObservablePropertyKey,
-    observer: ObserverFunction
+    observer: ObserveFunction
   ): void {
     if (!this.observers[property]) {
       this.observers[property] = [observer]
@@ -30,7 +30,7 @@ export default class ObservableObjectStorage {
   }
 
   public dependOnProperty(property: ObservablePropertyKey): void {
-    if (null != this.dependentObserver) {
+    if (this.dependentObserver) {
       this.observeProperty(property, this.dependentObserver)
     }
   }
@@ -41,7 +41,7 @@ export default class ObservableObjectStorage {
     oldValue: any
   ): void {
     if (this.observers[property]) {
-      this.observers[property].forEach((observer: ObserverFunction): void => {
+      this.observers[property].forEach((observer: ObserveFunction): void => {
         observer.call(
           this.observableObject,
           newValue,

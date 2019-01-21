@@ -1,11 +1,10 @@
-import { PropertyDescriptorAblePart } from './property'
+import GenericPropertyDescriptor from './GenericPropertyDescriptor'
 import ObservableObject from './ObservableObject'
-import ObserverFunction from './ObserverFunction'
+import ObserveFunction from './ObserveFunction'
 
 export default interface ObservablePropertyDescriptor
-  extends PropertyDescriptorAblePart {
-  value?: any
+  extends GenericPropertyDescriptor {
   get?(observableObject: ObservableObject): any
-  set?: ObserverFunction
+  set?: ObserveFunction
   deep?: boolean
 }
