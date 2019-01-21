@@ -4,17 +4,13 @@ import ObserveFunction from './ObserveFunction'
 export default class Observer {
   public dependentObserver?: ObserveFunction
 
-  public readonly originalObject: object
-
   private readonly observableObject: ObservableObject
 
   private observers: { [key: string]: Array<ObserveFunction> } = {}
 
   public constructor(
-    originalObject: object,
     observableObject: ObservableObject
   ) {
-    this.originalObject = originalObject
     this.observableObject = observableObject
   }
 

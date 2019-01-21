@@ -12,11 +12,12 @@ const getOwnPropertyNames = Object.getOwnPropertyNames
 const nativeDefineProperty = Object.defineProperty
 const hasOwnProperty = Object.prototype.hasOwnProperty
 const isNaN = Number.isNaN
-const storageKey = Symbol.for('observable')
 const DEFAULT_DESCRIPTOR: GenericPropertyDescriptor = {
   configurable: true,
   enumerable: true,
 }
+
+export const OBSERVER_KEY = '__ob__'
 
 export type ObservablePropertyKey = string | number
 
@@ -61,14 +62,12 @@ export default class ObservableObject implements Object {
   [index: number]: any
   [key: string]: any
 
-  public static readonly observable: symbol = storageKey;
-
-  private [storageKey]: Observer
+  private [OBSERVER_KEY]: Observer
 
   public constructor(object: object) {
-    Object.defineProperty(this, storageKey, {
+    Object.defineProperty(this, OBSERVER_KEY, {
       ...NON_ENUMERABLE_DESCRIPTOR,
-      value: new Observer(object, this),
+      value: new Observer(this),
     })
 
     // todo improve perf
@@ -100,7 +99,7 @@ export default class ObservableObject implements Object {
       throw new TypeError(`Cannot redefine property: ${property}`)
     }
 
-    const storage: Observer = observableObject[storageKey]
+    const storage: Observer = observableObject[OBSERVER_KEY]
     descriptor = normalizeDescriptor(descriptor, observableObject[property])
     const { enumerable, configurable, get, set } = descriptor
     let { value } = descriptor
@@ -154,8 +153,11 @@ export default class ObservableObject implements Object {
       )
     }
 
-    const storage: Observer = observableObject[storageKey]
-    descriptor = normalizeDescriptor(descriptor, observableObject[computedProperty])
+    const storage: Observer = observableObject[OBSERVER_KEY]
+    descriptor = normalizeDescriptor(
+      descriptor,
+      observableObject[computedProperty]
+    )
     const { enumerable, configurable, value, get, set } = descriptor
     const getValue = value || get
 
@@ -232,7 +234,7 @@ export default class ObservableObject implements Object {
     property: ObservablePropertyKey,
     observer: ObserveFunction
   ): void {
-    observableObject[storageKey].observeProperty(property, observer)
+    observableObject[OBSERVER_KEY].observeProperty(property, observer)
   }
 
   public static observeProperties(
@@ -241,7 +243,7 @@ export default class ObservableObject implements Object {
     observer: ObserveFunction
   ): void {
     properties.forEach(function(property: ObservablePropertyKey): void {
-      observableObject[storageKey].observeProperty(property, observer)
+      observableObject[OBSERVER_KEY].observeProperty(property, observer)
     })
   }
 }

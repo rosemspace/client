@@ -1,11 +1,26 @@
-import config from './config'
 import ObservableObject, {
   ObservablePropertyKey,
-} from '@rosem/reaction/ObservableObject'
+} from './ObservableObject'
+
+const SSR_ATTRIBUTE = 'data-server-rendered'
+
+const ASSET_TYPES = ['component', 'directive', 'filter']
+
+const LIFECYCLE_HOOKS = [
+  'beforeCreate',
+  'created',
+  'beforeMount',
+  'mounted',
+  'beforeUpdate',
+  'updated',
+  'beforeDestroy',
+  'destroyed',
+  'activated',
+  'deactivated',
+  'errorCaptured',
+]
 
 export default class {
-  static config: object = config
-
   static test() {
     let data = {
       firstName: '',
