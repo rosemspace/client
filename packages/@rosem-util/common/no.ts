@@ -1,6 +1,6 @@
 /**
  * Always return false.
  */
-export default function no(a?: any, b?: any, c?: any) {
+export default function no(...args: any) {
   return false
 }

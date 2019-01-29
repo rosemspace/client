@@ -2,6 +2,8 @@ import ObservableObject, {
   ObservablePropertyKey,
 } from './ObservableObject'
 
+export const OBSERVER_KEY = '__ob__'
+
 const SSR_ATTRIBUTE = 'data-server-rendered'
 
 const ASSET_TYPES = ['component', 'directive', 'filter']

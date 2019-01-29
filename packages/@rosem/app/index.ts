@@ -3,7 +3,7 @@
 // const t = new Transition(host.body)
 // console.log(t)
 
-import Reaction from '@rosem/observable-object'
+import Reaction from '@rosem/observable'
 // import { h, vHost } from '@rosem/vdom-html'
 // import { parseHTML } from '@rosem/dom-parser/intex'
 // import isUnaryTag from '@rosem-util/html/isUnaryTag'

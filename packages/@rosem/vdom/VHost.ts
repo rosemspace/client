@@ -1,7 +1,7 @@
-import isArray from '@rosem-util/common/isArray'
+import isArray from 'lodash/isArray'
+import isNumber from 'lodash/isNumber'
+import isString from 'lodash/isString'
 import isPrimitive from '@rosem-util/common/isPrimitive'
-import isNumber from '@rosem-util/common/isNumber'
-import isString from '@rosem-util/common/isString'
 import VNode, {
   PrimitiveVNode,
   VNodeChildElementList,
@@ -143,11 +143,15 @@ export default class VHost<
   ): void {
     // todo: remove HTMLElement
     id && (element as HTMLElement & Element).setAttribute('id', id)
-    classList && (element as HTMLElement & Element).setAttribute('class', classList)
+    classList &&
+      (element as HTMLElement & Element).setAttribute('class', classList)
 
     for (let attributeName in attributes) {
       // noinspection JSUnfilteredForInLoop
-      (element as HTMLElement & Element).setAttribute(attributeName, String(attributes[attributeName])) // todo: check boolean
+      (element as HTMLElement & Element).setAttribute(
+        attributeName,
+        String(attributes[attributeName])
+      ) // todo: check boolean
     }
   }
 
