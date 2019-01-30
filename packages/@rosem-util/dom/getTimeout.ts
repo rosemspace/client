@@ -1,4 +1,4 @@
-import convertSStringToMs from '@rosem/util-time/convertSStringToMs'
+import convertSStringToMs from '@rosem-util/time/convertSStringToMs'
 
 export default function getTimeout(
   delays: string[],

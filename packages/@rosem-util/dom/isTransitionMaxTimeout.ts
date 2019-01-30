@@ -1,4 +1,4 @@
-import convertSStringToMs from '@rosem/util-time/convertSStringToMs'
+import convertSStringToMs from '@rosem-util/time/convertSStringToMs'
 import CSSTransitionDeclaration, {
   CSS_TRANSITION_DEFAULT_PROPERTY,
 } from './CSSTransitionDeclaration'

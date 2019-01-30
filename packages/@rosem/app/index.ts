@@ -4,6 +4,7 @@
 // console.log(t)
 
 import Reaction from '@rosem/observable'
+import Transition from '@rosem/ui-transition'
 // import { h, vHost } from '@rosem/vdom-html'
 // import { parseHTML } from '@rosem/dom-parser/intex'
 // import isUnaryTag from '@rosem-util/html/isUnaryTag'
@@ -31,4 +32,5 @@ import Reaction from '@rosem/observable'
 // window.h = h
 // window.vHost = vHost
 
-Reaction.test()
+Transition.test();
+// Reaction.test()

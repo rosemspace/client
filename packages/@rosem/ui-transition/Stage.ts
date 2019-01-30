@@ -1,41 +1,34 @@
-import MiddlewareRunnerInterface from './MiddlewareRunnerInterface'
-import MiddlewareInterface, { Details, Phase } from './MiddlewareInterface'
+import ModuleInterface, { Detail, Phase } from './ModuleInterface'
+import ModuleDispatcherInterface from './ModuleDispatcherInterface'
 
-export type StageDurationList = { [stageName: string]: number }
-
-export default class Stage implements MiddlewareRunnerInterface {
+export default class Stage implements ModuleDispatcherInterface {
   public readonly name: string
   public readonly duration?: number
   public readonly isExplicitDuration: boolean = false
-  private middlewareList: MiddlewareInterface[] = []
+  private moduleList: Array<ModuleInterface> = []
 
-  constructor(name: string, duration?: number | StageDurationList) {
+  constructor(name: string, duration?: number) {
     this.name = name
 
     if (null != duration) {
-      // todo is plain object
-      this.duration = typeof duration === 'object' ? duration[name] : duration
+      this.duration = duration
       this.isExplicitDuration = true
     } else {
       this.duration = 0
     }
   }
 
-  public use(middleware: MiddlewareInterface) {
-    this.middlewareList.push(middleware)
+  public use(middleware: ModuleInterface) {
+    this.moduleList.push(middleware)
   }
 
-  public run(phase: Phase, details: Details = {}): Details {
-    this.middlewareList.forEach((middleware) => {
-      if (null != middleware.getDetails) {
-        Object.assign(details, middleware.getDetails(details))
+  public dispatch(phase: Phase, details: Detail = {}): Detail {
+    this.moduleList.forEach((module) => {
+      if (null != module.getDetail) {
+        Object.assign(details, module.getDetail())
       }
 
-      const middlewarePhase = middleware[phase]
-
-      if (null != middlewarePhase) {
-        middlewarePhase(details)
-      }
+      module[phase](details)
     })
 
     return details

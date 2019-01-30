@@ -1,5 +1,3 @@
-import Stage from './Stage'
-import { Phase, Details } from './MiddlewareInterface'
 import CSSTransitionDeclaration from '@rosem-util/dom/CSSTransitionDeclaration'
 import CSSAnimationDeclaration from '@rosem-util/dom/CSSAnimationDeclaration'
 import getComputedTransition from '@rosem-util/dom/getComputedTransition'
@@ -10,15 +8,16 @@ import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from '@rosem-util/dom/animationFrame'
+import { Phase, Detail } from './ModuleInterface'
+import Stage from './Stage'
 
-export type StageManagerOptions = {
+export type StageDispatcherOptions = {
   target?: string
   name: string
   stageIndex: number
-  [name: string]: any
 }
 
-export default class StageManager {
+export default class StageDispatcher {
   protected static defaultEasing: CSSTransitionDeclaration = {
     endEventName: 'transitionend',
     properties: [],
@@ -27,9 +26,9 @@ export default class StageManager {
     timeout: 0,
   }
 
-  protected element: HTMLElement
-  protected target: HTMLElement
-  protected options: StageManagerOptions = {
+  protected element: Element
+  protected target: Element
+  protected options: StageDispatcherOptions = {
     name: 'transition',
     stageIndex: 0,
   }
@@ -38,17 +37,13 @@ export default class StageManager {
   protected stageIndex: number
   protected running: boolean = false
   protected easing: CSSTransitionDeclaration | CSSAnimationDeclaration =
-    StageManager.defaultEasing
+    StageDispatcher.defaultEasing
   protected easingEndEventListener?: EventListener
   protected frameId?: number
   protected timerId?: number
-  protected resolve?: (value?: Details | PromiseLike<Details>) => void
+  protected resolve?: (value?: Detail | PromiseLike<Detail>) => void
 
-  constructor(
-    element: HTMLElement,
-    stages = [],
-    options?: StageManagerOptions
-  ) {
+  constructor(element: Element, stages = [], options?: StageDispatcherOptions) {
     this.element = element
     this.target = this.element
     this.stages = stages
@@ -56,7 +51,7 @@ export default class StageManager {
     this.stageIndex = this.options.stageIndex
   }
 
-  public get delegatedTarget(): HTMLElement | null {
+  public get delegatedTarget(): Element | null {
     // todo remove ternary or maybe just make it as computed?
     return null != this.options.target
       ? this.target.querySelector(this.options.target)
@@ -100,8 +95,8 @@ export default class StageManager {
     }
   }
 
-  protected addEasingEndEventListener(details: Details): void {
-    this.easing = StageManager.defaultEasing
+  protected addEasingEndEventListener(details: Detail): void {
+    this.easing = StageDispatcher.defaultEasing
 
     if (!this.isExplicitDuration) {
       const delegatedTarget = this.delegatedTarget
@@ -153,7 +148,7 @@ export default class StageManager {
     }
   }
 
-  protected onTransitionEnd(details: Details, event: TransitionEvent): void {
+  protected onTransitionEnd(details: Detail, event: TransitionEvent): void {
     if (
       this.running &&
       event.target === this.delegatedTarget &&
@@ -162,11 +157,11 @@ export default class StageManager {
         event.propertyName
       )
     ) {
-      this[Phase.afterEnd](details)
+      this[Phase.AfterEnd](details)
     }
   }
 
-  protected onAnimationEnd(details: Details, event: AnimationEvent): void {
+  protected onAnimationEnd(details: Detail, event: AnimationEvent): void {
     if (
       this.running &&
       event.target === this.delegatedTarget &&
@@ -175,35 +170,47 @@ export default class StageManager {
         event.animationName
       )
     ) {
-      this[Phase.afterEnd](details)
+      this[Phase.AfterEnd](details)
     }
   }
 
-  protected runPhase(phase: Phase, details: Details = {}): Details {
-    return this.stage.run(phase, details)
+  protected dispatchPhase(phase: Phase, details: Detail = {}): Detail {
+    return this.stage.dispatch(phase, details)
   }
 
-  protected [Phase.beforeStart](details: Details = {}): Details {
+  protected [Phase.Cleanup](details: Detail = {}): Detail {
+    return this.dispatchPhase(Phase.Cleanup, details)
+  }
+
+  protected [Phase.BeforeStart](details: Detail = {}): Detail {
     this.running = true
+    const target = this.delegatedTarget
 
-    if (null != this.delegatedTarget) {
-      this.delegatedTarget.style.display = ''
+    if (null != target) {
+      const style = target.getAttribute('style')
+
+      if (style) {
+        target.setAttribute(
+          'style',
+          style.replace(/display:\s*[^;]+;?/, '')
+        )
+      }
     }
 
-    return this.runPhase(Phase.beforeStart, details)
+    return this.dispatchPhase(Phase.BeforeStart, details)
   }
 
-  protected [Phase.start](details: Details = {}): Details {
-    details.done = () => this[Phase.afterEnd]()
+  protected [Phase.Start](details: Detail = {}): Detail {
+    details.done = () => this[Phase.AfterEnd]()
 
-    return this.runPhase(Phase.start, details)
+    return this.dispatchPhase(Phase.Start, details)
   }
 
-  protected [Phase.afterEnd](details: Details = {}): Details {
+  protected [Phase.AfterEnd](details: Detail = {}): Detail {
     this.removeEasingEndEventListener()
     delete details.done
     this.running = false
-    const finalDetails = this.runPhase(Phase.afterEnd, details)
+    const finalDetails = this.dispatchPhase(Phase.AfterEnd, details)
 
     if (null != this.resolve) {
       this.resolve(finalDetails)
@@ -212,18 +219,18 @@ export default class StageManager {
     return finalDetails
   }
 
-  protected [Phase.cancelled](details: Details = {}): Details {
+  protected [Phase.Cancelled](details: Detail = {}): Detail {
     this.removeEasingEndEventListener()
     this.cancelNextFrame()
 
-    return this.runPhase(Phase.cancelled, details)
+    return this.dispatchPhase(Phase.Cancelled, details)
   }
 
-  public cancel(): Details {
-    return this.runPhase(Phase.cancelled, this.getDetails())
+  public cancel(): Detail {
+    return this.dispatchPhase(Phase.Cancelled, this.getDetails())
   }
 
-  public getDetails(): Details {
+  public getDetails(): Detail {
     return {
       name: this.options.name,
       currentTarget: this.element,
@@ -235,30 +242,31 @@ export default class StageManager {
     }
   }
 
-  public forceRun(stageIndex: number = 0): void {
+  public forceDispatchByIndex(stageIndex: number = 0): void {
     const details = this.getDetails()
-    this.running && this[Phase.cancelled](details)
+    this.running && this[Phase.Cancelled](details)
     this.stageIndex = details.stageIndex = stageIndex
-    this[Phase.afterEnd](details)
+    this[Phase.AfterEnd](details)
   }
 
-  public run(stageIndex: number = 0): Promise<Details> {
+  public dispatchByIndex(stageIndex: number = 0): Promise<Detail> {
     const details = this.getDetails()
-    this.running && this[Phase.cancelled](details)
+    this[Phase.Cleanup](details)
+    this.running && this[Phase.Cancelled](details)
     this.stageIndex = details.stageIndex = stageIndex
-    this[Phase.beforeStart](details)
+    this[Phase.BeforeStart](details)
     this.addEasingEndEventListener(details)
     this.nextFrame(() => {
-      this[Phase.start](details)
+      this[Phase.Start](details)
 
       if (this.isExplicitDuration) {
         this.timerId = self.setTimeout(
-          () => this[Phase.afterEnd](details),
+          () => this[Phase.AfterEnd](details),
           this.duration
         )
       } else if (this.easing.timeout <= 0) {
-        // if zero duration end event won't be fired
-        this[Phase.afterEnd](details)
+        // if zero duration then end event won't be fired
+        this[Phase.AfterEnd](details)
       }
     })
 
@@ -270,10 +278,10 @@ export default class StageManager {
   public play(
     startStageIndex: number = 0,
     endStageIndex?: number | null
-  ): Promise<Details> {
+  ): Promise<Detail> {
     endStageIndex = null != endStageIndex ? endStageIndex : this.stages.length
 
-    return this.run(startStageIndex).then((details) => {
+    return this.dispatchByIndex(startStageIndex).then((details) => {
       return ++startStageIndex < (null != endStageIndex ? endStageIndex : 0)
         ? this.play(startStageIndex, endStageIndex)
         : details
