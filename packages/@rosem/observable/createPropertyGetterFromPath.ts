@@ -1,7 +1,10 @@
 /**
  * Parse simple path.
  */
-const bailRE = /^[\w$](?:(?:[\w.]|\.\$)*?\w)?$/
+import unicodeLetters from '@rosem/dom-parser/unicodeLetters'
+
+// const bailRE = /^[\w$](?:(?:[\w.]|\.\$)*?\w)?$/
+const bailRE = new RegExp(`[^${unicodeLetters}.$]`)
 
 export default function createPropertyGetterFromPath(
   path: string,
