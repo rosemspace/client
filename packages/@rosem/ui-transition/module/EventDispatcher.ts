@@ -1,15 +1,15 @@
-import { Detail, Phase } from '../ModuleInterface'
+import { Detail } from '../ModuleInterface'
 import AbstractModule from '../AbstractModule'
 
 export default class EventDispatcher extends AbstractModule {
   private readonly stageName: string
 
   constructor(stageName: string) {
-    super(Phase.length)
+    super()
     this.stageName = stageName
   }
 
-  public [Phase.BeforeStart](details: Detail): void {
+  beforeStart(details: Detail): void {
     details.currentTarget.dispatchEvent(
       new CustomEvent(`before-${this.stageName}`, {
         detail: details,
@@ -17,7 +17,7 @@ export default class EventDispatcher extends AbstractModule {
     )
   }
 
-  public [Phase.Start](detail: Detail): void {
+  start(detail: Detail): void {
     detail.currentTarget.dispatchEvent(
       new CustomEvent(this.stageName, {
         detail: detail,
@@ -25,7 +25,7 @@ export default class EventDispatcher extends AbstractModule {
     )
   }
 
-  public [Phase.AfterEnd](detail: Detail): void {
+  afterEnd(detail: Detail): void {
     detail.currentTarget.dispatchEvent(
       new CustomEvent(`after-${this.stageName}`, {
         detail: detail,
@@ -33,7 +33,7 @@ export default class EventDispatcher extends AbstractModule {
     )
   }
 
-  public [Phase.Cancelled](detail: Detail): void {
+  cancelled(detail: Detail): void {
     detail.currentTarget.dispatchEvent(
       new CustomEvent(`${this.stageName}-cancelled`, {
         detail: detail,
@@ -41,7 +41,7 @@ export default class EventDispatcher extends AbstractModule {
     )
   }
 
-  public getDetail(): Detail {
+  getDetail(): Detail {
     return {
       events: true,
     }

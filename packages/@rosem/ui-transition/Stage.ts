@@ -18,7 +18,7 @@ export default class Stage implements ModuleDispatcherInterface {
     }
   }
 
-  public use(middleware: ModuleInterface) {
+  public addModule(middleware: ModuleInterface) {
     this.moduleList.push(middleware)
   }
 

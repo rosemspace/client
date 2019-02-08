@@ -8,7 +8,7 @@ import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from '@rosem-util/dom/animationFrame'
-import { Phase, Detail } from './ModuleInterface'
+import { Detail, Phase, PhaseEnum } from './ModuleInterface'
 import Stage from './Stage'
 
 export type StageDispatcherOptions = {
@@ -26,14 +26,14 @@ export default class StageDispatcher {
     timeout: 0,
   }
 
-  protected element: Element
-  protected target: Element
+  protected element: HTMLElement | SVGElement
+  protected target: HTMLElement | SVGElement
   protected options: StageDispatcherOptions = {
     name: 'transition',
     stageIndex: 0,
   }
   // name: string
-  protected stages: Stage[]
+  protected stages: Array<Stage>
   protected stageIndex: number
   protected running: boolean = false
   protected easing: CSSTransitionDeclaration | CSSAnimationDeclaration =
@@ -43,7 +43,11 @@ export default class StageDispatcher {
   protected timerId?: number
   protected resolve?: (value?: Detail | PromiseLike<Detail>) => void
 
-  constructor(element: Element, stages = [], options?: StageDispatcherOptions) {
+  constructor(
+    element: HTMLElement | SVGElement,
+    stages = [],
+    options?: StageDispatcherOptions
+  ) {
     this.element = element
     this.target = this.element
     this.stages = stages
@@ -51,7 +55,7 @@ export default class StageDispatcher {
     this.stageIndex = this.options.stageIndex
   }
 
-  public get delegatedTarget(): Element | null {
+  public get delegatedTarget(): HTMLElement | SVGElement | null {
     // todo remove ternary or maybe just make it as computed?
     return null != this.options.target
       ? this.target.querySelector(this.options.target)
@@ -68,9 +72,7 @@ export default class StageDispatcher {
 
   public get duration(): number {
     return this.isExplicitDuration
-      ? null != this.stage.duration
-        ? this.stage.duration
-        : 0
+      ? this.stage.duration || 0
       : this.easing.timeout
   }
 
@@ -157,7 +159,7 @@ export default class StageDispatcher {
         event.propertyName
       )
     ) {
-      this[Phase.AfterEnd](details)
+      this.afterEnd(details)
     }
   }
 
@@ -170,7 +172,7 @@ export default class StageDispatcher {
         event.animationName
       )
     ) {
-      this[Phase.AfterEnd](details)
+      this.afterEnd(details)
     }
   }
 
@@ -178,39 +180,32 @@ export default class StageDispatcher {
     return this.stage.dispatch(phase, details)
   }
 
-  protected [Phase.Cleanup](details: Detail = {}): Detail {
-    return this.dispatchPhase(Phase.Cleanup, details)
+  protected cleanup(details: Detail = {}): Detail {
+    return this.dispatchPhase(PhaseEnum.Cleanup, details)
   }
 
-  protected [Phase.BeforeStart](details: Detail = {}): Detail {
+  protected beforeStart(details: Detail = {}): Detail {
     this.running = true
     const target = this.delegatedTarget
 
     if (null != target) {
-      const style = target.getAttribute('style')
-
-      if (style) {
-        target.setAttribute(
-          'style',
-          style.replace(/display:\s*[^;]+;?/, '')
-        )
-      }
+      target.style.setProperty('display', '')
     }
 
-    return this.dispatchPhase(Phase.BeforeStart, details)
+    return this.dispatchPhase(PhaseEnum.BeforeStart, details)
   }
 
-  protected [Phase.Start](details: Detail = {}): Detail {
-    details.done = () => this[Phase.AfterEnd]()
+  protected start(details: Detail = {}): Detail {
+    details.done = () => this.afterEnd()
 
-    return this.dispatchPhase(Phase.Start, details)
+    return this.dispatchPhase(PhaseEnum.Start, details)
   }
 
-  protected [Phase.AfterEnd](details: Detail = {}): Detail {
+  protected afterEnd(details: Detail = {}): Detail {
     this.removeEasingEndEventListener()
     delete details.done
     this.running = false
-    const finalDetails = this.dispatchPhase(Phase.AfterEnd, details)
+    const finalDetails = this.dispatchPhase(PhaseEnum.AfterEnd, details)
 
     if (null != this.resolve) {
       this.resolve(finalDetails)
@@ -219,15 +214,15 @@ export default class StageDispatcher {
     return finalDetails
   }
 
-  protected [Phase.Cancelled](details: Detail = {}): Detail {
+  protected cancelled(details: Detail = {}): Detail {
     this.removeEasingEndEventListener()
     this.cancelNextFrame()
 
-    return this.dispatchPhase(Phase.Cancelled, details)
+    return this.dispatchPhase(PhaseEnum.Cancelled, details)
   }
 
   public cancel(): Detail {
-    return this.dispatchPhase(Phase.Cancelled, this.getDetails())
+    return this.dispatchPhase(PhaseEnum.Cancelled, this.getDetails())
   }
 
   public getDetails(): Detail {
@@ -244,29 +239,29 @@ export default class StageDispatcher {
 
   public forceDispatchByIndex(stageIndex: number = 0): void {
     const details = this.getDetails()
-    this.running && this[Phase.Cancelled](details)
+    this.running && this.cancelled(details)
     this.stageIndex = details.stageIndex = stageIndex
-    this[Phase.AfterEnd](details)
+    this.afterEnd(details)
   }
 
   public dispatchByIndex(stageIndex: number = 0): Promise<Detail> {
     const details = this.getDetails()
-    this[Phase.Cleanup](details)
-    this.running && this[Phase.Cancelled](details)
+    this.cleanup(details)
+    this.running && this.cancelled(details)
     this.stageIndex = details.stageIndex = stageIndex
-    this[Phase.BeforeStart](details)
+    this.beforeStart(details)
     this.addEasingEndEventListener(details)
     this.nextFrame(() => {
-      this[Phase.Start](details)
+      this.start(details)
 
       if (this.isExplicitDuration) {
         this.timerId = self.setTimeout(
-          () => this[Phase.AfterEnd](details),
+          () => this.afterEnd(details),
           this.duration
         )
       } else if (this.easing.timeout <= 0) {
         // if zero duration then end event won't be fired
-        this[Phase.AfterEnd](details)
+        this.afterEnd(details)
       }
     })
 

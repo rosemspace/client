@@ -1,16 +1,17 @@
-import ModuleInterface, { Detail, Phase } from './ModuleInterface'
+import ModuleInterface, { Detail } from './ModuleInterface'
 
-export default abstract class AbstractModule extends Array
-  implements ModuleInterface {
-  public length: number = Phase.length
+export default abstract class AbstractModule implements ModuleInterface {
+  cleanup(detail: Detail): void {}
 
-  public [Phase.Cleanup](detail: Detail): void {}
+  beforeStart(detail: Detail): void {}
 
-  public [Phase.BeforeStart](detail: Detail): void {}
+  start(detail: Detail): void {}
 
-  public [Phase.Start](detail: Detail): void {}
+  afterEnd(detail: Detail): void {}
 
-  public [Phase.AfterEnd](detail: Detail): void {}
+  cancelled(detail: Detail): void {}
 
-  public [Phase.Cancelled](detail: Detail): void {}
+  public getDetail(): Detail {
+    return {}
+  }
 }

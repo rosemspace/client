@@ -1,15 +1,12 @@
+import isEmpty from 'lodash/isEmpty'
 import isPlainObject from 'lodash/isPlainObject'
+import { Detail } from './ModuleInterface'
 import Stage from './Stage'
 import StageDispatcher, { StageDispatcherOptions } from './StageDispatcher'
-import { Detail } from './ModuleInterface'
 import CSSClass from './module/CSSClass'
 import EventDispatcher from './module/EventDispatcher'
-// import HideAfterEndTransitionMiddleware from './HideAfterEndTransitionMiddleware'
-// import CSSClassesTransitionMiddleware from './CSSClassesTransitionMiddleware'
-// import LeaveRectAutoValueTransitionMiddleware from './LeaveRectAutoValueTransitionMiddleware'
-// import EnterRectAutoValueTransitionMiddleware from './EnterRectAutoValueTransitionMiddleware'
-// import DispatchEventTransitionMiddleware from './DispatchEventTransitionMiddleware'
-// import ShowBeforeStartTransitionMiddleware from './ShowBeforeStartTransitionMiddleware'
+import RemoveBeforeStart from './module/RemoveBeforeStart'
+import SetAfterEnd, { AttrMap, StyleMap } from './module/SetAfterEnd'
 
 export type TransitionDuration = {
   leave: number
@@ -27,29 +24,38 @@ export type TransitionOptions = {
   enterToClass?: string
   enterDoneClass?: string
   duration?: number | TransitionDuration
-  hideAfterLeave?: boolean
+  afterLeaveClassList?: Array<string> | string
+  afterLeaveStyleMap?: StyleMap
+  afterLeaveAttributeMap?: AttrMap
   auto?: boolean | string | string[]
   events?: boolean
   forceUpdate?: boolean
 } & StageDispatcherOptions
 
+export const defaultOptions: TransitionOptions = {
+  name: 'transition',
+  stageIndex: 0,
+  forceUpdate: true,
+  css: true,
+  events: true,
+  auto: false,
+  afterLeaveClassList: [],
+  afterLeaveStyleMap: {'display': 'none'},
+  afterLeaveAttributeMap: {},
+}
+
 export default class Transition extends StageDispatcher {
   public static STAGE_LEAVE_ORDER: number = 0
   public static STAGE_ENTER_ORDER: number = 1
 
-  protected options: TransitionOptions = {
-    name: 'transition',
-    stageIndex: 0,
-    forceUpdate: true,
-    css: true,
-    events: true,
-    auto: false,
-    hideAfterLeave: true,
-  }
+  protected options: TransitionOptions
 
-  constructor(element: Element, options?: TransitionOptions) {
+  constructor(element: HTMLElement | SVGElement, options?: TransitionOptions) {
     super(element, [], options)
-    this.options = Object.assign(this.options, options)
+    this.options = {
+      ...defaultOptions,
+      ...options,
+    }
     const duration: undefined | number | TransitionDuration = this.options
       .duration
     let leaveDuration = <number>duration
@@ -64,7 +70,7 @@ export default class Transition extends StageDispatcher {
     const enterStage = new Stage('enter', enterDuration)
 
     if (this.options.css) {
-      leaveStage.use(
+      leaveStage.addModule(
         new CSSClass(`${this.options.name}-${leaveStage.name}`, {
           fromClass: this.options.leaveClass,
           activeClass: this.options.leaveActiveClass,
@@ -72,7 +78,7 @@ export default class Transition extends StageDispatcher {
           doneClass: this.options.leaveDoneClass,
         })
       )
-      enterStage.use(
+      enterStage.addModule(
         new CSSClass(`${this.options.name}-${enterStage.name}`, {
           fromClass: this.options.enterClass,
           activeClass: this.options.enterActiveClass,
@@ -82,14 +88,22 @@ export default class Transition extends StageDispatcher {
       )
     }
 
-    // if (this.options.hideAfterLeave) {
-    //   const hideAfterLeaveMiddleware = new HideAfterEndTransitionMiddleware()
-    //   const showBeforeEnterMiddleware = new ShowBeforeStartTransitionMiddleware()
-    //   leaveStage.use(hideAfterLeaveMiddleware)
-    //   enterStage.use(showBeforeEnterMiddleware)
-    //   this.middleware.hideAfterLeave = hideAfterLeaveMiddleware
-    //   this.middleware.showBeforeEnter = showBeforeEnterMiddleware
-    // }
+    if (this.hideAfterLeave) {
+      leaveStage.addModule(
+        new SetAfterEnd(
+          this.options.afterLeaveClassList || [],
+          this.options.afterLeaveStyleMap || {},
+          this.options.afterLeaveAttributeMap || {}
+        )
+      )
+      enterStage.addModule(
+        new RemoveBeforeStart(
+          this.options.afterLeaveClassList || [],
+          Object.keys(this.options.afterLeaveStyleMap || []),
+          Object.keys(this.options.afterLeaveAttributeMap || [])
+        )
+      )
+    }
 
     // if (this.options.auto) {
     //   let auto = this.options.auto
@@ -105,8 +119,8 @@ export default class Transition extends StageDispatcher {
     // }
 
     if (this.options.events) {
-      leaveStage.use(new EventDispatcher(leaveStage.name))
-      enterStage.use(new EventDispatcher(enterStage.name))
+      leaveStage.addModule(new EventDispatcher(leaveStage.name))
+      enterStage.addModule(new EventDispatcher(enterStage.name))
     }
 
     this.stages.push(leaveStage)
@@ -115,6 +129,20 @@ export default class Transition extends StageDispatcher {
     if (this.options.forceUpdate) {
       this.forceUpdate()
     }
+  }
+
+  get hideAfterLeave(): boolean {
+    const {
+      afterLeaveClassList,
+      afterLeaveStyleMap,
+      afterLeaveAttributeMap,
+    } = this.options
+
+    return Boolean(
+      (afterLeaveClassList && afterLeaveClassList.length) ||
+        (afterLeaveStyleMap && !isEmpty(afterLeaveStyleMap)) ||
+        (afterLeaveAttributeMap && !isEmpty(afterLeaveAttributeMap))
+    )
   }
 
   dispatchByIndex(stageIndex: number = 0): Promise<Detail> {
@@ -150,8 +178,8 @@ export default class Transition extends StageDispatcher {
     return this.dispatchByIndex(Transition.STAGE_ENTER_ORDER)
   }
 
-  toggle(stageIndex: number = 0): Promise<Detail> {
-    if (!Number.isInteger(stageIndex)) {
+  toggle(stageIndex?: number): Promise<Detail> {
+    if (null == stageIndex) {
       stageIndex = Number(!this.stageIndex)
     }
 
