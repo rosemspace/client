@@ -4,32 +4,25 @@ import isNonPhrasingHTMLTag from './html/isNonPhrasingTag'
 import isOptionalClosingHTMLTag from './html/isOptionalClosingTag'
 import isUnaryHTMLTag from './html/isUnaryTag'
 import decodeAttribute from './decodeAttribute'
-import unicodeLetters from './unicodeLetters'
+import {
+  attributeRE,
+  COMMENT_END_TOKEN,
+  COMMENT_END_TOKEN_LENGTH,
+  COMMENT_START_TOKEN_LENGTH,
+  commentRE,
+  commentStartRE,
+  CONDITIONAL_COMMENT_END_TOKEN,
+  CONDITIONAL_COMMENT_END_TOKEN_LENGTH,
+  conditionalCommentRE,
+  conditionalCommentStartRE,
+  doctypeRE,
+  endTagRE,
+  plainTextElementRE,
+  startTagCloseRE,
+  startTagOpenRE,
+} from './syntax'
 
 const isNotProduction = !isProduction
-const doctypeRE = /^<!DOCTYPE [^>]+>/i
-// Non-colonized name e.g. "name"
-// could use CombiningChar and Extender characters
-// (https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName)
-// but for ui templates we can enforce a simple charset
-const ncNameREPart = `[a-zA-Z_][\\-\\.0-9_${unicodeLetters}]*`
-// Qualified name e.g. "namespace:name"
-const qNameRECapture = `((?:${ncNameREPart}\\:)?${ncNameREPart})`
-const startTagOpenRE = new RegExp(`^<${qNameRECapture}`)
-const startTagCloseRE = /^\s*(\/?)>/
-// Regular Expressions for parsing tags and attributes
-const attributeRE = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
-const endTagRE = new RegExp(`^<\\/${qNameRECapture}[^>]*>`)
-// Used repeating construction to avoid being passed as HTML comment when inlined in a page
-const commentStartRE = /^<!-{2}/
-const conditionalCommentStartRE = /^<!\[/
-// Special Elements (can contain anything)
-const plainTextElementRE = /s(?:cript|tyle)|textarea/i
-const COMMENT_END_TOKEN = '-->'
-const CONDITIONAL_COMMENT_END_TOKEN = ']>'
-const COMMENT_START_TOKEN_LENGTH = 4 // <!--
-const COMMENT_END_TOKEN_LENGTH = 3 // -->
-const CONDITIONAL_COMMENT_END_TOKEN_LENGTH = 2 // ]>
 const reCache: { [stackTag: string]: RegExp } = {}
 
 // #5992
@@ -44,11 +37,11 @@ let html: string
 let stack: Array<StackTag>
 let index: number
 let last
-let lastTag: string | undefined
+let lastTagUpperCased: string | undefined
 
 type StackTag = {
   tag: string
-  tagName: string
+  tagNameUpperCased: string
   attrs: Array<ParsedAttribute>
   start: number
   end: number
@@ -56,7 +49,7 @@ type StackTag = {
 
 type ParsedTag = {
   tag: string
-  tagName: string
+  tagNameUpperCased: string
   attrs: Array<AttributeMatch>
   unarySlash: string
   start: number
@@ -133,7 +126,7 @@ export default class TemplateParser {
       last = html
 
       // Make sure we're not in a plaintext content element like script/style/textarea
-      if (!lastTag || !plainTextElementRE.test(lastTag)) {
+      if (!lastTagUpperCased || !plainTextElementRE.test(lastTagUpperCased)) {
         let textEndTokenIndex: number = html.indexOf('<')
 
         // We have no text, so will be searching for doctype/tag/comment
@@ -209,7 +202,9 @@ export default class TemplateParser {
             if (parsedStartTag) {
               this.handleStartTag(parsedStartTag)
 
-              if (shouldIgnoreFirstNewline(parsedStartTag.tagName, html)) {
+              if (
+                shouldIgnoreFirstNewline(parsedStartTag.tagNameUpperCased, html)
+              ) {
                 this.advance(1)
               }
 
@@ -253,26 +248,26 @@ export default class TemplateParser {
         }
       } else {
         let endTagLength = 0
-        const stackedTag = lastTag.toUpperCase()
+        const stackedTagUpperCased = lastTagUpperCased
         const reStackedTag =
-          reCache[stackedTag] ||
-          (reCache[stackedTag] = new RegExp(
-            '([\\s\\S]*?)(</' + stackedTag + '[^>]*>)',
+          reCache[stackedTagUpperCased] ||
+          (reCache[stackedTagUpperCased] = new RegExp(
+            '([\\s\\S]*?)(</' + stackedTagUpperCased + '[^>]*>)',
             'i'
           ))
         const rest = html.replace(reStackedTag, (all, text, endTag) => {
           endTagLength = endTag.length
 
           if (
-            !plainTextElementRE.test(stackedTag) &&
-            stackedTag !== 'noscript'
+            !plainTextElementRE.test(stackedTagUpperCased) &&
+            stackedTagUpperCased !== 'NOSCRIPT'
           ) {
             text = text
-              .replace(/<!-{2}([\s\S]*?)-->/g, '$1') // #7298
-              .replace(/<!\[CDATA\[([\s\S]*?)]]>/g, '$1')
+              .replace(commentRE, '$1')
+              .replace(conditionalCommentRE, '$1')
           }
 
-          if (shouldIgnoreFirstNewline(stackedTag, text)) {
+          if (shouldIgnoreFirstNewline(stackedTagUpperCased, text)) {
             text = text.slice(1)
           }
 
@@ -283,7 +278,7 @@ export default class TemplateParser {
         })
         index += html.length - rest.length
         html = rest
-        this.parseEndTag(stackedTag, index - endTagLength, index)
+        this.parseEndTag(stackedTagUpperCased, index - endTagLength, index)
       }
 
       if (html === last) {
@@ -338,9 +333,9 @@ export default class TemplateParser {
   private parseStartTag(
     startTagOpenMatch: RegExpMatchArray
   ): ParsedTag | undefined {
-    const match: ParsedTag = {
+    const parsedTag: ParsedTag = {
       tag: startTagOpenMatch[1],
-      tagName: startTagOpenMatch[1].toUpperCase(),
+      tagNameUpperCased: startTagOpenMatch[1].toUpperCase(),
       attrs: [],
       unarySlash: '',
       start: index,
@@ -359,34 +354,37 @@ export default class TemplateParser {
       ;(<AttributeMatch>attr).start = index
       this.advance((<AttributeMatch>attr)[0].length)
       ;(<AttributeMatch>attr).end = index
-      match.attrs.push(<AttributeMatch>attr)
+      parsedTag.attrs.push(<AttributeMatch>attr)
     }
 
     if (end) {
-      match.unarySlash = end[1]
+      parsedTag.unarySlash = end[1]
       this.advance(end[0].length)
-      match.end = index
+      parsedTag.end = index
 
-      return match
+      return parsedTag
     }
   }
 
   private handleStartTag(parsedTag: ParsedTag) {
     const tag = parsedTag.tag
-    const tagName = parsedTag.tagName
+    const tagNameUpperCased = parsedTag.tagNameUpperCased
     const unarySlash = parsedTag.unarySlash
 
     if (this.options.expectHTML) {
-      if (lastTag === 'P' && isNonPhrasingTag(tagName)) {
-        this.parseEndTag(lastTag, index, index)
+      if (lastTagUpperCased === 'P' && isNonPhrasingTag(tagNameUpperCased)) {
+        this.parseEndTag(lastTagUpperCased, index, index)
       }
 
-      if (isOptionalClosingTag(tagName) && lastTag === tagName) {
-        this.parseEndTag(tagName, index, index)
+      if (
+        isOptionalClosingTag(tagNameUpperCased) &&
+        lastTagUpperCased === tagNameUpperCased
+      ) {
+        this.parseEndTag(tagNameUpperCased, index, index)
       }
     }
 
-    const unary = isUnaryTag(tagName) || Boolean(unarySlash)
+    const unary = isUnaryTag(tagNameUpperCased) || Boolean(unarySlash)
     const l = parsedTag.attrs.length
     const attrs: Array<ParsedAttribute> = new Array(l)
 
@@ -394,7 +392,7 @@ export default class TemplateParser {
       const args: AttributeMatch = parsedTag.attrs[i]
       const value = args[3] || args[4] || args[5] || ''
       const shouldDecodeNewlines =
-        tagName === 'A' && args[1] === 'href'
+        tagNameUpperCased === 'A' && args[1] === 'href'
           ? this.options.shouldDecodeNewlinesForHref
           : this.options.shouldDecodeNewlines
 
@@ -409,15 +407,15 @@ export default class TemplateParser {
     if (!unary) {
       stack.push({
         tag: tag,
-        tagName: tagName,
+        tagNameUpperCased: tagNameUpperCased,
         attrs: attrs,
         start: parsedTag.start,
         end: parsedTag.end,
       })
-      lastTag = tagName
+      lastTagUpperCased = tagNameUpperCased
     }
 
-    this.start(tagName, attrs, unary, parsedTag.start, parsedTag.end)
+    this.start(tagNameUpperCased, attrs, unary, parsedTag.start, parsedTag.end)
   }
 
   private parseEndTag(tagName: string, start: number, end: number) {
@@ -428,7 +426,7 @@ export default class TemplateParser {
       tagName = tagName.toUpperCase()
 
       for (pos = stack.length - 1; pos >= 0; --pos) {
-        if (stack[pos].tagName === tagName) {
+        if (stack[pos].tagNameUpperCased === tagName) {
           break
         }
       }
@@ -451,7 +449,7 @@ export default class TemplateParser {
 
       // Remove the open elements from the stack
       stack.length = pos
-      lastTag = pos > 0 ? stack[pos - 1].tagName : undefined
+      lastTagUpperCased = pos > 0 ? stack[pos - 1].tagNameUpperCased : undefined
     } else if (tagName === 'BR') {
       this.start(tagName, [], true, start, end)
     } else if (tagName === 'P') {
