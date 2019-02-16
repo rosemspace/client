@@ -22,6 +22,16 @@ const LIFECYCLE_HOOKS = [
   'errorCaptured',
 ]
 
+const arrayMethodsToPatch = [
+  'push',
+  'pop',
+  'shift',
+  'unshift',
+  'splice',
+  'sort',
+  'reverse'
+]
+
 export default class {
   static test() {
     let data = {

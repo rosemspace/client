@@ -1,43 +1,46 @@
 export default interface HostInterface<
-  Node,
-  Comment extends Node,
-  Text extends Node,
-  Element extends Node,
-  NativeComponent extends Element = Element
+  NativeNode,
+  NativeElement extends NativeNode = NativeNode,
+  NativeText extends NativeNode = NativeNode,
+  NativeComment extends NativeNode = NativeNode,
 > {
-  createElement(tagName: any): NativeComponent
+  createElement(qualifiedName: any): NativeElement
 
-  createElementNS(namespaceURI: string, qualifiedName: string): Element
+  createElementNS(namespaceURI: string, qualifiedName: string): NativeElement
 
-  createTextNode(text: string): Text
+  createText(text: string): NativeText
 
-  createComment(text: string): Comment
+  createComment(comment: string): NativeComment
 
-  getChildNodes(element: Element): Iterable<Node>
+  setAttribute(element: NativeElement, qualifiedName: string, value: any): void
+
+  setAttributeNS(element: NativeElement, namespaceURI: string, qualifiedName: string, value: any): void
+
+  setTextContent(node: NativeNode, text: string | null): void
 
   insertBefore(
-    parentNode: Node,
-    newNode: Node,
-    referenceNode: Node | null
+    parentNode: NativeNode,
+    childNode: NativeNode,
+    referenceNode: NativeNode
   ): void
 
-  removeChild(node: Node, child: Node): void
+  appendChild(parentNode: NativeNode, childNode: NativeNode): void
 
-  appendChild(node: Node, child: Node): void
+  removeChild(parentNode: NativeNode, childNode: NativeNode): void
 
-  parentNode(node: Node): Node | null
+  // getChildNodes(element: Element): Iterable<Node>
 
-  getNextSibling(node: Node): Node | null
+  // parentNode(node: Node): Node | null
+  //
+  // getNextSibling(node: Node): Node | null
+  //
+  // getTagName(element: Element): string
 
-  getTagName(element: Element): string
-
-  setTextContent(node: Node, text: string | null): void
-
-  getTextContent(node: Node): string | null
-
-  isElement(node: Node): node is Element
-
-  isText(node: Node): node is Text
-
-  isComment(node: Node): node is Comment
+  // getTextContent(node: Node): string | null
+  //
+  // isElement(node: Node): node is Element
+  //
+  // isText(node: Node): node is Text
+  //
+  // isComment(node: Node): node is Comment
 }

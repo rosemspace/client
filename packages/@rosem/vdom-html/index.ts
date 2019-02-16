@@ -2,8 +2,8 @@ import Host from './Host'
 import VHost from '@rosem/vdom/VHost'
 import HostInterface from '@rosem/vdom/HostInterface'
 
-const host: HostInterface<Node, Comment, Text, Element, HTMLElement> = new Host()
+export const host: HostInterface<Node, Element, Text, Comment> = new Host()
 
-export const vHost = new VHost<Node, Comment, Text, Element, HTMLElement>(host)
+export const vHost = new VHost()
 
-export const h = vHost.createElement
+export const h = vHost.createVirtualNode

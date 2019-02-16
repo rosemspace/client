@@ -5,12 +5,16 @@
 
 import Reaction from '@rosem/observable'
 import Transition from '@rosem/ui-transition'
-// import { h, vHost } from '@rosem/vdom-html'
+import { h, host, vHost } from '@rosem/vdom-html'
 import TemplateParser from '@rosem/template-parser'
 
-// window.h = h
-// window.vHost = vHost
+// @ts-ignore
+window.h = h
+// @ts-ignore
+window.host = host
+// @ts-ignore
+window.vHost = vHost
 
-new TemplateParser().parseFromString(document.documentElement.innerHTML)
+// new TemplateParser().parseFromString(document.documentElement.innerHTML)
 // Transition.test();
 // Reaction.test()

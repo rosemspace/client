@@ -1,261 +1,174 @@
+import forEach from 'lodash/forEach'
 import isArray from 'lodash/isArray'
 import isNumber from 'lodash/isNumber'
 import isString from 'lodash/isString'
 import isPrimitive from '@rosem-util/common/isPrimitive'
 import VNode, {
   PrimitiveVNode,
-  VNodeChildElementList,
+  VNodeAttrDescriptor,
   VNodeChildren,
-  VNodeList,
   VNodeProps,
 } from './VNode'
 import VHostInterface from './VHostInterface'
 import HostInterface from './HostInterface'
-import { AttrMap } from './Attribute'
 
 let uuid = 0
 
-export default class VHost<
-  Node,
-  Comment extends Node,
-  Text extends Node,
-  Element extends Node,
-  NativeComponent extends Element = Element
-> implements VHostInterface<Node, Comment, Text, Element> {
-  protected host: HostInterface<Node, Comment, Text, Element, NativeComponent>
-
-  public constructor(
-    document: HostInterface<Node, Comment, Text, Element, NativeComponent>
-  ) {
-    this.host = document
+// todo: move to parser
+type XmlNamespaceMap = {
+  [type: string]: {
+    namespace: string
+    exclude?: RegExp
   }
+}
 
-  public createVNode(
-    type?: string,
-    props?: VNodeProps,
-    children?: VNodeChildElementList<Node>,
-    text?: PrimitiveVNode,
-    realNode?: Element | Text | Comment | Node
-  ): VNode<Node> {
-    return {
-      type,
-      props,
-      children,
-      text,
-      realNode,
-      key: null != props && null != props.key ? props.key : ++uuid,
-    }
-  }
+const defaultElementNamespaceMap: XmlNamespaceMap = {
+  svg: {
+    namespace: 'http://www.w3.org/2000/svg',
+    exclude: /^foreignObject$/,
+  },
+}
 
-  protected addNamespace(
-    namespace: string,
-    data: VNodeProps,
-    children?: VNodeList<Node>,
-    type?: string
-  ): void {
-    data.namespace = namespace
+const defaultAttributeNamespaceMap: XmlNamespaceMap = {
+  xlink: {
+    namespace: 'http://www.w3.org/1999/xlink',
+  },
+}
+// todo: end
 
-    if ('foreignObject' !== type && null != children) {
-      for (let i = 0; i < children.length; ++i) {
-        let childProps = children[i].props
+export default class VHost implements VHostInterface {
+  // todo: move to parser
+  // protected addNamespace(
+  //   type: string | null,
+  //   namespace: string,
+  //   props: VNodeProps,
+  //   children?: VNodeList
+  // ): void {
+  //   props.namespace = namespace
+  //
+  //   if (type && null != children) {
+  //     // const namespace
+  //   }
+  //
+  //   if (
+  //     this.namespaces[type].exclude &&
+  //     !this.namespaces[type].exclude.test(type)
+  //   ) {
+  //     for (let i = 0; i < children.length; ++i) {
+  //       let childProps = children[i].props
+  //
+  //       if (null != childProps) {
+  //         this.addNamespace(children[i].type, namespace, childProps, <
+  //           VNodeList
+  //         >children[i].children)
+  //       }
+  //     }
+  //   }
+  // }
 
-        if (null != childProps) {
-          this.addNamespace(
-            namespace,
-            childProps,
-            <VNodeList<Node>>children[i].children,
-            children[i].type
-          )
-        }
-      }
-    }
-  }
-
-  public createElement(
+  public createVirtualNode(
     type: string,
-    propsOrChildren?: VNodeProps | VNodeChildren<Node>,
-    children?: VNodeChildren<Node>
-  ): VNode<Node> {
-    let props: VNodeProps = {}
+    propsOrChildrenOrText?: VNodeProps | VNodeChildren | VNode | PrimitiveVNode,
+    childrenOrText?: VNodeChildren
+  ): VNode {
+    let props: VNodeProps = {
+      key: ++uuid,
+    }
     let text: PrimitiveVNode
     let index: number
 
-    if (null != children) {
-      props = <VNodeProps>propsOrChildren
+    if (null != childrenOrText) {
+      props = <VNodeProps>propsOrChildrenOrText
 
-      if (isArray(<VNodeChildElementList<Node>>children)) {
-        children = <VNodeChildElementList<Node>>children
-      } else if (isPrimitive(<PrimitiveVNode>children)) {
-        text = <PrimitiveVNode>children
-      } else if ((<VNode<Node>>children).type) {
-        children = [<VNode<Node>>children]
+      if (isArray(childrenOrText)) {
+        childrenOrText = <VNodeChildren>childrenOrText
+      } else if (isPrimitive(childrenOrText)) {
+        text = <PrimitiveVNode>childrenOrText
+      } else if ((<VNode>childrenOrText).type) {
+        childrenOrText = [<VNode>childrenOrText]
       }
-    } else if (null != propsOrChildren) {
-      if (isArray(<VNodeChildElementList<Node>>propsOrChildren)) {
-        children = <VNodeChildElementList<Node>>propsOrChildren
-      } else if (isPrimitive(propsOrChildren)) {
-        text = <PrimitiveVNode>propsOrChildren
-      } else if ((<VNode<Node>>propsOrChildren).type) {
-        children = [<VNode<Node>>propsOrChildren]
+    } else if (null != propsOrChildrenOrText) {
+      if (isArray(<VNodeChildren>propsOrChildrenOrText)) {
+        childrenOrText = <VNodeChildren>propsOrChildrenOrText
+      } else if (isPrimitive(propsOrChildrenOrText)) {
+        text = <PrimitiveVNode>propsOrChildrenOrText
+      } else if ((<VNode>propsOrChildrenOrText).type) {
+        childrenOrText = [<VNode>propsOrChildrenOrText]
       } else {
-        props = <VNodeProps>propsOrChildren
+        props = <VNodeProps>propsOrChildrenOrText
       }
     }
 
-    if (null != children) {
-      for (
-        index = 0;
-        index < (<VNodeChildElementList<Node>>children).length;
-        ++index
-      ) {
-        if (isPrimitive((<VNodeChildElementList<Node>>children)[index]))
-          (<VNodeChildElementList<Node>>children)[index] = this.createVNode(
-            undefined,
-            undefined,
-            undefined,
-            (<VNodeChildElementList<Node>>children)[index] as PrimitiveVNode,
-            undefined
-          )
+    if (null != childrenOrText) {
+      for (index = 0; index < (<VNodeChildren>childrenOrText).length; ++index) {
+        if (isPrimitive((<VNodeChildren>childrenOrText)[index]))
+          (<VNodeChildren>childrenOrText)[index] = {
+            type: null,
+            props,
+            children: undefined,
+            text: <PrimitiveVNode>(<VNodeChildren>childrenOrText)[index],
+          }
       }
     }
 
-    if ('svg' === type) {
-      this.addNamespace(
-        'http://www.w3.org/2000/svg',
-        props,
-        <VNodeList<Node>>children,
-        type
-      )
-    }
+    // todo: move to parser
+    // if (this.namespaces[type]) {
+    //   this.addNamespace(type, this.namespaces[type].namespace, props, <
+    //     VNodeList
+    //   >childrenOrText)
+    // }
 
-    return this.createVNode(
-      type,
-      props,
-      <VNodeChildElementList<Node>>children,
-      text,
-      undefined
-    )
+    return { type, props, children: <VNodeChildren>childrenOrText, text }
   }
 
-  public setElementProperties(
-    element: Element,
-    { id, classList, attributes }: VNodeProps
-  ): void {
-    // todo: remove HTMLElement
-    id && (element as HTMLElement & Element).setAttribute('id', id)
-    classList &&
-      (element as HTMLElement & Element).setAttribute('class', classList)
-
-    for (let attributeName in attributes) {
-      // noinspection JSUnfilteredForInLoop
-      (element as HTMLElement & Element).setAttribute(
-        attributeName,
-        String(attributes[attributeName])
-      ) // todo: check boolean
-    }
-  }
-
-  public getElementProperties(element: Element): VNodeProps {
-    // todo remake to SimpleSet
-    const attributes: AttrMap = {}
-    const props: VNodeProps = { attributes }
-    // todo: remove HTMLElement
-    const elementAttributes = (element as HTMLElement & Element).attributes
-
-    for (let index = 0; index < elementAttributes.length; ++index) {
-      const elementAttribute = elementAttributes[index]
-      const name = elementAttribute.nodeName
-
-      if ('id' !== name && 'class' !== name) {
-        attributes[name] = elementAttribute.nodeValue as string
-      } else {
-        'id' === name
-          ? (props.id = elementAttribute.nodeValue)
-          : (props.classList = elementAttribute.nodeValue)
-      }
-    }
-
-    return props
-  }
-
-  public elementToVNode(element: Element): VNode<Node> {
-    const children: Array<VNode<Node>> = []
-
-    for (let elementChildNode of this.host.getChildNodes(element)) {
-      children.push(this.toVNode(elementChildNode))
-    }
-
-    return this.createVNode(
-      this.host.getTagName(element).toLowerCase(),
-      this.getElementProperties(element),
-      children,
-      undefined,
-      element
-    )
-  }
-
-  public textToVNode(text: Text): VNode<Node> {
-    return this.createVNode(
-      undefined,
-      undefined,
-      undefined,
-      this.host.getTextContent(text),
-      text
-    )
-  }
-
-  public commentToVNode(comment: Comment): VNode<Node> {
-    return this.createVNode(
-      '!',
-      {},
-      [],
-      this.host.getTextContent(comment),
-      comment
-    )
-  }
-
-  public toVNode(node: Node): VNode<Node> {
-    switch (true) {
-      case this.host.isElement(node):
-        return this.elementToVNode(<Element>node)
-      case this.host.isText(node):
-        return this.textToVNode(<Text>node)
-      case this.host.isComment(node):
-        return this.commentToVNode(<Comment>node)
-      default:
-        return this.createVNode('', {}, [], undefined, node)
-    }
-  }
-
-  public toNode(vnode: VNode<Node>): Node {
+  public toRealNode<
+    RealNode,
+    RealElement extends RealNode,
+    RealText extends RealNode,
+    RealComment extends RealNode
+  >(
+    host: HostInterface<RealNode, RealElement, RealText, RealComment>,
+    vnode: VNode
+  ): RealNode {
     if (isString(vnode) || isNumber(vnode)) {
-      return this.host.createTextNode(String(vnode.text))
+      return host.createText(String(vnode.text))
     }
 
     if (null != vnode.type) {
       if ('!' === vnode.type) {
-        return this.host.createComment(
+        return host.createComment(
           null != vnode.text ? String(vnode.text) : ''
         )
       }
 
-      let element
+      const props: VNodeProps = vnode.props
+      const element: RealElement = props.namespace
+        ? host.createElementNS(props.namespace, vnode.type)
+        : host.createElement(vnode.type)
 
-      if (null != vnode.props) {
-        element =
-          null != vnode.props.namespace
-            ? this.host.createElementNS(vnode.props.namespace, vnode.type)
-            : this.host.createElement(vnode.type)
-
-        this.setElementProperties(element, vnode.props)
-      } else {
-        element = this.host.createElement(vnode.type)
+      if (props.attrs) {
+        forEach(
+          props.attrs,
+          (
+            attr: VNodeAttrDescriptor | string | number | boolean,
+            key: string
+          ) => {
+            isPrimitive(attr)
+              ? host.setAttribute(element, key, attr)
+              : host.setAttributeNS(
+                  element,
+                  (<VNodeAttrDescriptor>attr).namespace,
+                  key,
+                  (<VNodeAttrDescriptor>attr).value
+                )
+          }
+        )
       }
 
-      if (null != vnode.children) {
-        for (let child of vnode.children) {
+      if (vnode.children) {
+        for (const child of vnode.children) {
           if (null != child) {
-            this.host.appendChild(element, this.toNode(<VNode<Node>>child))
+            host.appendChild(element, this.toRealNode(host, <VNode>child))
           }
         }
       }
@@ -263,8 +176,6 @@ export default class VHost<
       return element
     }
 
-    return this.host.createTextNode(
-      null != vnode.text ? String(vnode.text) : ''
-    )
+    return host.createText(null != vnode.text ? String(vnode.text) : '')
   }
 }

@@ -1,43 +1,35 @@
-import { AttrMap } from './Attribute'
+type Primitive = string | number | boolean
 
-export type Key = string | number
+export type PrimitiveVNode = Primitive | null | undefined
 
-export type PrimitiveVNode = string | number | boolean | null | undefined
-
-export type VNodeProps = {
-  attributes?: AttrMap
-  key?: Key
-  namespace?: string
-} & Record<PropertyKey, any>
-
-export default interface VNode<Node> {
-  children?: Array<VNode<Node> | PrimitiveVNode>
-  props?: VNodeProps
-  key?: Key
-  realNode?: Node
+// type: 'name' - element - `text` not allowed
+// type: null - text - `children` not allowed
+// type: '!' - comment - `children` not allowed
+export default interface VNode {
+  type: string | null
+  // key: VNodeKey
+  props: VNodeProps
+  children?: VNodeChildren
   text?: PrimitiveVNode
-  type?: string
 }
 
-export type VNodeList<Node> = Array<VNode<Node>>
+export type VNodeKey = Primitive
 
-export type VNodeChildElement<Node> =
-  | VNode<Node>
-  | PrimitiveVNode
+export type VNodeProps = {
+  key: VNodeKey
+  namespace?: string
+  attrs?: VNodeAttrMap
+} &  Record<string, Primitive>
 
-export type VNodeChildElementList<Node> = Array<
-  VNodeChildElement<Node>
->
+export type VNodeAttrDescriptor = {
+  namespace: string,
+  value: Primitive,
+}
 
-export type VNodeChildren<Node> =
-  | VNodeChildElement<Node>
-  | VNodeChildElementList<Node>
+export type VNodeAttrMap = Record<string, VNodeAttrDescriptor | Primitive>
 
-// attributeStyleMap
-interface VDOMStylePropertyMap {}
+export type VNodeList = Array<VNode>
 
-// classList
-interface VDOMTokenList {}
+export type VNodeChildElement = VNode | PrimitiveVNode
 
-// dataset
-interface VDOMStringMap {}
+export type VNodeChildren = Array<VNodeChildElement>

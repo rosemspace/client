@@ -1,50 +1,42 @@
 import VNode, {
   PrimitiveVNode,
-  VNodeChildElementList,
+  // VNodeChildElementList,
   VNodeChildren,
   VNodeProps,
 } from './VNode'
 
-export default interface VHostInterface<
-  Node,
-  Comment extends Node,
-  Text extends Node,
-  Element extends Node
-> {
-  createElement(type: string): VNode<Node>
+export default interface VHostInterface {
+  createVirtualNode(type: string): VNode
 
-  createElement(
+  createVirtualNode(
     type: string,
-    propsOrChildren: VNodeProps | VNodeChildren<Node>
-  ): VNode<Node>
+    propsOrChildrenOrText: VNodeProps | VNodeChildren | VNode | PrimitiveVNode
+  ): VNode
 
-  createElement(
+  createVirtualNode(
     type: string,
     props: VNodeProps,
-    children: VNodeChildren<Node>
-  ): VNode<Node>
+    childrenOrText: VNodeChildren | VNode | PrimitiveVNode
+  ): VNode
 
-  createElement(
+  createVirtualNode(
     type: string,
-    propsOrChildren?: VNodeProps | VNodeChildren<Node>,
-    children?: VNodeChildren<Node>
-  ): VNode<Node>
+    propsOrChildrenOrText?: VNodeProps | VNodeChildren | VNode | PrimitiveVNode,
+    childrenOrText?: VNodeChildren
+  ): VNode
 
-  createVNode(
-    type: string,
-    props?: VNodeProps,
-    children?: VNodeChildElementList<Node>,
-    text?: PrimitiveVNode,
-    realNode?: Element | Text | Comment | Node
-  ): VNode<Node>
+  // render(oldNode: VNode, newNode: VNode): any // todo render
 
-  elementToVNode(element: Element): VNode<Node>
+  // getDiff(oldNode: VNode, newNode: VNode): any // todo VNodeDiff
 
-  textToVNode(text: Text): VNode<Node>
+  // createVNode(
+  //   type: string,
+  //   props?: VNodeProps,
+  //   children?: VNodeChildElementList<Node>,
+  //   text?: PrimitiveVNode
+  // ): VNode<Node>
 
-  commentToVNode(comment: Comment): VNode<Node>
+  // nativeElementToVirtualNode<Element extends Node>(element: Element): VNode<Node>
 
-  toVNode(node: Node): VNode<Node>
-
-  toNode(vnode: VNode<Node>): Node
+  // virtualNodeToNativeElement<Element extends Node>(vnode: VNode<Node>): Element
 }
