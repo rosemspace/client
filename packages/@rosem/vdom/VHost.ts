@@ -14,28 +14,6 @@ import HostInterface from './HostInterface'
 
 let uuid = 0
 
-// todo: move to parser
-type XmlNamespaceMap = {
-  [type: string]: {
-    namespace: string
-    exclude?: RegExp
-  }
-}
-
-const defaultElementNamespaceMap: XmlNamespaceMap = {
-  svg: {
-    namespace: 'http://www.w3.org/2000/svg',
-    exclude: /^foreignObject$/,
-  },
-}
-
-const defaultAttributeNamespaceMap: XmlNamespaceMap = {
-  xlink: {
-    namespace: 'http://www.w3.org/1999/xlink',
-  },
-}
-// todo: end
-
 export default class VHost implements VHostInterface {
   // todo: move to parser
   // protected addNamespace(
