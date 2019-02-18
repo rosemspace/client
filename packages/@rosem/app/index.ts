@@ -26,6 +26,9 @@ new TemplateParser().parseFromString(`
   <title>Document</title>
 </head>
 <body>
+<svg>
+  <use xlink:href="icons.svg#test"/>
+</svg>
 <div>
   <p>Paragraph 1
   <p>Paragraph 2
@@ -35,6 +38,41 @@ new TemplateParser().parseFromString(`
       <li>List item 3</li>
   </ul>
 </div>
+<math>
+    <!--xmlns="http://www.w3.org/1998/Math/MathML"-->
+    <mrow>
+        <msup>
+            <mfenced>
+                <mrow>
+                    <mi>a</mi>
+                    <mo>+</mo>
+                    <mi>b</mi>
+                </mrow>
+            </mfenced>
+            <mn>2</mn>
+        </msup>
+        <mo>=</mo>
+        <msup>
+            <mrow>
+                <mi>a</mi>
+            </mrow>
+            <mn>2</mn>
+        </msup>
+        <mo>+</mo>
+        <msup>
+            <mrow>
+                <mi>b</mi>
+            </mrow>
+            <mn>2</mn>
+        </msup>
+        <mo>+</mo>
+        <mrow>
+            <mn>2</mn>
+            <mi>a</mi>
+            <mi>b</mi>
+        </mrow>
+    </mrow>
+</math>
 <svg width="4in" height="3in"
      xmlns="http://www.w3.org/2000/svg">
   <desc>This graphic links to an external image
@@ -65,7 +103,7 @@ new TemplateParser().parseFromString(`
       In the context of SVG embeded into HTML, the XHTML namespace could
       be avoided, but it is mandatory in the context of an SVG document
     -->
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div xmlns="http://www.w3.org/1999/xhtml2">
       Lorem ipsum dolor sit amet, consectetur adipiscing elit.
       Sed mollis mollis mi ut ultricies. Nullam magna ipsum,
       porta vel dui convallis, rutrum imperdiet eros. Aliquam

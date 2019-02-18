@@ -24,7 +24,7 @@ export const GREATER_THAN_ENTITY_HEX_NUMBER = '&#x0003E;'
 export const GREATER_THAN_ENTITY_ALIAS_1 = '&gt;'
 export const GREATER_THAN_ENTITY_ALIAS_2 = '&GT;'
 
-const decodingMap: { [code: string]: string } = {
+export const ATTRIBUTE_ENTITY_DECODING_MAP: { [code: string]: string } = {
   [TAB_ENTITY_DECIMAL_NUMBER]: '\t',
   [TAB_ENTITY_HEX_NUMBER]: '\t',
   [TAB_ENTITY_ALIAS_1]: '\t',
@@ -51,6 +51,7 @@ const decodingMap: { [code: string]: string } = {
   [GREATER_THAN_ENTITY_ALIAS_1]: '>',
   [GREATER_THAN_ENTITY_ALIAS_2]: '>',
 }
+
 const encodedAttrCommonAliasREPart = 'a(?:pos|mp)|AMP|(?:[lg]|quo)?t|(?:[LG]|QUO)?T'
 const encodedAttrRE = new RegExp(
   `^&(?:${encodedAttrCommonAliasREPart}|#(?:3[489]|6[02]));$`,
@@ -67,6 +68,6 @@ export function decodeAttrEntities(
 ): string {
   return value.replace(
     shouldDecodeNewlines ? encodedAttrNewLineRE : encodedAttrRE,
-    (match) => decodingMap[match]
+    (match) => ATTRIBUTE_ENTITY_DECODING_MAP[match]
   )
 }

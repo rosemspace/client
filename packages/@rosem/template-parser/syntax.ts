@@ -1,6 +1,10 @@
 import unicodeLetters from './unicodeLetters'
 
-export const doctypeRE = /^\s*<!DOCTYPE [^>]+>/i
+export const processingInstructionRE = /^\s*<\?[^>]+\?>/
+
+export const xmlDeclarationRE = /^\s*<\?xml[^>]+>/
+
+export const doctypeDeclarationRE = /^\s*<!DOCTYPE [^>]+>/i
 
 // Non-colonized name e.g. "name"
 // could use CombiningChar and Extender characters
@@ -9,6 +13,8 @@ export const doctypeRE = /^\s*<!DOCTYPE [^>]+>/i
 const ncNameREPart = `[a-zA-Z_][\\-\\.0-9_${unicodeLetters}]*`
 
 // Qualified name e.g. "namespace:name"
+export const qNameRE = new RegExp(`^(?:(${ncNameREPart})\:)?(${ncNameREPart})$`)
+
 const qNameRECapturePart = `((?:${ncNameREPart}\\:)?${ncNameREPart})`
 
 export const startTagOpenRE = new RegExp(`^<${qNameRECapturePart}`)
