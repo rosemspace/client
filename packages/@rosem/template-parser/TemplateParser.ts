@@ -7,12 +7,17 @@ import isForeignSVGTag from './svg/isForeignTag'
 import isNonPhrasingHTMLTag from './html/isNonPhrasingTag'
 import isOptionalClosingHTMLTag from './html/isOptionalClosingTag'
 import isUnaryHTMLTag from './html/isUnaryTag'
-import { decodeAttrEntities } from './entities'
+import { decodeAttrEntities } from './mapping/AttrEntityDecodingMap'
+import { XML_NAMESPACE_MAP } from './mapping/XMLNamespaceMap'
 import {
-  ATTRIBUTE_NAMESPACE_MAP,
-  ELEMENT_NAMESPACE_MAP,
-} from './XMLNamespaceMap'
-import { TAG_MIME_TYPE_MAP } from './TagMIMETypeMap'
+  APPLICATION_MATHML_XML_MIME_TYPE,
+  APPLICATION_XHTML_XML_MIME_TYPE,
+  APPLICATION_XML_MIME_TYPE,
+  IMAGE_SVG_XML_MIME_TYPE,
+  MIME_TYPE_MAP,
+  TEXT_HTML_MIME_TYPE,
+  TEXT_XML_MIME_TYPE,
+} from './mapping/MIMETypeMap'
 import {
   attributeRE,
   COMMENT_END_TOKEN,
@@ -37,13 +42,14 @@ export type TemplateSupportedType = 'application/mathml+xml' | SupportedType
 
 export type ParsedTag = {
   name: string
-  nameUpperCased: string
-  namespace: string
+  nameLowerCased: string
+  namespace?: string
   attrs: Array<ParsedAttribute>
-  unarySlash: string
-  unary: boolean
   start: number
   end: number
+  unary: boolean
+  unarySlash: string
+  root?: ParsedTag
 }
 
 export type ParsedAttribute = {
@@ -85,13 +91,15 @@ export default class TemplateParser {
   protected isUnaryTag: IsTagFunction = no
 
   private readonly moduleList: Array<Object> = []
-  private namespace: string = ELEMENT_NAMESPACE_MAP.HTML
+  private type?: TemplateSupportedType
+  private namespace?: string
   private source: string = ''
-  private reCache: { [stackTag: string]: RegExp } = {}
-  private stack: Array<ParsedTag> = []
   private index: number = 0
+  private stackedTagRegExpCache: { [stackTag: string]: RegExp } = {}
+  private tagStack: Array<ParsedTag> = []
+  private rootTagStack: Array<ParsedTag> = []
   private last: string | undefined
-  private lastTagUpperCased: string | undefined
+  private lastTagLowerCased: string | undefined
 
   constructor(options?: TemplateParserOptions) {
     this.options = {
@@ -100,27 +108,37 @@ export default class TemplateParser {
     }
   }
 
-  protected parseFromStringInNewContext(
-    source: string,
-    type: TemplateSupportedType
-  ) {
-    this.parseFromString.call(
-      Object.assign(Object.create(TemplateParser.prototype), {
-        options: this.options,
-        expectHTML: false,
-        isForeignTag: no,
-        isNonPhrasingTag: no,
-        isOptionalClosingTag: no,
-        isUnaryTag: no,
-        reCache: this.reCache,
-        stack: [],
-        index: this.index,
-        // last: this.last,
-        // lastTagUpperCased: this.lastTagUpperCased,
-      }),
-      source,
-      type
-    )
+  protected switchParser(type: TemplateSupportedType): void {
+    if (type === this.type) {
+      return
+    }
+
+    this.type = type
+    this.expectHTML = false
+    this.isForeignTag = this.isNonPhrasingTag = this.isOptionalClosingTag = this.isUnaryTag = no
+
+    // noinspection FallThroughInSwitchStatementJS
+    switch (type) {
+      case TEXT_XML_MIME_TYPE:
+      case APPLICATION_XML_MIME_TYPE:
+      case APPLICATION_MATHML_XML_MIME_TYPE:
+        break
+      case TEXT_HTML_MIME_TYPE:
+        this.expectHTML = true // HTML5 syntax support
+        this.isOptionalClosingTag = isOptionalClosingHTMLTag
+      case APPLICATION_XHTML_XML_MIME_TYPE:
+        this.isForeignTag = isForeignHTMLTag
+        this.isNonPhrasingTag = isNonPhrasingHTMLTag
+        this.isUnaryTag = isUnaryHTMLTag // todo: XHTML
+
+        break
+      case IMAGE_SVG_XML_MIME_TYPE:
+        this.isForeignTag = isForeignSVGTag
+
+        break
+      default:
+        throw new TypeError(`Unsupported source type: ${type}`)
+    }
   }
 
   public parseFromString(
@@ -128,55 +146,22 @@ export default class TemplateParser {
     type: TemplateSupportedType = 'text/html'
   ): void {
     debugger
+    // Clear previous data
+    this.tagStack = []
+    this.rootTagStack = []
+    this.index = 0
     this.source = source
-
-    switch (type) {
-      case 'text/xml':
-      case 'application/xml':
-        this.namespace = ELEMENT_NAMESPACE_MAP.XML
-        this.parseXMLDeclaration()
-
-        break
-      case 'application/mathml+xml':
-        this.namespace = ELEMENT_NAMESPACE_MAP.MATH
-        this.parseXMLDeclaration()
-
-        break
-      case 'application/xhtml+xml':
-        this.namespace = ELEMENT_NAMESPACE_MAP.XHTML
-        this.isForeignTag = isForeignHTMLTag
-        this.isNonPhrasingTag = isNonPhrasingHTMLTag
-        this.isUnaryTag = isUnaryHTMLTag // todo: XHTML
-        this.parseDoctype()
-
-        break
-      case 'image/svg+xml':
-        this.namespace = ELEMENT_NAMESPACE_MAP.SVG
-        this.isForeignTag = isForeignSVGTag
-        this.parseDoctype()
-
-        break
-      case 'text/html':
-        this.namespace = ELEMENT_NAMESPACE_MAP.HTML
-        this.expectHTML = true // HTML5 syntax support
-        this.isForeignTag = isForeignHTMLTag
-        this.isNonPhrasingTag = isNonPhrasingHTMLTag
-        this.isOptionalClosingTag = isOptionalClosingHTMLTag
-        this.isUnaryTag = isUnaryHTMLTag
-        this.parseDoctype()
-
-        break
-      default:
-        throw new TypeError(`Unsupported source type: ${type}`)
-    }
+    this.switchParser(type)
+    this.parseXMLDeclaration()
+    this.parseDoctype()
 
     while (this.source) {
       this.last = this.source
 
       // Make sure we're not in a plaintext content element like script/style/textarea
       if (
-        !this.lastTagUpperCased ||
-        !plainTextElementRE.test(this.lastTagUpperCased)
+        !this.lastTagLowerCased ||
+        !plainTextElementRE.test(this.lastTagLowerCased)
       ) {
         let textEndTokenIndex: number = this.source.indexOf('<')
 
@@ -238,32 +223,6 @@ export default class TemplateParser {
           const startTagOpenMatch = this.source.match(startTagOpenRE)
 
           if (startTagOpenMatch) {
-            // Switch parser if we have embedded element
-            if (this.isForeignTag(startTagOpenMatch[1])) {
-              const tagNameUpperCased = startTagOpenMatch[1].toUpperCase()
-
-              let embeddedSource
-              this.source = this.source.replace(
-                this.getStackedTagRE(tagNameUpperCased),
-                (all: string): string => {
-                  embeddedSource = all
-
-                  return ''
-                }
-              )
-
-              if (embeddedSource) {
-                this.parseFromStringInNewContext(
-                  embeddedSource,
-                  TAG_MIME_TYPE_MAP[tagNameUpperCased]
-                )
-                this.index += embeddedSource.length
-
-                continue
-              }
-            }
-
-            // Or continue parse
             const parsedStartTag = this.parseStartTag(startTagOpenMatch)
 
             if (parsedStartTag) {
@@ -271,7 +230,7 @@ export default class TemplateParser {
 
               if (
                 shouldIgnoreFirstNewline(
-                  parsedStartTag.nameUpperCased,
+                  parsedStartTag.nameLowerCased,
                   this.source
                 )
               ) {
@@ -319,28 +278,30 @@ export default class TemplateParser {
       // We are in a plaintext content element like script/style/textarea
       else {
         let endTagLength = 0
-        const stackedTagUpperCased = this.lastTagUpperCased
-        const stackedTagRE = this.getStackedTagRE(stackedTagUpperCased)
+        const stackedTagLowerCased = this.lastTagLowerCased
+        const stackedTagRE = this.getStackedTagRE(stackedTagLowerCased)
         const rest = this.source.replace(
           stackedTagRE,
-          (all: string, text: string, endTag: string): string => {
+          (all: string, content: string, endTag: string): string => {
             endTagLength = endTag.length
 
+            let text = content
+
             if (
-              !plainTextElementRE.test(stackedTagUpperCased) &&
-              stackedTagUpperCased !== 'NOSCRIPT'
+              !plainTextElementRE.test(stackedTagLowerCased) &&
+              'NOSCRIPT' !== stackedTagLowerCased
             ) {
               text = text
                 .replace(commentRE, '$1')
                 .replace(conditionalCommentCharacterDataRE, '$1')
             }
 
-            if (shouldIgnoreFirstNewline(stackedTagUpperCased, text)) {
+            if (shouldIgnoreFirstNewline(stackedTagLowerCased, text)) {
               text = text.slice(1)
             }
 
             debugger
-            this.chars(text)
+            this.chars(text, this.index, this.index + content.length)
 
             return ''
           }
@@ -350,7 +311,7 @@ export default class TemplateParser {
         this.source = rest
 
         this.parseEndTag(
-          stackedTagUpperCased,
+          stackedTagLowerCased,
           this.index - endTagLength,
           this.index
         )
@@ -358,9 +319,9 @@ export default class TemplateParser {
 
       if (this.source === this.last) {
         debugger
-        this.chars(this.source)
+        this.chars(this.source, this.index, this.index + this.source.length)
 
-        if (isNotProduction && !this.stack.length) {
+        if (isNotProduction && !this.tagStack.length) {
           this.warn(`Mal-formatted tag at end of template: "${this.source}"`, {
             start: this.index + this.source.length,
           })
@@ -370,10 +331,7 @@ export default class TemplateParser {
     }
 
     // Clean up any remaining tags
-    this.parseEndTag()
-    // Clear temporary data
-    this.stack = []
-    this.index = 0
+    this.parseEndTag('', 0, 0) // todo
   }
 
   private advance(n: number) {
@@ -383,8 +341,8 @@ export default class TemplateParser {
 
   private getStackedTagRE(tagName: string): RegExp {
     return (
-      this.reCache[tagName] ||
-      (this.reCache[tagName] = new RegExp(
+      this.stackedTagRegExpCache[tagName] ||
+      (this.stackedTagRegExpCache[tagName] = new RegExp(
         `([\\s\\S]*?)(</${tagName}[^>]*>)`,
         'i'
       ))
@@ -412,12 +370,15 @@ export default class TemplateParser {
   private parseStartTag(
     startTagOpenMatch: RegExpMatchArray
   ): ParsedTag | undefined {
-    const tagNameUpperCased = startTagOpenMatch[1].toUpperCase()
+    const tagName = startTagOpenMatch[1]
+    const tagNameLowerCased = tagName.toLowerCase()
     const attrs: Array<ParsedAttribute> = []
     const parsedTag: ParsedTag = {
-      name: startTagOpenMatch[1],
-      nameUpperCased: tagNameUpperCased,
-      namespace: this.namespace,
+      name: tagName,
+      nameLowerCased: tagNameLowerCased,
+      namespace:
+        this.namespace ||
+        (this.namespace = XML_NAMESPACE_MAP[tagNameLowerCased]),
       attrs,
       unarySlash: '',
       unary: false,
@@ -427,92 +388,156 @@ export default class TemplateParser {
 
     this.advance(startTagOpenMatch[0].length)
 
-    let unaryTagMatch: RegExpMatchArray | null
+    let startTagCloseTagMatch: RegExpMatchArray | null
     let attrMatch: RegExpMatchArray | null
 
     // Parse attributes while tag is open
     while (
-      !(unaryTagMatch = this.source.match(startTagCloseRE)) &&
+      !(startTagCloseTagMatch = this.source.match(startTagCloseRE)) &&
       (attrMatch = this.source.match(attributeRE))
     ) {
       const start = this.index
+      // Full attribute name, i. e. "xlink:href"
       const attrNameLowerCased = attrMatch[1].toLowerCase()
+      // Non-colonized attribute name, i. e. "xlink" (before ":")
       const attrNcNameLowerCased = attrNameLowerCased.replace(qNameRE, '$1')
 
       this.advance(attrMatch[0].length)
 
-      // todo: add handle of xmlns attribute
-      attrs.push({
+      const attr: ParsedAttribute = {
         name: attrMatch[1],
         nameLowerCased: attrNameLowerCased,
         value: decodeAttrEntities(
           attrMatch[3] || attrMatch[4] || attrMatch[5] || '',
-          'A' === tagNameUpperCased && 'href' === attrNameLowerCased
+          'A' === tagNameLowerCased && 'href' === attrNameLowerCased
             ? this.options.shouldDecodeNewlinesForHref
             : this.options.shouldDecodeNewlines
         ),
         start: start + (<RegExpMatchArray>attrMatch[0].match(/^\s*/)).length,
         end: this.index,
-      })
+      }
 
-      // Add namespace for attribute
+      // todo: ns:name
+      // 1. if tagStack is empty parse namespaces on root element.
+      // 2. parse xmlns:prefix and add prefix to namespaceMap
+      // 3. parse xmlns and set namespace to its value
+      // Add namespace of tags
+      if ('xmlns' === attrNameLowerCased) {
+        this.namespace = parsedTag.namespace = attr.value
+      }
+
+      // Add namespace of attribute
       if (attrNcNameLowerCased) {
-        const namespace = ATTRIBUTE_NAMESPACE_MAP[attrNcNameLowerCased]
+        const attrNamespace = XML_NAMESPACE_MAP[attrNcNameLowerCased]
 
-        if (namespace) {
-          attrs[attrs.length - 1].namespace = namespace
+        if (attrNamespace) {
+          attr.namespace = attrNamespace
         }
       }
+
+      attrs.push(attr)
     }
 
-    if (unaryTagMatch) {
-      parsedTag.unarySlash = unaryTagMatch[1]
+    if (startTagCloseTagMatch) {
+      parsedTag.unarySlash = startTagCloseTagMatch[1]
       parsedTag.unary =
-        this.isUnaryTag(tagNameUpperCased) || Boolean(unaryTagMatch[1])
-      this.advance(unaryTagMatch[0].length)
+        this.isUnaryTag(tagNameLowerCased) || Boolean(startTagCloseTagMatch[1])
+      this.advance(startTagCloseTagMatch[0].length)
       parsedTag.end = this.index
+
+      // We don't have namespace from previous tag
+      if (
+        !this.namespace &&
+        this.rootTagStack.length &&
+        this.rootTagStack[this.rootTagStack.length - 1].namespace
+      ) {
+        const rootTag = this.rootTagStack[this.rootTagStack.length - 1]
+
+        this.warn(
+          `tag <${
+            parsedTag.name
+          }> without namespace is not allowed in context of <${rootTag.name}>`,
+          {
+            start: parsedTag.start,
+          }
+        )
+        this.namespace = parsedTag.namespace = rootTag.namespace
+      }
+
+      // Change parser for foreign tag
+      if (!this.rootTagStack.length || this.isForeignTag(tagNameLowerCased)) {
+        this.rootTagStack.push(parsedTag)
+
+        if (MIME_TYPE_MAP[tagNameLowerCased]) {
+          this.switchParser(MIME_TYPE_MAP[tagNameLowerCased])
+          this.namespace = parsedTag.namespace =
+            XML_NAMESPACE_MAP[parsedTag.nameLowerCased] || this.namespace
+        } else {
+          this.namespace = undefined
+        }
+      }
 
       return parsedTag
     }
   }
 
   private handleStartTag(parsedTag: ParsedTag) {
-    const tagNameUpperCased = parsedTag.nameUpperCased
+    const tagNameLowerCased = parsedTag.nameLowerCased
 
     if (this.expectHTML) {
       if (
-        this.lastTagUpperCased === 'P' &&
-        this.isNonPhrasingTag(tagNameUpperCased)
+        this.lastTagLowerCased === 'P' &&
+        this.isNonPhrasingTag(tagNameLowerCased)
       ) {
-        this.parseEndTag(this.lastTagUpperCased, this.index, this.index)
+        this.parseEndTag(this.lastTagLowerCased, this.index, this.index)
       }
 
       if (
-        this.isOptionalClosingTag(tagNameUpperCased) &&
-        this.lastTagUpperCased === tagNameUpperCased
+        this.isOptionalClosingTag(tagNameLowerCased) &&
+        this.lastTagLowerCased === tagNameLowerCased
       ) {
-        this.parseEndTag(tagNameUpperCased, this.index, this.index)
+        this.parseEndTag(tagNameLowerCased, this.index, this.index)
       }
     }
 
     if (!parsedTag.unary) {
-      this.stack.push(parsedTag)
-      this.lastTagUpperCased = tagNameUpperCased
+      this.tagStack.push(parsedTag)
+      this.lastTagLowerCased = tagNameLowerCased
     }
 
     this.start(parsedTag)
   }
 
   private parseEndTag(tagName: string, start: number, end: number) {
-    let tagNameUpperCased
+    let tagNameLowerCased
     let pos
 
     // Find the closest opened tag of the same type
     if (tagName) {
-      tagNameUpperCased = tagName.toUpperCase()
+      tagNameLowerCased = tagName.toLowerCase()
 
-      for (pos = this.stack.length - 1; pos >= 0; --pos) {
-        if (this.stack[pos].nameUpperCased === tagNameUpperCased) {
+      for (pos = this.tagStack.length - 1; pos >= 0; --pos) {
+        if (this.tagStack[pos].nameLowerCased === tagNameLowerCased) {
+          if (
+            this.tagStack[pos].nameLowerCased ===
+            this.rootTagStack[this.rootTagStack.length - 1].nameLowerCased
+          ) {
+            this.rootTagStack.pop()
+
+            if (this.rootTagStack.length) {
+              const previousRootTag: ParsedTag = this.rootTagStack[
+                this.rootTagStack.length - 1
+              ]
+
+              if (MIME_TYPE_MAP[previousRootTag.nameLowerCased]) {
+                this.switchParser(MIME_TYPE_MAP[previousRootTag.nameLowerCased])
+                this.namespace = previousRootTag.namespace
+              } else {
+                this.namespace = undefined
+              }
+            }
+          }
+
           break
         }
       }
@@ -522,27 +547,30 @@ export default class TemplateParser {
     }
 
     if (pos >= 0) {
+      let index
+
       // Close all the open elements, up the stack
-      for (let index = this.stack.length - 1; index >= pos; --index) {
+      for (index = this.tagStack.length - 1; index >= pos; --index) {
         if (isNotProduction && (index > pos || !tagName)) {
-          const stackTag = this.stack[index]
+          const stackTag = this.tagStack[index]
 
           this.warn(`tag <${stackTag.name}> has no matching end tag.`, {
             start: stackTag.start,
           })
         }
 
-        this.end(this.stack[index].name, start, end)
+        this.end(this.tagStack[index].name, start, end)
       }
 
       // Remove the open elements from the stack
-      this.stack.length = pos
-      this.lastTagUpperCased =
-        pos > 0 ? this.stack[pos - 1].nameUpperCased : undefined
-    } else if (tagNameUpperCased === 'BR') {
+      this.tagStack.length = pos
+      this.lastTagLowerCased =
+        pos > 0 ? this.tagStack[pos - 1].nameLowerCased : undefined
+    } else if (tagNameLowerCased === 'BR') {
       this.start({
         name: tagName,
-        nameUpperCased: tagNameUpperCased,
+        nameLowerCased: tagNameLowerCased,
+        // root: {...this.rootTag},
         namespace: this.namespace,
         attrs: [],
         unarySlash: '',
@@ -550,10 +578,11 @@ export default class TemplateParser {
         start,
         end,
       })
-    } else if (tagNameUpperCased === 'P') {
+    } else if (tagNameLowerCased === 'P') {
       this.start({
         name: tagName,
-        nameUpperCased: tagNameUpperCased,
+        nameLowerCased: tagNameLowerCased,
+        // root: {...this.rootTag},
         namespace: this.namespace,
         attrs: [],
         unarySlash: '',

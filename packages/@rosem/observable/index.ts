@@ -1,6 +1,4 @@
-import ObservableObject, {
-  ObservablePropertyKey,
-} from './ObservableObject'
+import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 
 export const OBSERVER_KEY = '__ob__'
 
@@ -29,7 +27,7 @@ const arrayMethodsToPatch = [
   'unshift',
   'splice',
   'sort',
-  'reverse'
+  'reverse',
 ]
 
 export default class {
@@ -80,7 +78,12 @@ export default class {
       lastNameElement.textContent = newValue
     })
     ObservableObject.defineComputedProperty(oo, 'fullName', {
-      get(newVal, oldVal, prop, obj: ObservableObject): string {
+      get(
+        newVal: any,
+        oldVal: any,
+        prop: ObservablePropertyKey,
+        obj: ObservableObject
+      ): string {
         console.log('GET: ', newVal)
         return this.firstName + ' ' + this.lastName
       },

@@ -13,7 +13,7 @@ export const doctypeDeclarationRE = /^\s*<!DOCTYPE [^>]+>/i
 const ncNameREPart = `[a-zA-Z_][\\-\\.0-9_${unicodeLetters}]*`
 
 // Qualified name e.g. "namespace:name"
-export const qNameRE = new RegExp(`^(?:(${ncNameREPart})\:)?(${ncNameREPart})$`)
+export const qNameRE = new RegExp(`^(?:(${ncNameREPart}):)?(${ncNameREPart})$`)
 
 const qNameRECapturePart = `((?:${ncNameREPart}\\:)?${ncNameREPart})`
 
@@ -22,7 +22,7 @@ export const startTagOpenRE = new RegExp(`^<${qNameRECapturePart}`)
 export const startTagCloseRE = /^\s*(\/?)>/
 
 // Regular Expressions for parsing tags and attributes
-export const attributeRE = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+export const attributeRE = /^\s*([^\s"'<>/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 
 export const endTagRE = new RegExp(`^<\\/${qNameRECapturePart}[^>]*>`)
 

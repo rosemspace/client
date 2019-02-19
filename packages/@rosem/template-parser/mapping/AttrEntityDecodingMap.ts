@@ -1,3 +1,5 @@
+type AttrEntityDecodingMap = { [code: string]: string }
+
 export const TAB_ENTITY_DECIMAL_NUMBER = '&#9;'
 export const TAB_ENTITY_HEX_NUMBER = '&#x00009;'
 export const TAB_ENTITY_ALIAS_1 = '&Tab;'
@@ -24,7 +26,7 @@ export const GREATER_THAN_ENTITY_HEX_NUMBER = '&#x0003E;'
 export const GREATER_THAN_ENTITY_ALIAS_1 = '&gt;'
 export const GREATER_THAN_ENTITY_ALIAS_2 = '&GT;'
 
-export const ATTRIBUTE_ENTITY_DECODING_MAP: { [code: string]: string } = {
+export const ATTRIBUTE_ENTITY_DECODING_MAP: AttrEntityDecodingMap = {
   [TAB_ENTITY_DECIMAL_NUMBER]: '\t',
   [TAB_ENTITY_HEX_NUMBER]: '\t',
   [TAB_ENTITY_ALIAS_1]: '\t',
@@ -52,7 +54,8 @@ export const ATTRIBUTE_ENTITY_DECODING_MAP: { [code: string]: string } = {
   [GREATER_THAN_ENTITY_ALIAS_2]: '>',
 }
 
-const encodedAttrCommonAliasREPart = 'a(?:pos|mp)|AMP|(?:[lg]|quo)?t|(?:[LG]|QUO)?T'
+const encodedAttrCommonAliasREPart =
+  'a(?:pos|mp)|AMP|(?:[lg]|quo)?t|(?:[LG]|QUO)?T'
 const encodedAttrRE = new RegExp(
   `^&(?:${encodedAttrCommonAliasREPart}|#(?:3[489]|6[02]));$`,
   'g'
@@ -71,3 +74,5 @@ export function decodeAttrEntities(
     (match) => ATTRIBUTE_ENTITY_DECODING_MAP[match]
   )
 }
+
+export default AttrEntityDecodingMap

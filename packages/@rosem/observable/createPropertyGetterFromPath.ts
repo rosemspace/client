@@ -1,7 +1,7 @@
 /**
  * Parse simple path.
  */
-import unicodeLetters from '@rosem/dom-parser/unicodeLetters'
+import unicodeLetters from '@rosem/template-parser/unicodeLetters'
 
 // const bailRE = /^[\w$](?:(?:[\w.]|\.\$)*?\w)?$/
 const bailRE = new RegExp(`[^${unicodeLetters}.$]`)

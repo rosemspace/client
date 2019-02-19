@@ -1,3 +1,3 @@
 export default function isForeignTag(tag: string): boolean {
-  return 'foreignObject' === tag
+  return /^foreignObject$/i.test(tag)
 }

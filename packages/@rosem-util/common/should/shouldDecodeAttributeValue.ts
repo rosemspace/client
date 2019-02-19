@@ -1,4 +1,4 @@
-import inBrowser from '@rosem-util/env/in/browser'
+import inBrowser from '@rosem-util/env/inBrowser'
 
 // check whether current browser encodes a char inside attribute values
 function shouldDecode (content: string, encoded: string): boolean {
