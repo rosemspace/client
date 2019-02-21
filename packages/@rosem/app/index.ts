@@ -17,7 +17,6 @@ window.vHost = vHost
 
 new TemplateParser().parseFromString(`
 <!doctype html>
-<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"

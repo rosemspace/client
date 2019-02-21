@@ -1,4 +1,4 @@
-import { TemplateSupportedType } from './TemplateParser'
+import { TemplateSupportedType } from '../TemplateParser'
 
 export type MIMETypeMap = {
   [tagName: string]: TemplateSupportedType

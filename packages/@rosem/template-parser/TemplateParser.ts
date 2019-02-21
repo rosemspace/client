@@ -2,11 +2,13 @@
 
 import no from '@rosem-util/common/no'
 import isProduction from '@rosem-util/env/isProduction'
-import isForeignHTMLTag from './html/isForeignTag'
-import isForeignSVGTag from './svg/isForeignTag'
-import isNonPhrasingHTMLTag from './html/isNonPhrasingTag'
-import isOptionalClosingHTMLTag from './html/isOptionalClosingTag'
-import isUnaryHTMLTag from './html/isUnaryTag'
+import isEscapableRawHTMLTextElement from './html/isEscapableRawTextElement'
+import isForeignHTMLTag from './html/isForeignElement'
+import isForeignSVGElement from './svg/isForeignElement'
+import isNonPhrasingHTMLElement from './html/isNonPhrasingElement'
+import isOptionalClosingHTMLElement from './html/isOptionalClosingElement'
+import isRawHTMLTextElement from './html/isRawTextElement'
+import isVoidHTMLElement from './html/isVoidElement'
 import { decodeAttrEntities } from './mapping/AttrEntityDecodingMap'
 import { XML_NAMESPACE_MAP } from './mapping/XMLNamespaceMap'
 import {
@@ -31,7 +33,6 @@ import {
   conditionalCommentStartRE,
   doctypeDeclarationRE,
   endTagRE,
-  plainTextElementRE,
   qNameRE,
   startTagCloseRE,
   startTagOpenRE,
@@ -47,9 +48,8 @@ export type ParsedTag = {
   attrs: Array<ParsedAttribute>
   start: number
   end: number
-  unary: boolean
+  void: boolean
   unarySlash: string
-  root?: ParsedTag
 }
 
 export type ParsedAttribute = {
@@ -62,33 +62,35 @@ export type ParsedAttribute = {
 }
 
 export type TemplateParserOptions = {
-  shouldDecodeNewlines: boolean
-  shouldDecodeNewlinesForHref: boolean
-  shouldKeepComment: boolean
+  decodeNewlines: boolean
+  decodeNewlinesForHref: boolean
+  keepComments: boolean
 }
 
 type IsTagFunction = (tag: string) => boolean
 
-// #5992
+// https://www.w3.org/TR/html5/syntax.html#restrictions-on-content-models
 function shouldIgnoreFirstNewline(tag: string, html: string) {
-  return /pre|textarea/i.test(tag) && '\n' === html[0]
+  return '\n' === html[0] && /^pre|textarea$/i.test(tag)
 }
 
 const isNotProduction = !isProduction
 
 const defaultOptions: TemplateParserOptions = {
-  shouldDecodeNewlines: false,
-  shouldDecodeNewlinesForHref: false,
-  shouldKeepComment: true,
+  decodeNewlines: false,
+  decodeNewlinesForHref: false,
+  keepComments: true,
 }
 
 export default class TemplateParser {
   protected readonly options: TemplateParserOptions
   protected expectHTML: boolean = false
-  protected isForeignTag: IsTagFunction = no
-  protected isNonPhrasingTag: IsTagFunction = no
-  protected isOptionalClosingTag: IsTagFunction = no
-  protected isUnaryTag: IsTagFunction = no
+  protected isEscapableRawTextElement: IsTagFunction = no
+  protected isForeignElement: IsTagFunction = no
+  protected isNonPhrasingElement: IsTagFunction = no
+  protected isOptionalClosingElement: IsTagFunction = no
+  protected isRawTextElement: IsTagFunction = no
+  protected isVoidElement: IsTagFunction = no
 
   private readonly moduleList: Array<Object> = []
   private type?: TemplateSupportedType
@@ -115,7 +117,7 @@ export default class TemplateParser {
 
     this.type = type
     this.expectHTML = false
-    this.isForeignTag = this.isNonPhrasingTag = this.isOptionalClosingTag = this.isUnaryTag = no
+    this.isEscapableRawTextElement = this.isForeignElement = this.isNonPhrasingElement = this.isOptionalClosingElement = this.isRawTextElement = this.isVoidElement = no
 
     // noinspection FallThroughInSwitchStatementJS
     switch (type) {
@@ -125,15 +127,17 @@ export default class TemplateParser {
         break
       case TEXT_HTML_MIME_TYPE:
         this.expectHTML = true // HTML5 syntax support
-        this.isOptionalClosingTag = isOptionalClosingHTMLTag
+        this.isOptionalClosingElement = isOptionalClosingHTMLElement
       case APPLICATION_XHTML_XML_MIME_TYPE:
-        this.isForeignTag = isForeignHTMLTag
-        this.isNonPhrasingTag = isNonPhrasingHTMLTag
-        this.isUnaryTag = isUnaryHTMLTag // todo: XHTML
+        this.isEscapableRawTextElement = isEscapableRawHTMLTextElement
+        this.isForeignElement = isForeignHTMLTag
+        this.isNonPhrasingElement = isNonPhrasingHTMLElement
+        this.isRawTextElement = isRawHTMLTextElement
+        this.isVoidElement = isVoidHTMLElement // todo: XHTML
 
         break
       case IMAGE_SVG_XML_MIME_TYPE:
-        this.isForeignTag = isForeignSVGTag
+        this.isForeignElement = isForeignSVGElement
 
         break
       default:
@@ -158,10 +162,14 @@ export default class TemplateParser {
     while (this.source) {
       this.last = this.source
 
-      // Make sure we're not in a plaintext content element like script/style/textarea
+      // Make sure we're not in a raw text element like
+      // <script>, <style>, <textarea> or <title>
       if (
         !this.lastTagLowerCased ||
-        !plainTextElementRE.test(this.lastTagLowerCased)
+        !(
+          this.isRawTextElement(this.lastTagLowerCased) ||
+          this.isEscapableRawTextElement(this.lastTagLowerCased)
+        )
       ) {
         let textEndTokenIndex: number = this.source.indexOf('<')
 
@@ -173,7 +181,7 @@ export default class TemplateParser {
 
             // If comment have end token
             if (commentEndTokenIndex >= 0) {
-              if (this.options.shouldKeepComment) {
+              if (this.options.keepComments) {
                 this.comment(
                   this.source.substring(
                     COMMENT_START_TOKEN_LENGTH,
@@ -252,7 +260,6 @@ export default class TemplateParser {
           // Do not treat "<" character in plain text as parser instruction
           while (
             (ignoreCharIndex = rest.indexOf('<', 1)) >= 0 &&
-            // !rest.match(doctypeRE) &&
             !endTagRE.test(rest) &&
             !startTagOpenRE.test(rest) &&
             !commentStartRE.test(rest) &&
@@ -263,7 +270,6 @@ export default class TemplateParser {
           }
 
           text = this.source.substring(0, textEndTokenIndex)
-          // this.advance(textEndTokenIndex) todo roshe: why it here?
         } else {
           text = this.source
           this.source = ''
@@ -275,7 +281,8 @@ export default class TemplateParser {
           this.chars(text, this.index - text.length, this.index)
         }
       }
-      // We are in a plaintext content element like script/style/textarea
+      // We are in a raw text element like <script>, <style>,
+      // <textarea> or <title>
       else {
         let endTagLength = 0
         const stackedTagLowerCased = this.lastTagLowerCased
@@ -288,8 +295,11 @@ export default class TemplateParser {
             let text = content
 
             if (
-              !plainTextElementRE.test(stackedTagLowerCased) &&
-              'NOSCRIPT' !== stackedTagLowerCased
+              !(
+                this.isRawTextElement(stackedTagLowerCased) ||
+                this.isEscapableRawTextElement(stackedTagLowerCased)
+              ) &&
+              'noscript' !== stackedTagLowerCased
             ) {
               text = text
                 .replace(commentRE, '$1')
@@ -381,7 +391,7 @@ export default class TemplateParser {
         (this.namespace = XML_NAMESPACE_MAP[tagNameLowerCased]),
       attrs,
       unarySlash: '',
-      unary: false,
+      void: false,
       start: this.index,
       end: this.index,
     }
@@ -410,8 +420,8 @@ export default class TemplateParser {
         value: decodeAttrEntities(
           attrMatch[3] || attrMatch[4] || attrMatch[5] || '',
           'A' === tagNameLowerCased && 'href' === attrNameLowerCased
-            ? this.options.shouldDecodeNewlinesForHref
-            : this.options.shouldDecodeNewlines
+            ? this.options.decodeNewlinesForHref
+            : this.options.decodeNewlines
         ),
         start: start + (<RegExpMatchArray>attrMatch[0].match(/^\s*/)).length,
         end: this.index,
@@ -419,7 +429,7 @@ export default class TemplateParser {
 
       // todo: ns:name
       // 1. if tagStack is empty parse namespaces on root element.
-      // 2. parse xmlns:prefix and add prefix to namespaceMap
+      // 2. parse xmlns:prefix and add prefix to root tag namespaceMap
       // 3. parse xmlns and set namespace to its value
       // Add namespace of tags
       if ('xmlns' === attrNameLowerCased) {
@@ -440,8 +450,9 @@ export default class TemplateParser {
 
     if (startTagCloseTagMatch) {
       parsedTag.unarySlash = startTagCloseTagMatch[1]
-      parsedTag.unary =
-        this.isUnaryTag(tagNameLowerCased) || Boolean(startTagCloseTagMatch[1])
+      parsedTag.void =
+        this.isVoidElement(tagNameLowerCased) ||
+        Boolean(startTagCloseTagMatch[1])
       this.advance(startTagCloseTagMatch[0].length)
       parsedTag.end = this.index
 
@@ -454,9 +465,9 @@ export default class TemplateParser {
         const rootTag = this.rootTagStack[this.rootTagStack.length - 1]
 
         this.warn(
-          `tag <${
-            parsedTag.name
-          }> without namespace is not allowed in context of <${rootTag.name}>`,
+          `<${parsedTag.name}> element is not allowed in context of <${
+            rootTag.name
+          }> element without namespace`,
           {
             start: parsedTag.start,
           }
@@ -465,7 +476,10 @@ export default class TemplateParser {
       }
 
       // Change parser for foreign tag
-      if (!this.rootTagStack.length || this.isForeignTag(tagNameLowerCased)) {
+      if (
+        !this.rootTagStack.length ||
+        this.isForeignElement(tagNameLowerCased)
+      ) {
         this.rootTagStack.push(parsedTag)
 
         if (MIME_TYPE_MAP[tagNameLowerCased]) {
@@ -487,20 +501,20 @@ export default class TemplateParser {
     if (this.expectHTML) {
       if (
         this.lastTagLowerCased === 'P' &&
-        this.isNonPhrasingTag(tagNameLowerCased)
+        this.isNonPhrasingElement(tagNameLowerCased)
       ) {
         this.parseEndTag(this.lastTagLowerCased, this.index, this.index)
       }
 
       if (
-        this.isOptionalClosingTag(tagNameLowerCased) &&
+        this.isOptionalClosingElement(tagNameLowerCased) &&
         this.lastTagLowerCased === tagNameLowerCased
       ) {
         this.parseEndTag(tagNameLowerCased, this.index, this.index)
       }
     }
 
-    if (!parsedTag.unary) {
+    if (!parsedTag.void) {
       this.tagStack.push(parsedTag)
       this.lastTagLowerCased = tagNameLowerCased
     }
@@ -554,7 +568,7 @@ export default class TemplateParser {
         if (isNotProduction && (index > pos || !tagName)) {
           const stackTag = this.tagStack[index]
 
-          this.warn(`tag <${stackTag.name}> has no matching end tag.`, {
+          this.warn(`<${stackTag.name}> element has no matching end tag.`, {
             start: stackTag.start,
           })
         }
@@ -570,11 +584,10 @@ export default class TemplateParser {
       this.start({
         name: tagName,
         nameLowerCased: tagNameLowerCased,
-        // root: {...this.rootTag},
         namespace: this.namespace,
         attrs: [],
+        void: true,
         unarySlash: '',
-        unary: true,
         start,
         end,
       })
@@ -582,11 +595,10 @@ export default class TemplateParser {
       this.start({
         name: tagName,
         nameLowerCased: tagNameLowerCased,
-        // root: {...this.rootTag},
         namespace: this.namespace,
         attrs: [],
+        void: false,
         unarySlash: '',
-        unary: false,
         start,
         end,
       })

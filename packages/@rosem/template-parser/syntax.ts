@@ -35,9 +35,6 @@ export const commentRE = /<!-{2}([\s\S]*?)-->/g
 
 export const conditionalCommentCharacterDataRE = /<!\[CDATA\[([\s\S]*?)]]>/g
 
-// Special Elements (can contain anything)
-export const plainTextElementRE = /s(?:cript|tyle)|textarea/i
-
 export const COMMENT_END_TOKEN = '-->'
 
 export const CONDITIONAL_COMMENT_END_TOKEN = ']>'
