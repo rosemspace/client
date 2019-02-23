@@ -1,4 +1,4 @@
-import isNative from 'lodash/isNative'
+import isNative from 'lodash-es/isNative'
 
 const supportsSymbol: boolean =
   null != Symbol &&

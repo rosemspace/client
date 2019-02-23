@@ -1,6 +1,6 @@
-import { OBSERVER_KEY } from './index'
-import isNaN from 'lodash/isNaN'
+import isNaN from 'lodash-es/isNaN'
 import canRedefineProperty from '@rosem-util/common/canRedefineProperty'
+import { OBSERVER_KEY } from './index'
 import normalizeDescriptor from './normalizeDescriptor'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 import ComputedPropertyDescriptor from './ComputedPropertyDescriptor'

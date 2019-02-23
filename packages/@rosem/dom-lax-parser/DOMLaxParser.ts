@@ -1,25 +1,25 @@
-// text and comments nodes should not contain namespaceURI
-
 import no from '@rosem-util/common/no'
 import isProduction from '@rosem-util/env/isProduction'
+import getStackedTagRegExp from './getStackedTagRegExp'
 import isEscapableRawHTMLTextElement from './html/isEscapableRawTextElement'
 import isForeignHTMLTag from './html/isForeignElement'
 import isForeignSVGElement from './svg/isForeignElement'
 import isNonPhrasingHTMLElement from './html/isNonPhrasingElement'
 import isOptionalClosingHTMLElement from './html/isOptionalClosingElement'
-import isRawHTMLTextElement from './html/isRawTextElement'
+import isRawTextElement from './isRawTextElement'
 import isVoidHTMLElement from './html/isVoidElement'
-import { decodeAttrEntities } from './mapping/AttrEntityDecodingMap'
-import { XML_NAMESPACE_MAP } from './mapping/XMLNamespaceMap'
+import { decodeAttrEntities } from './AttrEntityDecodingMap'
+import { NAMESPACE_MAP } from './NamespaceMap'
 import {
   APPLICATION_MATHML_XML_MIME_TYPE,
   APPLICATION_XHTML_XML_MIME_TYPE,
   APPLICATION_XML_MIME_TYPE,
   IMAGE_SVG_XML_MIME_TYPE,
   MIME_TYPE_MAP,
+  SourceSupportedType,
   TEXT_HTML_MIME_TYPE,
   TEXT_XML_MIME_TYPE,
-} from './mapping/MIMETypeMap'
+} from './TypeMap'
 import {
   attributeRE,
   COMMENT_END_TOKEN,
@@ -29,7 +29,8 @@ import {
   commentStartRE,
   CONDITIONAL_COMMENT_END_TOKEN,
   CONDITIONAL_COMMENT_END_TOKEN_LENGTH,
-  conditionalCommentCharacterDataRE,
+  CONDITIONAL_COMMENT_START_TOKEN_LENGTH,
+  cDataSectionRE,
   conditionalCommentStartRE,
   doctypeDeclarationRE,
   endTagRE,
@@ -37,17 +38,19 @@ import {
   startTagCloseRE,
   startTagOpenRE,
   xmlDeclarationRE,
+  cDataSectionStartRE,
+  CDATA_SECTION_END_TOKEN,
+  CDATA_SECTION_START_TOKEN_LENGTH,
+  CDATA_SECTION_END_TOKEN_LENGTH,
 } from './syntax'
-
-export type TemplateSupportedType = 'application/mathml+xml' | SupportedType
 
 export type ParsedTag = {
   name: string
   nameLowerCased: string
   namespace?: string
   attrs: Array<ParsedAttribute>
-  start: number
-  end: number
+  matchStart: number
+  matchEnd: number
   void: boolean
   unarySlash: string
 }
@@ -65,43 +68,42 @@ export type TemplateParserOptions = {
   decodeNewlines: boolean
   decodeNewlinesForHref: boolean
   keepComments: boolean
+  keepCDATASections: boolean
 }
 
-type IsTagFunction = (tag: string) => boolean
+type IsElement = (tag: string) => boolean
+
+const isNotProduction = !isProduction
+const defaultOptions: TemplateParserOptions = {
+  decodeNewlines: false,
+  decodeNewlinesForHref: false,
+  keepComments: true,
+  keepCDATASections: true,
+}
 
 // https://www.w3.org/TR/html5/syntax.html#restrictions-on-content-models
 function shouldIgnoreFirstNewline(tag: string, html: string) {
   return '\n' === html[0] && /^pre|textarea$/i.test(tag)
 }
 
-const isNotProduction = !isProduction
-
-const defaultOptions: TemplateParserOptions = {
-  decodeNewlines: false,
-  decodeNewlinesForHref: false,
-  keepComments: true,
-}
-
-export default class TemplateParser {
+export default class DOMLaxParser {
   protected readonly options: TemplateParserOptions
   protected expectHTML: boolean = false
-  protected isEscapableRawTextElement: IsTagFunction = no
-  protected isForeignElement: IsTagFunction = no
-  protected isNonPhrasingElement: IsTagFunction = no
-  protected isOptionalClosingElement: IsTagFunction = no
-  protected isRawTextElement: IsTagFunction = no
-  protected isVoidElement: IsTagFunction = no
-
-  private readonly moduleList: Array<Object> = []
-  private type?: TemplateSupportedType
-  private namespace?: string
-  private source: string = ''
-  private index: number = 0
-  private stackedTagRegExpCache: { [stackTag: string]: RegExp } = {}
-  private tagStack: Array<ParsedTag> = []
-  private rootTagStack: Array<ParsedTag> = []
-  private last: string | undefined
-  private lastTagLowerCased: string | undefined
+  protected readonly moduleList: Array<Object> = []
+  protected type?: SourceSupportedType
+  protected namespace?: string
+  protected source: string = ''
+  protected index: number = 0
+  protected tagStack: Array<ParsedTag> = []
+  protected rootTagStack: Array<ParsedTag> = []
+  protected last: string | undefined
+  protected lastTagLowerCased: string | undefined
+  protected isEscapableRawTextElement: IsElement = no
+  protected isForeignElement: IsElement = no
+  protected isNonPhrasingElement: IsElement = no
+  protected isOptionalClosingElement: IsElement = no
+  protected isRawTextElement: IsElement = no
+  protected isVoidElement: IsElement = no
 
   constructor(options?: TemplateParserOptions) {
     this.options = {
@@ -110,7 +112,9 @@ export default class TemplateParser {
     }
   }
 
-  protected switchParser(type: TemplateSupportedType): void {
+  static getStackedTagRegExp: (tagName: string) => RegExp = getStackedTagRegExp
+
+  protected switchParser(type: SourceSupportedType = 'text/html'): void {
     if (type === this.type) {
       return
     }
@@ -132,24 +136,24 @@ export default class TemplateParser {
         this.isEscapableRawTextElement = isEscapableRawHTMLTextElement
         this.isForeignElement = isForeignHTMLTag
         this.isNonPhrasingElement = isNonPhrasingHTMLElement
-        this.isRawTextElement = isRawHTMLTextElement
+        this.isRawTextElement = isRawTextElement
         this.isVoidElement = isVoidHTMLElement // todo: XHTML
 
         break
       case IMAGE_SVG_XML_MIME_TYPE:
         this.isForeignElement = isForeignSVGElement
+        this.isRawTextElement = isRawTextElement
 
         break
       default:
-        throw new TypeError(`Unsupported source type: ${type}`)
+        throw new TypeError(`Unsupported source MIME type: ${type}`)
     }
   }
 
   public parseFromString(
     source: string,
-    type: TemplateSupportedType = 'text/html'
+    type: SourceSupportedType = 'text/html'
   ): void {
-    debugger
     // Clear previous data
     this.tagStack = []
     this.rootTagStack = []
@@ -180,10 +184,10 @@ export default class TemplateParser {
             const commentEndTokenIndex = this.source.indexOf(COMMENT_END_TOKEN)
 
             // If comment have end token
-            if (commentEndTokenIndex >= 0) {
+            if (commentEndTokenIndex >= COMMENT_START_TOKEN_LENGTH) {
               if (this.options.keepComments) {
                 this.comment(
-                  this.source.substring(
+                  this.source.slice(
                     COMMENT_START_TOKEN_LENGTH,
                     commentEndTokenIndex
                   ),
@@ -198,17 +202,44 @@ export default class TemplateParser {
             }
           }
 
+          // Character data:
+          if (cDataSectionStartRE.test(this.source)) {
+            const cdataSectionEndTokenIndex = this.source.indexOf(
+              CDATA_SECTION_END_TOKEN
+            )
+
+            // If CDATA section have end token
+            if (cdataSectionEndTokenIndex >= CDATA_SECTION_START_TOKEN_LENGTH) {
+              if (this.options.keepCDATASections) {
+                this.cDataSection(
+                  this.source.slice(
+                    CDATA_SECTION_START_TOKEN_LENGTH,
+                    cdataSectionEndTokenIndex
+                  ),
+                  this.index,
+                  this.index +
+                    cdataSectionEndTokenIndex +
+                    CDATA_SECTION_END_TOKEN_LENGTH
+                )
+              }
+            }
+          }
+
           // Conditional comment:
           // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
           if (conditionalCommentStartRE.test(this.source)) {
-            const conditionalEndTokenIndex = this.source.indexOf(
+            const conditionalCommentEndTokenIndex = this.source.indexOf(
               CONDITIONAL_COMMENT_END_TOKEN
             )
 
             // If conditional comment have end token
-            if (conditionalEndTokenIndex >= 0) {
+            if (
+              conditionalCommentEndTokenIndex >=
+              CONDITIONAL_COMMENT_START_TOKEN_LENGTH
+            ) {
               this.advance(
-                conditionalEndTokenIndex + CONDITIONAL_COMMENT_END_TOKEN_LENGTH
+                conditionalCommentEndTokenIndex +
+                  CONDITIONAL_COMMENT_END_TOKEN_LENGTH
               )
 
               continue
@@ -257,7 +288,7 @@ export default class TemplateParser {
           let rest = this.source.slice(textEndTokenIndex)
           let ignoreCharIndex
 
-          // Do not treat "<" character in plain text as parser instruction
+          // Do not treat character "<" in plain text as parser instruction
           while (
             (ignoreCharIndex = rest.indexOf('<', 1)) >= 0 &&
             !endTagRE.test(rest) &&
@@ -269,14 +300,14 @@ export default class TemplateParser {
             rest = this.source.slice(textEndTokenIndex)
           }
 
-          text = this.source.substring(0, textEndTokenIndex)
+          text = this.source.slice(0, textEndTokenIndex)
         } else {
           text = this.source
           this.source = ''
         }
 
+        // todo I guess we will always have text
         if (text) {
-          // I guess we will always have text
           this.advance(text.length)
           this.chars(text, this.index - text.length, this.index)
         }
@@ -286,7 +317,7 @@ export default class TemplateParser {
       else {
         let endTagLength = 0
         const stackedTagLowerCased = this.lastTagLowerCased
-        const stackedTagRE = this.getStackedTagRE(stackedTagLowerCased)
+        const stackedTagRE = getStackedTagRegExp(stackedTagLowerCased)
         const rest = this.source.replace(
           stackedTagRE,
           (all: string, content: string, endTag: string): string => {
@@ -301,16 +332,13 @@ export default class TemplateParser {
               ) &&
               'noscript' !== stackedTagLowerCased
             ) {
-              text = text
-                .replace(commentRE, '$1')
-                .replace(conditionalCommentCharacterDataRE, '$1')
+              text = text.replace(commentRE, '$1').replace(cDataSectionRE, '$1')
             }
 
             if (shouldIgnoreFirstNewline(stackedTagLowerCased, text)) {
               text = text.slice(1)
             }
 
-            debugger
             this.chars(text, this.index, this.index + content.length)
 
             return ''
@@ -328,9 +356,9 @@ export default class TemplateParser {
       }
 
       if (this.source === this.last) {
-        debugger
         this.chars(this.source, this.index, this.index + this.source.length)
 
+        // When a template ends with "<..." (just the example)
         if (isNotProduction && !this.tagStack.length) {
           this.warn(`Mal-formatted tag at end of template: "${this.source}"`, {
             start: this.index + this.source.length,
@@ -344,22 +372,12 @@ export default class TemplateParser {
     this.parseEndTag('', 0, 0) // todo
   }
 
-  private advance(n: number) {
+  protected advance(n: number) {
     this.index += n
-    this.source = this.source.substring(n)
+    this.source = this.source.slice(n)
   }
 
-  private getStackedTagRE(tagName: string): RegExp {
-    return (
-      this.stackedTagRegExpCache[tagName] ||
-      (this.stackedTagRegExpCache[tagName] = new RegExp(
-        `([\\s\\S]*?)(</${tagName}[^>]*>)`,
-        'i'
-      ))
-    )
-  }
-
-  private parseXMLDeclaration() {
+  protected parseXMLDeclaration() {
     const xmlDeclarationMatch = this.source.match(xmlDeclarationRE)
 
     if (xmlDeclarationMatch) {
@@ -368,7 +386,7 @@ export default class TemplateParser {
     }
   }
 
-  private parseDoctype() {
+  protected parseDoctype() {
     const doctypeDeclarationMatch = this.source.match(doctypeDeclarationRE)
 
     if (doctypeDeclarationMatch) {
@@ -377,7 +395,7 @@ export default class TemplateParser {
     }
   }
 
-  private parseStartTag(
+  protected parseStartTag(
     startTagOpenMatch: RegExpMatchArray
   ): ParsedTag | undefined {
     const tagName = startTagOpenMatch[1]
@@ -387,13 +405,12 @@ export default class TemplateParser {
       name: tagName,
       nameLowerCased: tagNameLowerCased,
       namespace:
-        this.namespace ||
-        (this.namespace = XML_NAMESPACE_MAP[tagNameLowerCased]),
+        this.namespace || (this.namespace = NAMESPACE_MAP[tagNameLowerCased]),
       attrs,
       unarySlash: '',
       void: false,
-      start: this.index,
-      end: this.index,
+      matchStart: this.index,
+      matchEnd: this.index,
     }
 
     this.advance(startTagOpenMatch[0].length)
@@ -438,7 +455,7 @@ export default class TemplateParser {
 
       // Add namespace of attribute
       if (attrNcNameLowerCased) {
-        const attrNamespace = XML_NAMESPACE_MAP[attrNcNameLowerCased]
+        const attrNamespace = NAMESPACE_MAP[attrNcNameLowerCased]
 
         if (attrNamespace) {
           attr.namespace = attrNamespace
@@ -454,7 +471,7 @@ export default class TemplateParser {
         this.isVoidElement(tagNameLowerCased) ||
         Boolean(startTagCloseTagMatch[1])
       this.advance(startTagCloseTagMatch[0].length)
-      parsedTag.end = this.index
+      parsedTag.matchEnd = this.index
 
       // We don't have namespace from previous tag
       if (
@@ -464,18 +481,21 @@ export default class TemplateParser {
       ) {
         const rootTag = this.rootTagStack[this.rootTagStack.length - 1]
 
-        this.warn(
-          `<${parsedTag.name}> element is not allowed in context of <${
-            rootTag.name
-          }> element without namespace`,
-          {
-            start: parsedTag.start,
-          }
-        )
         this.namespace = parsedTag.namespace = rootTag.namespace
+
+        if (isNotProduction) {
+          this.warn(
+            `<${parsedTag.name}> element is not allowed in context of <${
+              rootTag.name
+            }> element without namespace`,
+            {
+              start: parsedTag.matchStart,
+            }
+          )
+        }
       }
 
-      // Change parser for foreign tag
+      // Switch parser for foreign tag
       if (
         !this.rootTagStack.length ||
         this.isForeignElement(tagNameLowerCased)
@@ -485,7 +505,7 @@ export default class TemplateParser {
         if (MIME_TYPE_MAP[tagNameLowerCased]) {
           this.switchParser(MIME_TYPE_MAP[tagNameLowerCased])
           this.namespace = parsedTag.namespace =
-            XML_NAMESPACE_MAP[parsedTag.nameLowerCased] || this.namespace
+            NAMESPACE_MAP[parsedTag.nameLowerCased] || this.namespace
         } else {
           this.namespace = undefined
         }
@@ -495,12 +515,12 @@ export default class TemplateParser {
     }
   }
 
-  private handleStartTag(parsedTag: ParsedTag) {
+  protected handleStartTag(parsedTag: ParsedTag) {
     const tagNameLowerCased = parsedTag.nameLowerCased
 
     if (this.expectHTML) {
       if (
-        this.lastTagLowerCased === 'P' &&
+        this.lastTagLowerCased === 'p' &&
         this.isNonPhrasingElement(tagNameLowerCased)
       ) {
         this.parseEndTag(this.lastTagLowerCased, this.index, this.index)
@@ -522,7 +542,7 @@ export default class TemplateParser {
     this.start(parsedTag)
   }
 
-  private parseEndTag(tagName: string, start: number, end: number) {
+  protected parseEndTag(tagName: string, matchStart: number, matchEnd: number) {
     let tagNameLowerCased
     let pos
 
@@ -532,6 +552,7 @@ export default class TemplateParser {
 
       for (pos = this.tagStack.length - 1; pos >= 0; --pos) {
         if (this.tagStack[pos].nameLowerCased === tagNameLowerCased) {
+          // Switch parser back before foreign tag
           if (
             this.tagStack[pos].nameLowerCased ===
             this.rootTagStack[this.rootTagStack.length - 1].nameLowerCased
@@ -543,12 +564,8 @@ export default class TemplateParser {
                 this.rootTagStack.length - 1
               ]
 
-              if (MIME_TYPE_MAP[previousRootTag.nameLowerCased]) {
-                this.switchParser(MIME_TYPE_MAP[previousRootTag.nameLowerCased])
-                this.namespace = previousRootTag.namespace
-              } else {
-                this.namespace = undefined
-              }
+              this.switchParser(MIME_TYPE_MAP[previousRootTag.nameLowerCased])
+              this.namespace = previousRootTag.namespace
             }
           }
 
@@ -569,18 +586,18 @@ export default class TemplateParser {
           const stackTag = this.tagStack[index]
 
           this.warn(`<${stackTag.name}> element has no matching end tag.`, {
-            start: stackTag.start,
+            start: stackTag.matchStart,
           })
         }
 
-        this.end(this.tagStack[index].name, start, end)
+        this.end(this.tagStack[index].name, matchStart, matchEnd)
       }
 
       // Remove the open elements from the stack
       this.tagStack.length = pos
       this.lastTagLowerCased =
         pos > 0 ? this.tagStack[pos - 1].nameLowerCased : undefined
-    } else if (tagNameLowerCased === 'BR') {
+    } else if (tagNameLowerCased === 'br') {
       this.start({
         name: tagName,
         nameLowerCased: tagNameLowerCased,
@@ -588,10 +605,10 @@ export default class TemplateParser {
         attrs: [],
         void: true,
         unarySlash: '',
-        start,
-        end,
+        matchStart,
+        matchEnd,
       })
-    } else if (tagNameLowerCased === 'P') {
+    } else if (tagNameLowerCased === 'p') {
       this.start({
         name: tagName,
         nameLowerCased: tagNameLowerCased,
@@ -599,31 +616,35 @@ export default class TemplateParser {
         attrs: [],
         void: false,
         unarySlash: '',
-        start,
-        end,
+        matchStart,
+        matchEnd,
       })
-      this.end(tagName, start, end)
+      this.end(tagName, matchStart, matchEnd)
     }
   }
 
-  private start(parsedTag: ParsedTag) {
-    console.log('START: ', parsedTag)
+  protected start(parsedTag: ParsedTag) {
+    console.log('TAG START: ', parsedTag)
   }
 
-  private end(tagName: string, matchStart: number, matchEnd: number) {
-    console.log('END: ', tagName, matchStart, matchEnd)
+  protected end(tagName: string, matchStart: number, matchEnd: number) {
+    console.log('TAG END: ', tagName, matchStart, matchEnd)
   }
 
-  private chars(text: string, matchStart: number, matchEnd: number) {
+  protected chars(text: string, matchStart: number, matchEnd: number) {
     console.log('TEXT: ', JSON.stringify(text), matchStart, matchEnd)
   }
 
-  private comment(text: string, matchStart: number, matchEnd: number) {
+  protected comment(text: string, matchStart: number, matchEnd: number) {
     console.log('COMMENT: ', JSON.stringify(text), matchStart, matchEnd)
   }
 
+  protected cDataSection(text: string, matchStart: number, matchEnd: number) {
+    console.log('CDATA SECTION: ', JSON.stringify(text), matchStart, matchEnd)
+  }
+
   // todo: options type
-  private warn(message: string, options: any = {}) {
+  protected warn(message: string, options: any = {}) {
     console.warn(message)
   }
 }

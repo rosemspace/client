@@ -33,15 +33,23 @@ export const conditionalCommentStartRE = /^<!\[/
 
 export const commentRE = /<!-{2}([\s\S]*?)-->/g
 
-export const conditionalCommentCharacterDataRE = /<!\[CDATA\[([\s\S]*?)]]>/g
+export const cDataSectionStartRE = /^<!\[CDATA\[/
+
+export const cDataSectionRE = /<!\[CDATA\[([\s\S]*?)]]>/g
 
 export const COMMENT_END_TOKEN = '-->'
-
-export const CONDITIONAL_COMMENT_END_TOKEN = ']>'
 
 export const COMMENT_START_TOKEN_LENGTH = 4 // <!--
 
 export const COMMENT_END_TOKEN_LENGTH = 3 // -->
+
+export const CDATA_SECTION_END_TOKEN = ']]>'
+
+export const CDATA_SECTION_START_TOKEN_LENGTH = 9 // <![CDATA[
+
+export const CDATA_SECTION_END_TOKEN_LENGTH = 3 // ]]>
+
+export const CONDITIONAL_COMMENT_END_TOKEN = ']>'
 
 export const CONDITIONAL_COMMENT_START_TOKEN_LENGTH = 3 // <![
 

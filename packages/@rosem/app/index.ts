@@ -5,8 +5,8 @@
 
 import Reaction from '@rosem/observable'
 import Transition from '@rosem/ui-transition'
-import { h, host, vHost } from '@rosem/vdom-html'
-import TemplateParser from '@rosem/template-parser'
+import { h, host, vHost } from '@rosem/ui-patform-web'
+import DOMLaxParser from '@rosem/dom-lax-parser'
 
 // @ts-ignore
 window.h = h
@@ -15,8 +15,9 @@ window.host = host
 // @ts-ignore
 window.vHost = vHost
 
-new TemplateParser().parseFromString(`
+new DOMLaxParser().parseFromString(`
 <!doctype html>
+<!--<html lang="en">-->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
@@ -24,10 +25,11 @@ new TemplateParser().parseFromString(`
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
 </head>
-<body>
+<!--<body>-->
 <svg>
   <use xlink:href="icons.svg#test"/>
 </svg>
+<div>Test of <![cond]> <![CDATA[ok]]> section</div>
 <div>
   <p>Paragraph 1
   <p>Paragraph 2
@@ -92,7 +94,7 @@ new TemplateParser().parseFromString(`
 </svg>
 <div class="test"></div>
 <!--</body>-->
-</xhtml>
+<...
 `)
 // Transition.test();
 // Reaction.test()

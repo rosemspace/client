@@ -1,5 +1,3 @@
-type AttrEntityDecodingMap = { [code: string]: string }
-
 export const TAB_ENTITY_DECIMAL_NUMBER = '&#9;'
 export const TAB_ENTITY_HEX_NUMBER = '&#x00009;'
 export const TAB_ENTITY_ALIAS_1 = '&Tab;'
@@ -25,6 +23,8 @@ export const GREATER_THAN_ENTITY_DECIMAL_NUMBER = '&#62;'
 export const GREATER_THAN_ENTITY_HEX_NUMBER = '&#x0003E;'
 export const GREATER_THAN_ENTITY_ALIAS_1 = '&gt;'
 export const GREATER_THAN_ENTITY_ALIAS_2 = '&GT;'
+
+type AttrEntityDecodingMap = { [code: string]: string }
 
 export const ATTRIBUTE_ENTITY_DECODING_MAP: AttrEntityDecodingMap = {
   [TAB_ENTITY_DECIMAL_NUMBER]: '\t',
