@@ -8,6 +8,8 @@ import isNonPhrasingHTMLElement from './html/isNonPhrasingElement'
 import isOptionalClosingHTMLElement from './html/isOptionalClosingElement'
 import isRawTextElement from './isRawTextElement'
 import isVoidHTMLElement from './html/isVoidElement'
+import unicodeLetters from './unicodeLetters'
+import ModuleInterface from './ModuleInterface'
 import { decodeAttrEntities } from './AttrEntityDecodingMap'
 import { NAMESPACE_MAP } from './NamespaceMap'
 import {
@@ -20,55 +22,78 @@ import {
   TEXT_HTML_MIME_TYPE,
   TEXT_XML_MIME_TYPE,
 } from './TypeMap'
-import {
-  attributeRE,
-  COMMENT_END_TOKEN,
-  COMMENT_END_TOKEN_LENGTH,
-  COMMENT_START_TOKEN_LENGTH,
-  commentRE,
-  commentStartRE,
-  CONDITIONAL_COMMENT_END_TOKEN,
-  CONDITIONAL_COMMENT_END_TOKEN_LENGTH,
-  CONDITIONAL_COMMENT_START_TOKEN_LENGTH,
-  cDataSectionRE,
-  conditionalCommentStartRE,
-  doctypeDeclarationRE,
-  endTagRE,
-  qNameRE,
-  startTagCloseRE,
-  startTagOpenRE,
-  xmlDeclarationRE,
-  cDataSectionStartRE,
-  CDATA_SECTION_END_TOKEN,
-  CDATA_SECTION_START_TOKEN_LENGTH,
-  CDATA_SECTION_END_TOKEN_LENGTH,
-} from './syntax'
 
-export type ParsedTag = {
+export const processingInstructionRE = /^\s*<\?[^>]+\?>/
+export const xmlDeclarationRE = /^\s*<\?xml[^>]+>/
+export const doctypeDeclarationRE = /^\s*<!DOCTYPE [^>]+>/i
+// Non-colonized name e.g. "name"
+// could use CombiningChar and Extender characters
+// (https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName)
+// but for ui templates we can enforce a simple charset
+const ncNameREPart = `[a-zA-Z_][\\-\\.0-9_${unicodeLetters}]*`
+// Qualified name e.g. "namespace:name"
+export const qNameRE = new RegExp(`^(?:(${ncNameREPart}):)?(${ncNameREPart})$`)
+const qNameRECapturePart = `((?:${ncNameREPart}\\:)?${ncNameREPart})`
+export const startTagOpenRE = new RegExp(`^<${qNameRECapturePart}`)
+export const startTagCloseRE = /^\s*(\/?)>/
+// Regular Expressions for parsing tags and attributes
+export const attributeRE = /^\s*([^\s"'<>/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+export const endTagRE = new RegExp(`^<\\/${qNameRECapturePart}[^>]*>`)
+// Used repeating construction to avoid being passed as HTML comment when inlined in a page
+export const commentStartRE = /^<!-{2}/
+export const conditionalCommentStartRE = /^<!\[/
+export const commentRE = /<!-{2}([\s\S]*?)-->/g
+export const cDataSectionStartRE = /^<!\[CDATA\[/
+export const cDataSectionRE = /<!\[CDATA\[([\s\S]*?)]]>/g
+export const COMMENT_END_TOKEN = '-->'
+const commentStartTokenLength = 4 // <!--
+const commentEndTokenLength = 3 // -->
+export const CDATA_SECTION_END_TOKEN = ']]>'
+const cDATASectionStartTokenLength = 9 // <![CDATA[
+const cDATASectionEndTokenLength = 3 // ]]>
+export const CONDITIONAL_COMMENT_END_TOKEN = ']>'
+const conditionalCommentStartTokenLength = 3 // <![
+const conditionalCommentEndTokenLength = 2 // ]>
+
+type ParsedItem = {
+  matchStart: number
+  matchEnd: number
+}
+
+export type ParsedStartTag = {
   name: string
   nameLowerCased: string
   namespace?: string
   attrs: Array<ParsedAttribute>
-  matchStart: number
-  matchEnd: number
   void: boolean
   unarySlash: string
-}
+} & ParsedItem
 
 export type ParsedAttribute = {
   name: string
   nameLowerCased: string
   namespace?: string
   value: string
-  start: number
-  end: number
-}
+} & ParsedItem
+
+export type ParsedEndTag = {
+  name: string,
+  nameLowerCased: string,
+} & ParsedItem
+
+export type ParsedText = {
+  text: string
+} & ParsedItem
 
 export type TemplateParserOptions = {
   decodeNewlines: boolean
   decodeNewlinesForHref: boolean
   keepComments: boolean
   keepCDATASections: boolean
+}
+
+export type WarningData = {
+  start: number
 }
 
 type IsElement = (tag: string) => boolean
@@ -89,13 +114,13 @@ function shouldIgnoreFirstNewline(tag: string, html: string) {
 export default class DOMLaxParser {
   protected readonly options: TemplateParserOptions
   protected expectHTML: boolean = false
-  protected readonly moduleList: Array<Object> = []
+  protected readonly moduleList: Array<ModuleInterface> = []
   protected type?: SourceSupportedType
   protected namespace?: string
   protected source: string = ''
   protected index: number = 0
-  protected tagStack: Array<ParsedTag> = []
-  protected rootTagStack: Array<ParsedTag> = []
+  protected tagStack: Array<ParsedStartTag> = []
+  protected rootTagStack: Array<ParsedStartTag> = []
   protected last: string | undefined
   protected lastTagLowerCased: string | undefined
   protected isEscapableRawTextElement: IsElement = no
@@ -113,6 +138,10 @@ export default class DOMLaxParser {
   }
 
   static getStackedTagRegExp: (tagName: string) => RegExp = getStackedTagRegExp
+
+  addModule(module: ModuleInterface): void {
+    this.moduleList.push(module)
+  }
 
   protected switchParser(type: SourceSupportedType = 'text/html'): void {
     if (type === this.type) {
@@ -150,7 +179,7 @@ export default class DOMLaxParser {
     }
   }
 
-  public parseFromString(
+  parseFromString(
     source: string,
     type: SourceSupportedType = 'text/html'
   ): void {
@@ -184,19 +213,19 @@ export default class DOMLaxParser {
             const commentEndTokenIndex = this.source.indexOf(COMMENT_END_TOKEN)
 
             // If comment have end token
-            if (commentEndTokenIndex >= COMMENT_START_TOKEN_LENGTH) {
+            if (commentEndTokenIndex >= commentStartTokenLength) {
               if (this.options.keepComments) {
-                this.comment(
-                  this.source.slice(
-                    COMMENT_START_TOKEN_LENGTH,
+                this.comment({
+                  text: this.source.slice(
+                    commentStartTokenLength,
                     commentEndTokenIndex
                   ),
-                  this.index,
-                  this.index + commentEndTokenIndex + COMMENT_END_TOKEN_LENGTH
-                )
+                  matchStart: this.index,
+                  matchEnd: this.index + commentEndTokenIndex + commentEndTokenLength
+                })
               }
 
-              this.advance(commentEndTokenIndex + COMMENT_END_TOKEN_LENGTH)
+              this.advance(commentEndTokenIndex + commentEndTokenLength)
 
               continue
             }
@@ -209,18 +238,18 @@ export default class DOMLaxParser {
             )
 
             // If CDATA section have end token
-            if (cdataSectionEndTokenIndex >= CDATA_SECTION_START_TOKEN_LENGTH) {
+            if (cdataSectionEndTokenIndex >= cDATASectionStartTokenLength) {
               if (this.options.keepCDATASections) {
-                this.cDataSection(
-                  this.source.slice(
-                    CDATA_SECTION_START_TOKEN_LENGTH,
+                this.cDataSection({
+                  text: this.source.slice(
+                    cDATASectionStartTokenLength,
                     cdataSectionEndTokenIndex
                   ),
-                  this.index,
-                  this.index +
+                  matchStart: this.index,
+                  matchEnd: this.index +
                     cdataSectionEndTokenIndex +
-                    CDATA_SECTION_END_TOKEN_LENGTH
-                )
+                    cDATASectionEndTokenLength
+                })
               }
             }
           }
@@ -235,11 +264,11 @@ export default class DOMLaxParser {
             // If conditional comment have end token
             if (
               conditionalCommentEndTokenIndex >=
-              CONDITIONAL_COMMENT_START_TOKEN_LENGTH
+              conditionalCommentStartTokenLength
             ) {
               this.advance(
                 conditionalCommentEndTokenIndex +
-                  CONDITIONAL_COMMENT_END_TOKEN_LENGTH
+                  conditionalCommentEndTokenLength
               )
 
               continue
@@ -309,7 +338,11 @@ export default class DOMLaxParser {
         // todo I guess we will always have text
         if (text) {
           this.advance(text.length)
-          this.chars(text, this.index - text.length, this.index)
+          this.text({
+            text,
+            matchStart: this.index - text.length,
+            matchEnd: this.index
+          })
         }
       }
       // We are in a raw text element like <script>, <style>,
@@ -339,7 +372,11 @@ export default class DOMLaxParser {
               text = text.slice(1)
             }
 
-            this.chars(text, this.index, this.index + content.length)
+            this.text({
+              text,
+              matchStart: this.index,
+              matchEnd: this.index + content.length
+            })
 
             return ''
           }
@@ -356,7 +393,11 @@ export default class DOMLaxParser {
       }
 
       if (this.source === this.last) {
-        this.chars(this.source, this.index, this.index + this.source.length)
+        this.text({
+          text: this.source,
+          matchStart: this.index,
+          matchEnd: this.index + this.source.length
+        })
 
         // When a template ends with "<..." (just the example)
         if (isNotProduction && !this.tagStack.length) {
@@ -397,11 +438,11 @@ export default class DOMLaxParser {
 
   protected parseStartTag(
     startTagOpenMatch: RegExpMatchArray
-  ): ParsedTag | undefined {
+  ): ParsedStartTag | undefined {
     const tagName = startTagOpenMatch[1]
     const tagNameLowerCased = tagName.toLowerCase()
     const attrs: Array<ParsedAttribute> = []
-    const parsedTag: ParsedTag = {
+    const parsedTag: ParsedStartTag = {
       name: tagName,
       nameLowerCased: tagNameLowerCased,
       namespace:
@@ -440,8 +481,8 @@ export default class DOMLaxParser {
             ? this.options.decodeNewlinesForHref
             : this.options.decodeNewlines
         ),
-        start: start + (<RegExpMatchArray>attrMatch[0].match(/^\s*/)).length,
-        end: this.index,
+        matchStart: start + (<RegExpMatchArray>attrMatch[0].match(/^\s*/)).length,
+        matchEnd: this.index,
       }
 
       // todo: ns:name
@@ -515,7 +556,7 @@ export default class DOMLaxParser {
     }
   }
 
-  protected handleStartTag(parsedTag: ParsedTag) {
+  protected handleStartTag(parsedTag: ParsedStartTag) {
     const tagNameLowerCased = parsedTag.nameLowerCased
 
     if (this.expectHTML) {
@@ -539,7 +580,7 @@ export default class DOMLaxParser {
       this.lastTagLowerCased = tagNameLowerCased
     }
 
-    this.start(parsedTag)
+    this.tagStart(parsedTag)
   }
 
   protected parseEndTag(tagName: string, matchStart: number, matchEnd: number) {
@@ -560,7 +601,7 @@ export default class DOMLaxParser {
             this.rootTagStack.pop()
 
             if (this.rootTagStack.length) {
-              const previousRootTag: ParsedTag = this.rootTagStack[
+              const previousRootTag: ParsedStartTag = this.rootTagStack[
                 this.rootTagStack.length - 1
               ]
 
@@ -585,15 +626,20 @@ export default class DOMLaxParser {
 
       // Close all the open elements, up the stack
       for (index = this.tagStack.length - 1; index >= pos; --index) {
-        if (isNotProduction && (index > pos || !tagName)) {
-          const stackTag = this.tagStack[index]
+        const stackTag = this.tagStack[index]
 
+        if (isNotProduction && (index > pos || !tagName)) {
           this.warn(`<${stackTag.name}> element has no matching end tag.`, {
             start: stackTag.matchStart,
           })
         }
 
-        this.end(this.tagStack[index].name, matchStart, matchEnd)
+        this.tagEnd({
+          name: stackTag.name,
+          nameLowerCased: stackTag.nameLowerCased,
+          matchStart,
+          matchEnd
+        })
       }
 
       // Remove the open elements from the stack
@@ -601,7 +647,7 @@ export default class DOMLaxParser {
       this.lastTagLowerCased =
         pos > 0 ? this.tagStack[pos - 1].nameLowerCased : undefined
     } else if (tagNameLowerCased === 'br') {
-      this.start({
+      this.tagStart({
         name: tagName,
         nameLowerCased: tagNameLowerCased,
         namespace: this.namespace,
@@ -612,7 +658,7 @@ export default class DOMLaxParser {
         matchEnd,
       })
     } else if (tagNameLowerCased === 'p') {
-      this.start({
+      this.tagStart({
         name: tagName,
         nameLowerCased: tagNameLowerCased,
         namespace: this.namespace,
@@ -622,32 +668,60 @@ export default class DOMLaxParser {
         matchStart,
         matchEnd,
       })
-      this.end(tagName, matchStart, matchEnd)
+      this.tagEnd({
+        name: tagName,
+        nameLowerCased: tagNameLowerCased,
+        matchStart,
+        matchEnd
+      })
     }
   }
 
-  protected start(parsedTag: ParsedTag) {
-    console.log('TAG START: ', parsedTag)
+  protected tagStart(parsedTag: ParsedStartTag) {
+    let module
+
+    for (module of this.moduleList) {
+      module.tagStart(parsedTag)
+    }
   }
 
-  protected end(tagName: string, matchStart: number, matchEnd: number) {
-    console.log('TAG END: ', tagName, matchStart, matchEnd)
+  protected tagEnd(parsedEndTag: ParsedEndTag) {
+    let module
+
+    for (module of this.moduleList) {
+      module.tagEnd(parsedEndTag)
+    }
   }
 
-  protected chars(text: string, matchStart: number, matchEnd: number) {
-    console.log('TEXT: ', JSON.stringify(text), matchStart, matchEnd)
+  protected text(parsedText: ParsedText) {
+    let module
+
+    for (module of this.moduleList) {
+      module.text(parsedText)
+    }
   }
 
-  protected comment(text: string, matchStart: number, matchEnd: number) {
-    console.log('COMMENT: ', JSON.stringify(text), matchStart, matchEnd)
+  protected comment(parsedComment: ParsedText) {
+    let module
+
+    for (module of this.moduleList) {
+      module.comment(parsedComment)
+    }
   }
 
-  protected cDataSection(text: string, matchStart: number, matchEnd: number) {
-    console.log('CDATA SECTION: ', JSON.stringify(text), matchStart, matchEnd)
+  protected cDataSection(parsedCDATASection: ParsedText) {
+    let module
+
+    for (module of this.moduleList) {
+      module.cDataSection(parsedCDATASection)
+    }
   }
 
-  // todo: options type
-  protected warn(message: string, options: any = {}) {
-    console.warn(message)
+  protected warn(message: string, data: WarningData) {
+    let module
+
+    for (module of this.moduleList) {
+      module.warn(message, data)
+    }
   }
 }

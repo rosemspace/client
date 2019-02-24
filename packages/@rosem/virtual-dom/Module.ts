@@ -5,7 +5,7 @@ import {
   DestroyHook,
   RemoveHook,
   PostHook,
-} from './HookList'
+} from './HookListInterface'
 
 export interface Module<Node> {
   pre: PreHook
