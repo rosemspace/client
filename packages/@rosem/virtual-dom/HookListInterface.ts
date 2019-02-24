@@ -1,41 +1,41 @@
-import VNode from './VNode'
+import VNode from './VirtualInstance'
 
 export type PreHook = () => any
 
-export type InitHook<Node> = (vNode: VNode<Node>) => any
+export type InitHook<Node> = (vNode: VNode) => any
 
 export type CreateHook<Node> = (
-  emptyVNode: VNode<Node>,
-  vNode: VNode<Node>
+  emptyVNode: VNode,
+  vNode: VNode
 ) => any
 
-export type InsertHook<Node> = (vNode: VNode<Node>) => any
+export type InsertHook<Node> = (vNode: VNode) => any
 
 export type PrePatchHook<Node> = (
-  oldVNode: VNode<Node>,
-  vNode: VNode<Node>
+  oldVNode: VNode,
+  vNode: VNode
 ) => any
 
 export type UpdateHook<Node> = (
-  oldVNode: VNode<Node>,
-  vNode: VNode<Node>
+  oldVNode: VNode,
+  vNode: VNode
 ) => any
 
 export type PostPatchHook<Node> = (
-  oldVNode: VNode<Node>,
-  vNode: VNode<Node>
+  oldVNode: VNode,
+  vNode: VNode
 ) => any
 
-export type DestroyHook<Node> = (vNode: VNode<Node>) => any
+export type DestroyHook<Node> = (vNode: VNode) => any
 
 export type RemoveHook<Node> = (
-  vNode: VNode<Node>,
+  vNode: VNode,
   removeCallback: () => void
 ) => any
 
 export type PostHook = () => any
 
-export default interface HookList<Node> {
+export default interface HookListInterface<Node> {
   pre?: PreHook // beforeCreate
   init?: InitHook<Node> // created
   create?: CreateHook<Node> // beforeMount

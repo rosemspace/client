@@ -566,6 +566,9 @@ export default class DOMLaxParser {
 
               this.switchParser(MIME_TYPE_MAP[previousRootTag.nameLowerCased])
               this.namespace = previousRootTag.namespace
+            } else {
+              this.switchParser()
+              this.namespace = undefined
             }
           }
 

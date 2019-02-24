@@ -1,6 +1,8 @@
-import HostInterface from '@rosem/vdom/HostInterface'
+import OperationListInterface from '@rosem/virtual-dom/OperationListInterface'
 
-export default class Host implements HostInterface<Node> {
+export default class OperationList
+  implements
+    OperationListInterface<Node, Element, Text, Comment, CDATASection> {
   createElement(tagName: any): Element {
     return document.createElement(tagName)
   }
@@ -17,15 +19,24 @@ export default class Host implements HostInterface<Node> {
     return document.createComment(comment)
   }
 
+  createCDATASection(data: string): CDATASection {
+    return document.createCDATASection(data)
+  }
+
   setAttribute(element: Element, qualifiedName: string, value: any): void {
     element.setAttribute(qualifiedName, value)
   }
 
-  setAttributeNS(element: Element, namespaceURI: string, qualifiedName: string, value: any): void {
+  setAttributeNS(
+    element: Element,
+    namespaceURI: string,
+    qualifiedName: string,
+    value: any
+  ): void {
     element.setAttributeNS(namespaceURI, qualifiedName, value)
   }
 
-  setTextContent(node: Node, text: string | null): void {
+  setTextContent(node: Node, text: string): void {
     node.textContent = text
   }
 
@@ -43,5 +54,17 @@ export default class Host implements HostInterface<Node> {
 
   removeChild(node: Node, child: Node): void {
     node.removeChild(child)
+  }
+
+  parentNode(node: Node): Node | null {
+    return node.parentNode
+  }
+
+  nextSibling(node: Node): Node | null {
+    return node.nextSibling
+  }
+
+  tagName(node: Element): string {
+    return node.tagName
   }
 }
