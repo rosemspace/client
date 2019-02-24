@@ -1,4 +1,4 @@
-import OperationListInterface from './OperationListInterface'
+import RendererInterface from './RendererInterface'
 import VirtualInstance, {
   Primitive,
   VirtualChildList,
@@ -40,7 +40,7 @@ export default interface VirtualHostInterface {
     CDATASection extends Node = Node
   >(
     virtualInstance: VirtualInstance,
-    operationList: OperationListInterface<Node, Element, Text, Comment, CDATASection>
+    renderer: RendererInterface<Node, Element, Text, Comment, CDATASection>
   ): Node
 
   // getDiff(oldNode: VNode, newNode: VNode): any // todo VNodeDiff

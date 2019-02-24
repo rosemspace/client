@@ -4,7 +4,7 @@ import isArray from 'lodash-es/isArray'
 import isNumber from 'lodash-es/isNumber'
 import isString from 'lodash-es/isString'
 import isPlainObject from 'lodash-es/isPlainObject'
-import OperationListInterface from './OperationListInterface'
+import RendererInterface from './RendererInterface'
 import VirtualHostInterface from './VirtualHostInterface'
 import VirtualInstance, {
   Primitive,
@@ -18,7 +18,7 @@ import VirtualInstance, {
   VirtualText,
 } from './VirtualInstance'
 
-let key = 0
+export let key = 0
 
 function validateVirtualElementName(name?: any) {
   if (!name || !isString(name)) {
@@ -102,6 +102,7 @@ export default class VirtualHost implements VirtualHostInterface {
           type: typeOrName,
           props: {
             key: ++key,
+            attrs: {},
             ...props,
           },
           index: 0,
@@ -116,6 +117,7 @@ export default class VirtualHost implements VirtualHostInterface {
         props: {
           tag: typeOrName,
           key: ++key,
+          attrs: {},
           ...props,
         },
         index: 0,
@@ -130,6 +132,7 @@ export default class VirtualHost implements VirtualHostInterface {
       props: {
         tag: String(typeOrName),
         key: ++key,
+        attrs: {},
       },
       index: 0,
       children: childListOrText as VirtualInstanceList,
@@ -144,20 +147,14 @@ export default class VirtualHost implements VirtualHostInterface {
     CDATASection extends Node = Node
   >(
     virtualInstance: VirtualInstance,
-    operationList: OperationListInterface<
-      Node,
-      Element,
-      Text,
-      Comment,
-      CDATASection
-    >
+    renderer: RendererInterface<Node, Element, Text, Comment, CDATASection>
   ): Element | Text | Comment | CDATASection {
     switch (virtualInstance.type) {
       case VirtualNodeType.ELEMENT_NODE:
         const props: VirtualElementProps = virtualInstance.props
         const element: Element = props.namespace
-          ? operationList.createElementNS(props.namespace, props.tag)
-          : operationList.createElement(props.tag)
+          ? renderer.createElementNS(props.namespace, props.tag)
+          : renderer.createElement(props.tag)
 
         if (props.attrs) {
           forEach(props.attrs, function(
@@ -165,8 +162,8 @@ export default class VirtualHost implements VirtualHostInterface {
             key: string
           ) {
             isPrimitive(attr)
-              ? operationList.setAttribute(element, key, attr)
-              : operationList.setAttributeNS(
+              ? renderer.setAttribute(element, key, attr)
+              : renderer.setAttributeNS(
                   element,
                   (attr as VirtualNodeAttrDescriptor).namespace,
                   key,
@@ -178,9 +175,9 @@ export default class VirtualHost implements VirtualHostInterface {
         if (virtualInstance.children) {
           for (const child of virtualInstance.children) {
             if (null != child) {
-              operationList.appendChild(
+              renderer.appendChild(
                 element,
-                this.renderVirtualInstance(child, operationList)
+                this.renderVirtualInstance(child, renderer)
               )
             }
           }
@@ -188,15 +185,15 @@ export default class VirtualHost implements VirtualHostInterface {
 
         return element
       case VirtualNodeType.TEXT_NODE:
-        return operationList.createText(
+        return renderer.createText(
           null != virtualInstance.text ? String(virtualInstance.text) : ''
         )
       case VirtualNodeType.COMMENT_NODE:
-        return operationList.createComment(
+        return renderer.createComment(
           null != virtualInstance.text ? String(virtualInstance.text) : ''
         )
       case VirtualNodeType.CDATA_SECTION_NODE:
-        return operationList.createCDATASection(
+        return renderer.createCDATASection(
           null != virtualInstance.text ? String(virtualInstance.text) : ''
         )
     }

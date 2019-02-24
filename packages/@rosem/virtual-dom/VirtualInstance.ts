@@ -7,8 +7,8 @@ export enum VirtualNodeType {
 
 export interface VirtualNode {
   type: VirtualNodeType
-  parent?: VirtualNode
-  nextSibling?: VirtualNode
+  parentElement?: VirtualElement
+  nextSibling?: VirtualInstance
 }
 
 export type Primitive = string | number | boolean
@@ -26,7 +26,7 @@ export type VirtualElementProps = {
   tag: string,
   key: VirtualNodeKey
   namespace?: string
-  attrs?: VirtualNodeAttrMap
+  attrs: VirtualNodeAttrMap
 }// & Record<string, Primitive>
 
 type VirtualInstance = VirtualElement | VirtualText | VirtualComment | VirtualCDATASection

@@ -1,8 +1,8 @@
-import OperationListInterface from '@rosem/virtual-dom/OperationListInterface'
+import RendererInterface from '@rosem/virtual-dom/RendererInterface'
 
-export default class OperationList
+export default class Renderer
   implements
-    OperationListInterface<Node, Element, Text, Comment, CDATASection> {
+    RendererInterface<Node, Element, Text, Comment, CDATASection> {
   createElement(tagName: any): Element {
     return document.createElement(tagName)
   }
@@ -56,8 +56,8 @@ export default class OperationList
     node.removeChild(child)
   }
 
-  parentNode(node: Node): Node | null {
-    return node.parentNode
+  parentElement(node: Node): Element | null {
+    return node.parentElement
   }
 
   nextSibling(node: Node): Node | null {

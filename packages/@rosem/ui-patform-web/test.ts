@@ -1,17 +1,9 @@
-import OperationList from './OperationList'
+import Renderer from './Renderer'
 import VirtualHost from '@rosem/virtual-dom/VirtualHost'
-import OperationListInterface from '@rosem/virtual-dom/OperationListInterface'
 
-const operationList: OperationListInterface<
-  Node,
-  Element,
-  Text,
-  Comment
-> = new OperationList()
+const virtualHost = new VirtualHost()
 
-const vHost = new VirtualHost()
-
-const h = vHost.createVirtualInstance
+const h = virtualHost.createVirtualInstance
 
 export default function() {
   const vnode = h(
@@ -42,5 +34,5 @@ export default function() {
   )
   console.log(vnode);
 
-  return vHost.renderVirtualInstance(vnode, operationList)
+  return virtualHost.renderVirtualInstance(vnode, new Renderer())
 }
