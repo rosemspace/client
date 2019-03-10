@@ -13,8 +13,8 @@ module.exports = {
     // https://github.com/pascalduez/stylelint-config-css-modules
     'stylelint-config-css-modules',
   ],
-  plugins: [
-  ],
+  // plugins: [
+  // ],
   // Rule lists:
   // - https://stylelint.io/user-guide/rules/
   rules: {

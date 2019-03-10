@@ -5,10 +5,10 @@
 
 import Reaction from '@rosem/observable'
 import Transition from '@rosem/ui-transition'
-import testDOMLaxParser from '@rosem/dom-lax-parser/test'
+// import templateCompiler from '@rosem/template-compiler/test'
 import testUIPlatformWEB from '@rosem/ui-patform-web/test'
 
-console.log(testDOMLaxParser());
+// console.log(templateCompiler());
 console.log(testUIPlatformWEB())
 // Transition.test();
 // Reaction.test()

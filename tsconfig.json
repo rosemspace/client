@@ -13,8 +13,9 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"//,
-//      "jest"
+      "webpack-env",
+      "jest",
+      "lodash-es"
     ],
     "paths": {
       "@rosem/*": [
@@ -34,9 +35,11 @@
   "include": [
     "packages/**/*.ts",
     "packages/**/*.tsx",
-    "packages/**/*.vue"
-//    "tests/**/*.ts",
-//    "tests/**/*.tsx"
+    "packages/**/*.vue",
+    "__mocks__/**/*.ts",
+    "__mocks__/**/*.tsx",
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

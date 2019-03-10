@@ -22,32 +22,31 @@ module.exports = {
       // extracted common chunks and vendor chunks.
       // chunks: ['chunk-vendors', 'chunk-common', 'index']
     },
-    admin: {
-      entry: 'packages/@rosem/admin/index.ts',
-      template: 'packages/@rosem/app/index.html',
-      title: 'Rosem | Admin Page',
-    },
+    // admin: {
+    //   entry: 'packages/@rosem/admin/index.ts',
+    //   template: 'packages/@rosem/app/index.html',
+    //   title: 'Rosem | Admin Page',
+    // },
   },
   transpileDependencies: [
     // add your modules here need to be transpiled
+    'lodash-es',
   ].concat(
     packages.map(
-      pckg =>
-        new RegExp(`([\/])${pckg.replace(/^[\w-]+\/|\/\*$/, '')}\\1`)
+      (pckg) => new RegExp(`([\\/])${pckg.replace(/^[\w-]+\/|\/\*$/, '')}\\1`)
     )
   ),
-  chainWebpack: function(config) {
+  chainWebpack: function(webpackConfig) {
     // chain your configuration here
   },
   configureWebpack: {
-    entry: {
-      // transition:
-      //   './packages/@rosem/ui/lib/components/Transition/TransitionGroup.js',
-    },
+    // entry: {
+    // transition:
+    //   './packages/@rosem/ui/lib/components/Transition/TransitionGroup.js',
+    // },
     // Set up all the aliases we use in our app.
     resolve: {
       alias: require('./aliases.config').webpack,
-      extensions: ['.wasm', '.mjs', '.ts'],
     },
   },
   css: {
@@ -61,6 +60,8 @@ module.exports = {
       ? // Proxy API endpoints to the production base URL.
         { proxy: { '/api': { target: process.env.API_BASE_URL } } }
       : // Proxy API endpoints a local mock API.
-        { /*before: require('./tests/mock-api')*/ }), // TODO tests
+        {
+          // before: require('./tests/mock-api')
+        }),
   },
 }

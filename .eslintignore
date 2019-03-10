@@ -1,2 +1,2 @@
 /dist/
-/tests/unit/coverage/
+/__tests__/coverage/

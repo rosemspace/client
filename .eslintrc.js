@@ -1,18 +1,9 @@
 module.exports = {
   root: true,
   env: {
-    node: true
+    node: true,
   },
-  parserOptions: {
-    parser: 'typescript-eslint-parser',
-    sourceType: 'script'
-  },
-  extends: [
-    // https://github.com/vuejs/eslint-plugin-vue#bulb-rules
-    'plugin:vue/essential',
-    '@vue/prettier',
-    '@vue/typescript'
-  ],
+  extends: ['plugin:vue/essential', '@vue/prettier', '@vue/typescript'],
   rules: {
     // Only allow debugger in development
     'no-debugger': process.env.PRE_COMMIT ? 'error' : 'off',
@@ -35,31 +26,14 @@ module.exports = {
       },
     ],
   },
+  parserOptions: {
+    parser: '@typescript-eslint/parser',
+  },
   overrides: [
     {
-      files: ['packages/**/*', 'tests/unit/**/*', 'tests/e2e/**/*'],
-      excludedFiles: 'app.config.ts',
-      parserOptions: {
-        sourceType: 'module',
-      },
+      files: ['**/*.spec.ts'],
       env: {
-        browser: true,
-      },
-    },
-    {
-      files: ['**/*.unit.ts'],
-      parserOptions: {
-        sourceType: 'module',
-      },
-      env: {
-        jest: true
-      },
-      globals: {
-        mount: false,
-        shallowMount: false,
-        shallowMountView: false,
-        createComponentMocks: false,
-        createModuleStore: false,
+        jest: true,
       },
     },
   ],
