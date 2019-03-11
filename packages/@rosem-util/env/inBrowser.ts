@@ -1,3 +1,6 @@
-const inBrowser: boolean = typeof window !== 'undefined'
-
-export default inBrowser
+/**
+ * Detects whether window and document objects are available in current environment.
+ */
+export default null != window &&
+  null != document &&
+  window.document === document

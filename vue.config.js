@@ -36,8 +36,9 @@ module.exports = {
       (pckg) => new RegExp(`([\\/])${pckg.replace(/^[\w-]+\/|\/\*$/, '')}\\1`)
     )
   ),
-  chainWebpack: function(webpackConfig) {
+  chainWebpack: function(config) {
     // chain your configuration here
+    // config.module.rule('ts')
   },
   configureWebpack: {
     // entry: {
@@ -48,6 +49,10 @@ module.exports = {
     resolve: {
       alias: require('./aliases.config').webpack,
     },
+    // mode: 'development',
+    // optimization: {
+    //   usedExports: true,
+    // },
   },
   css: {
     // Enable CSS source maps.
