@@ -24,9 +24,9 @@ export const GREATER_THAN_ENTITY_HEX_NUMBER = '&#x0003E;'
 export const GREATER_THAN_ENTITY_ALIAS_1 = '&gt;'
 export const GREATER_THAN_ENTITY_ALIAS_2 = '&GT;'
 
-type AttrEntityDecodingMap = { [code: string]: string }
+type DecodeAttrEntities = { [code: string]: string }
 
-export const ATTRIBUTE_ENTITY_DECODING_MAP: AttrEntityDecodingMap = {
+export const ATTRIBUTE_ENTITY_DECODING_MAP: DecodeAttrEntities = {
   [TAB_ENTITY_DECIMAL_NUMBER]: '\t',
   [TAB_ENTITY_HEX_NUMBER]: '\t',
   [TAB_ENTITY_ALIAS_1]: '\t',
@@ -54,18 +54,18 @@ export const ATTRIBUTE_ENTITY_DECODING_MAP: AttrEntityDecodingMap = {
   [GREATER_THAN_ENTITY_ALIAS_2]: '>',
 }
 
-const encodedAttrCommonAliasREPart =
+const encodedAttrCommonAliasRegExpPart =
   'a(?:pos|mp)|AMP|(?:[lg]|quo)?t|(?:[LG]|QUO)?T'
 const encodedAttrRE = new RegExp(
-  `^&(?:${encodedAttrCommonAliasREPart}|#(?:3[489]|6[02]));$`,
+  `^&(?:${encodedAttrCommonAliasRegExpPart}|#(?:3[489]|6[02]));$`,
   'g'
 )
 const encodedAttrNewLineRE = new RegExp(
-  `^&(?:${encodedAttrCommonAliasREPart}|NewLine|Tab|#(?:9|10|3[489]|6[02]));$`,
+  `^&(?:${encodedAttrCommonAliasRegExpPart}|NewLine|Tab|#(?:9|10|3[489]|6[02]));$`,
   'g'
 )
 
-export function decodeAttrEntities(
+export default function decodeAttrEntities(
   value: string,
   shouldDecodeNewlines: boolean = false
 ): string {
@@ -74,5 +74,3 @@ export function decodeAttrEntities(
     (match) => ATTRIBUTE_ENTITY_DECODING_MAP[match]
   )
 }
-
-export default AttrEntityDecodingMap

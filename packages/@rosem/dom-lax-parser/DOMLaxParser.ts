@@ -1,5 +1,6 @@
 import no from '@rosem-util/common/no'
 import isProduction from '@rosem-util/env/isProduction'
+import potentialCustomElementNameCharRegExp from '@rosem-util/dom/potentialCustomElementNameCharRegExp'
 import getStackedTagRegExp from './getStackedTagRegExp'
 import isEscapableRawHTMLTextElement from './html/isEscapableRawTextElement'
 import isForeignHTMLTag from './html/isForeignElement'
@@ -8,20 +9,19 @@ import isNonPhrasingHTMLElement from './html/isNonPhrasingElement'
 import isOptionalClosingHTMLElement from './html/isOptionalClosingElement'
 import isRawTextElement from './isRawTextElement'
 import isVoidHTMLElement from './html/isVoidElement'
-import unicodeLetters from './unicodeLetters'
+import decodeAttrEntities from './decodeAttrEntities'
+import namespaceMap from './namespaceMap'
 import ModuleInterface from './ModuleInterface'
-import { decodeAttrEntities } from './AttrEntityDecodingMap'
-import { NAMESPACE_MAP } from './NamespaceMap'
 import {
   APPLICATION_MATHML_XML_MIME_TYPE,
   APPLICATION_XHTML_XML_MIME_TYPE,
   APPLICATION_XML_MIME_TYPE,
   IMAGE_SVG_XML_MIME_TYPE,
-  MIME_TYPE_MAP,
+  typeMap,
   SourceSupportedType,
   TEXT_HTML_MIME_TYPE,
   TEXT_XML_MIME_TYPE,
-} from './TypeMap'
+} from './typeMap'
 
 export const processingInstructionRE = /^\s*<\?[^>]+\?>/
 export const xmlDeclarationRE = /^\s*<\?xml[^>]+>/
@@ -30,7 +30,9 @@ export const doctypeDeclarationRE = /^\s*<!DOCTYPE [^>]+>/i
 // could use CombiningChar and Extender characters
 // (https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName)
 // but for ui templates we can enforce a simple charset
-const ncNameREPart = `[a-zA-Z_][\\-\\.0-9_${unicodeLetters}]*`
+const ncNameREPart = `[a-zA-Z_][\\-\\.0-9_${
+  potentialCustomElementNameCharRegExp.source
+}]*`
 // Qualified name e.g. "namespace:name"
 export const qNameRE = new RegExp(`^(?:(${ncNameREPart}):)?(${ncNameREPart})$`)
 const qNameRECapturePart = `((?:${ncNameREPart}\\:)?${ncNameREPart})`
@@ -77,8 +79,8 @@ export type ParsedAttribute = {
 } & ParsedItem
 
 export type ParsedEndTag = {
-  name: string,
-  nameLowerCased: string,
+  name: string
+  nameLowerCased: string
 } & ParsedItem
 
 export type ParsedText = {
@@ -113,7 +115,6 @@ function shouldIgnoreFirstNewline(tag: string, html: string) {
 
 export default class DOMLaxParser {
   protected readonly options: TemplateParserOptions
-  protected expectHTML: boolean = false
   protected readonly moduleList: Array<ModuleInterface> = []
   protected type?: SourceSupportedType
   protected namespace?: string
@@ -123,6 +124,7 @@ export default class DOMLaxParser {
   protected rootTagStack: Array<ParsedStartTag> = []
   protected last: string | undefined
   protected lastTagLowerCased: string | undefined
+  protected expectHTML: boolean = false
   protected isEscapableRawTextElement: IsElement = no
   protected isForeignElement: IsElement = no
   protected isNonPhrasingElement: IsElement = no
@@ -221,7 +223,8 @@ export default class DOMLaxParser {
                     commentEndTokenIndex
                   ),
                   matchStart: this.index,
-                  matchEnd: this.index + commentEndTokenIndex + commentEndTokenLength
+                  matchEnd:
+                    this.index + commentEndTokenIndex + commentEndTokenLength,
                 })
               }
 
@@ -246,9 +249,10 @@ export default class DOMLaxParser {
                     cdataSectionEndTokenIndex
                   ),
                   matchStart: this.index,
-                  matchEnd: this.index +
+                  matchEnd:
+                    this.index +
                     cdataSectionEndTokenIndex +
-                    cDATASectionEndTokenLength
+                    cDATASectionEndTokenLength,
                 })
               }
             }
@@ -341,7 +345,7 @@ export default class DOMLaxParser {
           this.text({
             text,
             matchStart: this.index - text.length,
-            matchEnd: this.index
+            matchEnd: this.index,
           })
         }
       }
@@ -375,7 +379,7 @@ export default class DOMLaxParser {
             this.text({
               text,
               matchStart: this.index,
-              matchEnd: this.index + content.length
+              matchEnd: this.index + content.length,
             })
 
             return ''
@@ -396,7 +400,7 @@ export default class DOMLaxParser {
         this.text({
           text: this.source,
           matchStart: this.index,
-          matchEnd: this.index + this.source.length
+          matchEnd: this.index + this.source.length,
         })
 
         // When a template ends with "<..." (just the example)
@@ -446,7 +450,7 @@ export default class DOMLaxParser {
       name: tagName,
       nameLowerCased: tagNameLowerCased,
       namespace:
-        this.namespace || (this.namespace = NAMESPACE_MAP[tagNameLowerCased]),
+        this.namespace || (this.namespace = namespaceMap[tagNameLowerCased]),
       attrs,
       unarySlash: '',
       void: false,
@@ -481,7 +485,8 @@ export default class DOMLaxParser {
             ? this.options.decodeNewlinesForHref
             : this.options.decodeNewlines
         ),
-        matchStart: start + (<RegExpMatchArray>attrMatch[0].match(/^\s*/)).length,
+        matchStart:
+          start + (<RegExpMatchArray>attrMatch[0].match(/^\s*/)).length,
         matchEnd: this.index,
       }
 
@@ -496,7 +501,7 @@ export default class DOMLaxParser {
 
       // Add namespace of attribute
       if (attrNcNameLowerCased) {
-        const attrNamespace = NAMESPACE_MAP[attrNcNameLowerCased]
+        const attrNamespace = namespaceMap[attrNcNameLowerCased]
 
         if (attrNamespace) {
           attr.namespace = attrNamespace
@@ -543,10 +548,10 @@ export default class DOMLaxParser {
       ) {
         this.rootTagStack.push(parsedTag)
 
-        if (MIME_TYPE_MAP[tagNameLowerCased]) {
-          this.switchParser(MIME_TYPE_MAP[tagNameLowerCased])
+        if (typeMap[tagNameLowerCased]) {
+          this.switchParser(typeMap[tagNameLowerCased])
           this.namespace = parsedTag.namespace =
-            NAMESPACE_MAP[parsedTag.nameLowerCased] || this.namespace
+            namespaceMap[parsedTag.nameLowerCased] || this.namespace
         } else {
           this.namespace = undefined
         }
@@ -605,7 +610,7 @@ export default class DOMLaxParser {
                 this.rootTagStack.length - 1
               ]
 
-              this.switchParser(MIME_TYPE_MAP[previousRootTag.nameLowerCased])
+              this.switchParser(typeMap[previousRootTag.nameLowerCased])
               this.namespace = previousRootTag.namespace
             } else {
               this.switchParser()
@@ -638,7 +643,7 @@ export default class DOMLaxParser {
           name: stackTag.name,
           nameLowerCased: stackTag.nameLowerCased,
           matchStart,
-          matchEnd
+          matchEnd,
         })
       }
 
@@ -672,7 +677,7 @@ export default class DOMLaxParser {
         name: tagName,
         nameLowerCased: tagNameLowerCased,
         matchStart,
-        matchEnd
+        matchEnd,
       })
     }
   }

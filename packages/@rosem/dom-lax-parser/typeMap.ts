@@ -11,7 +11,7 @@ type TypeMap = {
   [tagName: string]: SourceSupportedType
 }
 
-export const MIME_TYPE_MAP: TypeMap = {
+export const typeMap: TypeMap = {
   xml: TEXT_XML_MIME_TYPE,
   html: TEXT_HTML_MIME_TYPE,
   xhtml: APPLICATION_XHTML_XML_MIME_TYPE,
@@ -19,4 +19,4 @@ export const MIME_TYPE_MAP: TypeMap = {
   svg: IMAGE_SVG_XML_MIME_TYPE,
 }
 
-export default TypeMap
+export default typeMap

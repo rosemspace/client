@@ -9,7 +9,7 @@ type NamespaceMap = {
   [type: string]: string
 }
 
-export const NAMESPACE_MAP: NamespaceMap = {
+export const namespaceMap: NamespaceMap = {
   html: HTML_NAMESPACE,
   math: MATHML_NAMESPACE,
   svg: SVG_NAMESPACE,
@@ -19,4 +19,4 @@ export const NAMESPACE_MAP: NamespaceMap = {
   xmlns: XMLNS_NAMESPACE,
 }
 
-export default NamespaceMap
+export default namespaceMap
