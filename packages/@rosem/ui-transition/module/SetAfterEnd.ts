@@ -1,19 +1,19 @@
-import isNumber from 'lodash/isNumber'
-import { Detail } from '../ModuleInterface'
+import setStyle from '@rosem-util/dom/setStyle'
+import { Detail, DetailInit } from '../ModuleInterface'
 import AbstractModule from '../AbstractModule'
 
 export type AttrMap = Record<string, string | number | boolean>
 export type StyleMap = Record<string, string | number>
 
 export default class SetAfterEnd extends AbstractModule {
-  classList: Array<string>
+  classList: string[]
   styleMap: StyleMap
   attributeMap: AttrMap
-  styleEntries: Array<Array<string | number>>
-  attributeEntries: Array<Array<string | number | boolean>>
+  styleEntries: [string, string | number][]
+  attributeEntries: [string, string | number | boolean][]
 
   constructor(
-    classList: Array<string> | string = '',
+    classList: string[] | string = '',
     style: StyleMap = { display: 'none' },
     attributeMap: AttrMap = {}
   ) {
@@ -33,15 +33,18 @@ export default class SetAfterEnd extends AbstractModule {
     target.classList.add(...this.classList)
 
     for (const [property, value] of this.styleEntries) {
-      target.style.setProperty(property, isNumber(value) ? String(value) + 'px' : value)
+      setStyle(target, property, value)
     }
 
     for (const [property, value] of this.attributeEntries) {
-      target.setAttribute(property, true === value ? property : String(value))
+      target.setAttribute(
+        String(property),
+        String(true === value ? property : value)
+      )
     }
   }
 
-  getDetails() {
+  getDetails(): DetailInit {
     return {
       addClassListAfterEnd: this.classList,
       addStyleMapAfterEnd: this.styleMap,

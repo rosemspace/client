@@ -13,7 +13,20 @@ export type Phase =
   | PhaseEnum.AfterEnd
   | PhaseEnum.Cancelled
 
-export type Detail = { [name: string]: any }
+export type DetailInit = {
+  target?: Element
+  [name: string]: any
+}
+
+export type Detail = {
+  name: string,
+  currentTarget: Element,
+  target: Element,
+  delegateTarget: Element,
+  stageIndex: number,
+  stageName: string,
+  duration: number,
+} & DetailInit
 
 export type PhaseHook = (detail: Detail) => void
 
@@ -23,5 +36,5 @@ export default interface ModuleInterface {
   start: PhaseHook
   afterEnd: PhaseHook
   cancelled: PhaseHook
-  getDetail(): Detail
+  getDetail(): DetailInit
 }

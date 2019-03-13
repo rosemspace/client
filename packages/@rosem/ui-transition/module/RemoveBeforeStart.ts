@@ -1,16 +1,17 @@
-import isArray from 'lodash/isArray'
-import { Detail } from '../ModuleInterface'
+import { isArray } from 'lodash-es'
+import setStyle from '@rosem-util/dom/setStyle'
+import { Detail, DetailInit } from '../ModuleInterface'
 import AbstractModule from '../AbstractModule'
 
 export default class RemoveBeforeStart extends AbstractModule {
-  classList: Array<string>
-  stylePropertyList: Array<string>
-  attributeList: Array<string>
+  classList: string[]
+  stylePropertyList: string[]
+  attributeList: string[]
 
   constructor(
-    classList: Array<string> | string = '',
-    stylePropertyList: Array<string> = ['display'],
-    attributeList: Array<string> = []
+    classList: string[] | string = '',
+    stylePropertyList: string[] = ['display'],
+    attributeList: string[] = []
   ) {
     super()
     this.classList = isArray(classList)
@@ -26,7 +27,7 @@ export default class RemoveBeforeStart extends AbstractModule {
     target.classList.remove(...this.classList)
 
     for (const property of this.stylePropertyList) {
-      target.style[property] = ''
+      setStyle(target, property, '')
     }
 
     for (const property of this.attributeList) {
@@ -34,7 +35,7 @@ export default class RemoveBeforeStart extends AbstractModule {
     }
   }
 
-  getDetail(): Detail {
+  getDetail(): DetailInit {
     return {
       removeClassListBeforeStart: this.classList,
       removeStylePropertyListBeforeStart: this.stylePropertyList,

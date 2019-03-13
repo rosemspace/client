@@ -1,13 +1,14 @@
-import CSSTransitionDeclaration from '@rosem-util/dom/CSSTransitionDeclaration'
-import CSSAnimationDeclaration from '@rosem-util/dom/CSSAnimationDeclaration'
-import getComputedTransition from '@rosem-util/dom/getComputedTransition'
-import getComputedAnimation from '@rosem-util/dom/getComputedAnimation'
-import isTransitionMaxTimeout from '@rosem-util/dom/isTransitionMaxTimeout'
-import isAnimationMaxTimeout from '@rosem-util/dom/isAnimationMaxTimeout'
+import CSSTransitionDeclaration from '@rosem-util/dom-easing/CSSTransitionDeclaration'
+import CSSAnimationDeclaration from '@rosem-util/dom-easing/CSSAnimationDeclaration'
+import getComputedTransition from '@rosem-util/dom-easing/getComputedTransition'
+import getComputedAnimation from '@rosem-util/dom-easing/getComputedAnimation'
+import isTransitionMaxTimeout from '@rosem-util/dom-easing/isTransitionMaxTimeout'
+import isAnimationMaxTimeout from '@rosem-util/dom-easing/isAnimationMaxTimeout'
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
-} from '@rosem-util/dom/animationFrame'
+} from '@rosem-util/dom-easing/animationFrame'
+import setStyle from '@rosem-util/dom/setStyle'
 import { Detail, Phase, PhaseEnum } from './ModuleInterface'
 import Stage from './Stage'
 
@@ -33,7 +34,7 @@ export default class StageDispatcher {
     stageIndex: 0,
   }
   // name: string
-  protected stages: Array<Stage>
+  protected stages: Stage[]
   protected stageIndex: number
   protected running: boolean = false
   protected easing: CSSTransitionDeclaration | CSSAnimationDeclaration =
@@ -55,7 +56,7 @@ export default class StageDispatcher {
     this.stageIndex = this.options.stageIndex
   }
 
-  public get delegatedTarget(): HTMLElement | SVGElement | null {
+  public get delegatedTarget(): Element | null {
     // todo remove ternary or maybe just make it as computed?
     return null != this.options.target
       ? this.target.querySelector(this.options.target)
@@ -176,32 +177,32 @@ export default class StageDispatcher {
     }
   }
 
-  protected dispatchPhase(phase: Phase, details: Detail = {}): Detail {
+  protected dispatchPhase(phase: Phase, details: Detail): Detail {
     return this.stage.dispatch(phase, details)
   }
 
-  protected cleanup(details: Detail = {}): Detail {
+  protected cleanup(details: Detail): Detail {
     return this.dispatchPhase(PhaseEnum.Cleanup, details)
   }
 
-  protected beforeStart(details: Detail = {}): Detail {
+  protected beforeStart(details: Detail): Detail {
     this.running = true
     const target = this.delegatedTarget
 
     if (null != target) {
-      target.style.setProperty('display', '')
+      setStyle(target, 'display', '')
     }
 
     return this.dispatchPhase(PhaseEnum.BeforeStart, details)
   }
 
-  protected start(details: Detail = {}): Detail {
-    details.done = () => this.afterEnd()
+  protected start(details: Detail): Detail {
+    details.done = () => this.afterEnd(details)
 
     return this.dispatchPhase(PhaseEnum.Start, details)
   }
 
-  protected afterEnd(details: Detail = {}): Detail {
+  protected afterEnd(details: Detail): Detail {
     this.removeEasingEndEventListener()
     delete details.done
     this.running = false
@@ -214,7 +215,7 @@ export default class StageDispatcher {
     return finalDetails
   }
 
-  protected cancelled(details: Detail = {}): Detail {
+  protected cancelled(details: Detail): Detail {
     this.removeEasingEndEventListener()
     this.cancelNextFrame()
 
@@ -229,7 +230,7 @@ export default class StageDispatcher {
     return {
       name: this.options.name,
       currentTarget: this.element,
-      target: this.delegatedTarget,
+      target: this.delegatedTarget as Element,
       delegateTarget: this.target,
       stageIndex: this.stageIndex,
       stageName: this.stageName,
@@ -246,6 +247,7 @@ export default class StageDispatcher {
 
   public dispatchByIndex(stageIndex: number = 0): Promise<Detail> {
     const details = this.getDetails()
+
     this.cleanup(details)
     this.running && this.cancelled(details)
     this.stageIndex = details.stageIndex = stageIndex

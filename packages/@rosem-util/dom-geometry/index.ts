@@ -1,39 +1,57 @@
+import defineConfigurableProperties from '@rosem-util/common/defineConfigurableProperties'
 import inBrowser from '@rosem-util/env/inBrowser.js'
 import getGlobalOf from '@rosem-util/env/getGlobalOf'
-import defineConfigurableProperties from '@rosem-util/common/defineConfigurableProperties'
+import isDocumentElement from '@rosem-util/dom/isDocumentElement'
+import isSVGGraphicsElement from '@rosem-util/dom/isSVGGraphicsElement'
 
-type Position = 'top' | 'right' | 'bottom' | 'left'
-type PositionList = Position[]
-type PaddingRect = { top: number; right: number; bottom: number; left: number }
+type PositionName = 'top' | 'right' | 'bottom' | 'left'
+type EdgeName = 'inlineStart' | 'inlineEnd' | 'blockStart' | 'blockEnd'
+// type PositionNameList = PositionName[]
+type EdgeNameList = EdgeName[]
+type EdgeNameToPositionNameMap = { [edge in EdgeName]: PositionName }
+type DOMEdgeType = 'content' | 'padding' | 'border' | 'margin'
+type DOMEdge = { [edge in EdgeName]: number }
 
-const positions: PositionList = ['top', 'right', 'bottom', 'left']
+// const positionNameList: PositionNameList = ['top', 'right', 'bottom', 'left']
+const edgeNameList: EdgeNameList = [
+  'inlineStart',
+  'inlineEnd',
+  'blockStart',
+  'blockEnd',
+]
+const edgeNameToPositionNameMap: EdgeNameToPositionNameMap = {
+  inlineStart: 'left',
+  inlineEnd: 'right',
+  blockStart: 'top',
+  blockEnd: 'bottom',
+}
 // Placeholder of an empty content rectangle.
-const emptyRect = createRectInit(0, 0, 0, 0)
+const emptyRectInit = createRectInit(0, 0, 0, 0)
 
 /**
  * Converts provided string to a number.
  *
- * @param {string|number} value
+ * @param {string|number|null} [value]
  * @returns {number}
  */
-function toFloat(value: string | null): number {
-  return parseFloat(String(value)) || 0
+function toFloat(value?: string | number | null): number {
+  return (null != value ? parseFloat(String(value)) : 0) || 0
 }
 
 /**
  * Extracts borders size from provided styles.
  *
  * @param {CSSStyleDeclaration} styles
- * @param {...string} positions - Borders positions (top, right, ...)
+ * @param {...string} edgeNameList - Border edge (inline-start, block-end, ...)
  * @returns {number}
  */
-function getBordersSize(
+export function getBorderSize(
   styles: CSSStyleDeclaration,
-  ...positions: PositionList
+  ...edgeNameList: EdgeNameList
 ): number {
-  return positions.reduce((size: number, position: Position): number => {
+  return edgeNameList.reduce((size: number, edgeName: EdgeName): number => {
     const value: string = styles.getPropertyValue(
-      'border-' + position + '-width'
+      'border-' + edgeNameToPositionNameMap[edgeName] + '-width'
     )
 
     return size + toFloat(value)
@@ -41,21 +59,21 @@ function getBordersSize(
 }
 
 /**
- * Extracts paddings sizes from provided styles.
+ * Extracts padding sizes from provided styles.
  *
  * @param {CSSStyleDeclaration} styles
- * @returns {Object} Paddings box.
+ * @returns {Object} Padding box.
  */
-function getPaddings(styles: CSSStyleDeclaration): PaddingRect {
-  const paddingRect: PaddingRect = {} as PaddingRect
+export function getPaddingEdge(styles: CSSStyleDeclaration): DOMEdge {
+  const paddingEdge: DOMEdge = {} as DOMEdge
 
-  for (const position of positions) {
-    const value = styles.getPropertyValue('padding-' + position)
-
-    paddingRect[position] = toFloat(value)
+  for (const edgeName of edgeNameList) {
+    paddingEdge[edgeName] = toFloat(
+      styles.getPropertyValue('padding-' + edgeNameToPositionNameMap[edgeName])
+    )
   }
 
-  return paddingRect
+  return paddingEdge
 }
 
 /**
@@ -65,7 +83,9 @@ function getPaddings(styles: CSSStyleDeclaration): PaddingRect {
  *      to be calculated.
  * @returns {DOMRectInit}
  */
-function getSVGContentRect(target: SVGGraphicsElement): DOMRectInit {
+function getSVGGraphicsElementContentRect(
+  target: SVGGraphicsElement
+): DOMRectInit {
   const bbox: DOMRect = target.getBBox()
 
   return createRectInit(0, 0, bbox.width, bbox.height)
@@ -91,15 +111,15 @@ function getHTMLElementContentRect(target: HTMLElement): DOMRectInit {
   // effective test for hidden elements. E.g. even jQuery's ':visible' filter
   // gives wrong results for elements with width & height less than 0.5.
   if (!clientWidth && !clientHeight) {
-    return emptyRect
+    return emptyRectInit
   }
 
   const styles: CSSStyleDeclaration = getGlobalOf(target).getComputedStyle(
     target
   )
-  const paddingRect: PaddingRect = getPaddings(styles)
-  const horizPad: number = paddingRect.left + paddingRect.right
-  const vertPad: number = paddingRect.top + paddingRect.bottom
+  const paddingEdge: DOMEdge = getPaddingEdge(styles)
+  const inlinePadding: number = paddingEdge.inlineStart + paddingEdge.inlineEnd
+  const blockPadding: number = paddingEdge.blockStart + paddingEdge.blockEnd
 
   // Computed styles of width & height are being used because they are the
   // only dimensions available to JS that contain non-rounded values. It could
@@ -117,12 +137,12 @@ function getHTMLElementContentRect(target: HTMLElement): DOMRectInit {
     // We can say that if CSS dimensions + paddings are equal to the "client"
     // properties then it's either IE, and thus we don't need to subtract
     // anything, or an element merely doesn't have paddings/borders styles.
-    if (Math.round(width + horizPad) !== clientWidth) {
-      width -= getBordersSize(styles, 'left', 'right') + horizPad
+    if (Math.round(width + inlinePadding) !== clientWidth) {
+      width -= getBorderSize(styles, 'inlineStart', 'inlineEnd') + inlinePadding
     }
 
-    if (Math.round(height + vertPad) !== clientHeight) {
-      height -= getBordersSize(styles, 'top', 'bottom') + vertPad
+    if (Math.round(height + blockPadding) !== clientHeight) {
+      height -= getBorderSize(styles, 'blockStart', 'blockEnd') + blockPadding
     }
   }
 
@@ -135,53 +155,31 @@ function getHTMLElementContentRect(target: HTMLElement): DOMRectInit {
     // include scroll bars size which can be removed at this step as scroll
     // bars are the only difference between rounded dimensions + paddings
     // and "client" properties, though that is not always true in Chrome.
-    const vertScrollbar: number = Math.round(width + horizPad) - clientWidth
-    const horizScrollbar: number = Math.round(height + vertPad) - clientHeight
+    const blockScrollbar: number =
+      Math.round(width + inlinePadding) - clientWidth
+    const inlineScrollbar: number =
+      Math.round(height + blockPadding) - clientHeight
 
     // Chrome has a rather weird rounding of "client" properties.
     // E.g. for an element with content width of 314.2px it sometimes gives
     // the client width of 315px and for the width of 314.7px it may give
     // 314px. And it doesn't happen all the time. So just ignore this delta
     // as a non-relevant.
-    if (Math.abs(vertScrollbar) !== 1) {
-      width -= vertScrollbar
+    if (Math.abs(blockScrollbar) !== 1) {
+      width -= blockScrollbar
     }
 
-    if (Math.abs(horizScrollbar) !== 1) {
-      height -= horizScrollbar
+    if (Math.abs(inlineScrollbar) !== 1) {
+      height -= inlineScrollbar
     }
   }
 
-  return createRectInit(paddingRect.left, paddingRect.top, width, height)
-}
-
-/**
- * Checks whether provided element is an instance of the SVGGraphicsElement.
- *
- * @param {Element} target - Element to be checked.
- * @returns {boolean}
- */
-const isSVGGraphicsElement =
-  // Some browsers, namely IE and Edge, don't have the SVGGraphicsElement
-  // interface.
-  null != SVGGraphicsElement
-    ? (target: Element): boolean =>
-        target instanceof getGlobalOf(target).SVGGraphicsElement
-    : // If it's so, then check that element is at least an instance of the
-      // SVGElement and that it has the "getBBox" method.
-      // eslint-disable-next-line no-extra-parens
-      (target: SVGGraphicsElement): boolean =>
-        target instanceof getGlobalOf(target).SVGElement &&
-        typeof target.getBBox === 'function'
-
-/**
- * Checks whether provided element is a document element (<html>).
- *
- * @param {Element} target - Element to be checked.
- * @returns {boolean}
- */
-function isDocumentElement(target: Element): boolean {
-  return target === getGlobalOf(target).document.documentElement
+  return createRectInit(
+    paddingEdge.inlineStart,
+    paddingEdge.blockStart,
+    width,
+    height
+  )
 }
 
 /**
@@ -190,13 +188,13 @@ function isDocumentElement(target: Element): boolean {
  * @param {HTMLElement|SVGGraphicsElement} target - Element content rectangle of which needs to be calculated.
  * @returns {DOMRectInit}
  */
-export function getContentRect(target: Element): DOMRectInit {
+export function getElementContentRect(target: Element): DOMRectInit {
   if (!inBrowser) {
-    return emptyRect
+    return emptyRectInit
   }
 
   if (isSVGGraphicsElement(target as SVGGraphicsElement)) {
-    return getSVGContentRect(target as SVGGraphicsElement)
+    return getSVGGraphicsElementContentRect(target as SVGGraphicsElement)
   }
 
   return getHTMLElementContentRect(target as HTMLElement)
@@ -209,7 +207,7 @@ export function getContentRect(target: Element): DOMRectInit {
  * @param {DOMRectInit} rectInit - Object with rectangle's x/y coordinates and dimensions.
  * @returns {DOMRectReadOnly}
  */
-export function createReadOnlyRect({
+export function createRectReadOnly({
   x,
   y,
   width,

@@ -1,4 +1,4 @@
-import { Detail } from '../ModuleInterface'
+import { Detail, DetailInit } from '../ModuleInterface'
 import AbstractModule from '../AbstractModule'
 
 export default class EventDispatcher extends AbstractModule {
@@ -41,7 +41,7 @@ export default class EventDispatcher extends AbstractModule {
     )
   }
 
-  getDetail(): Detail {
+  getDetail(): DetailInit {
     return {
       events: true,
     }

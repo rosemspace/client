@@ -1,4 +1,4 @@
-import { Detail } from '../ModuleInterface'
+import { Detail, DetailInit } from '../ModuleInterface'
 import AbstractModule from '../AbstractModule'
 
 export type CSSClassOptions = {
@@ -79,7 +79,7 @@ export default class CSSClass extends AbstractModule {
     target.classList.add(this.doneClass)
   }
 
-  getDetail(): Detail {
+  getDetail(): DetailInit {
     return {
       css: true,
       fromClass: this.fromClass,

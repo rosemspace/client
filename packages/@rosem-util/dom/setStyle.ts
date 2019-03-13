@@ -1,10 +1,19 @@
+import { isNumber } from 'lodash-es'
+
+function normalizeValue(value: string | number | boolean): string {
+  return isNumber(value) ? String(value) + 'px' : String(value)
+}
+
 export default function setStyle(
   element: HTMLElement | SVGElement | Element,
   attribute: string,
   value: string | number | boolean | null
 ): void {
   if (element instanceof HTMLElement || element instanceof SVGElement) {
-    element.style.setProperty(attribute, null != value ? String(value) : null)
+    element.style.setProperty(
+      attribute,
+      null != value ? normalizeValue(value) : null
+    )
   } else {
     const style: string | null = element.getAttribute('style')
 
@@ -13,9 +22,11 @@ export default function setStyle(
       style
         ? style.replace(
             new RegExp(`(${attribute}:)\\s*[^;]+;?`),
-            null != value ? `$1${String(value)};` : ''
+            null != value ? `$1${normalizeValue(value)};` : ''
           )
-        : `${attribute}:${value};`
+        : null != value
+        ? `${attribute}:${normalizeValue(value)};`
+        : ''
     )
   }
 }

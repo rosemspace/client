@@ -1,4 +1,4 @@
-import ModuleInterface, { Detail } from './ModuleInterface'
+import ModuleInterface, { Detail, DetailInit } from './ModuleInterface'
 
 export default abstract class AbstractModule implements ModuleInterface {
   cleanup(detail: Detail): void {}
@@ -11,7 +11,7 @@ export default abstract class AbstractModule implements ModuleInterface {
 
   cancelled(detail: Detail): void {}
 
-  public getDetail(): Detail {
+  public getDetail(): DetailInit {
     return {}
   }
 }

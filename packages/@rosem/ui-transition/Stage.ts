@@ -5,7 +5,7 @@ export default class Stage implements ModuleDispatcherInterface {
   public readonly name: string
   public readonly duration?: number
   public readonly isExplicitDuration: boolean = false
-  private moduleList: Array<ModuleInterface> = []
+  private moduleList: ModuleInterface[] = []
 
   constructor(name: string, duration?: number) {
     this.name = name
@@ -22,7 +22,7 @@ export default class Stage implements ModuleDispatcherInterface {
     this.moduleList.push(middleware)
   }
 
-  public dispatch(phase: Phase, details: Detail = {}): Detail {
+  public dispatch(phase: Phase, details: Detail): Detail {
     this.moduleList.forEach((module) => {
       if (null != module.getDetail) {
         Object.assign(details, module.getDetail())

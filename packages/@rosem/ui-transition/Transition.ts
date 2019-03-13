@@ -1,5 +1,4 @@
-import isEmpty from 'lodash/isEmpty'
-import isPlainObject from 'lodash/isPlainObject'
+import { isEmpty, isPlainObject } from 'lodash-es'
 import { Detail } from './ModuleInterface'
 import Stage from './Stage'
 import StageDispatcher, { StageDispatcherOptions } from './StageDispatcher'
@@ -24,7 +23,7 @@ export type TransitionOptions = {
   enterToClass?: string
   enterDoneClass?: string
   duration?: number | TransitionDuration
-  afterLeaveClassList?: Array<string> | string
+  afterLeaveClassList?: string[] | string
   afterLeaveStyleMap?: StyleMap
   afterLeaveAttributeMap?: AttrMap
   auto?: boolean | string | string[]
@@ -58,12 +57,12 @@ export default class Transition extends StageDispatcher {
     }
     const duration: undefined | number | TransitionDuration = this.options
       .duration
-    let leaveDuration = <number>duration
-    let enterDuration = <number>duration
+    let leaveDuration = duration as number
+    let enterDuration = duration as number
 
     if (isPlainObject(duration)) {
-      leaveDuration = (<TransitionDuration>duration).leave
-      enterDuration = (<TransitionDuration>duration).enter
+      leaveDuration = (duration as TransitionDuration).leave
+      enterDuration = (duration as TransitionDuration).enter
     }
 
     const leaveStage = new Stage('leave', leaveDuration)
