@@ -1,35 +1,30 @@
-import isPrimitive from '@rosem-util/common/isPrimitive'
-import CommutatorInterface from '@rosem/virtual-dom/CommutatorInterface'
 import { forEach } from 'lodash-es'
+import isPrimitive from '@rosem-util/common/isPrimitive'
+import HydratorInterface from './HydratorInterface'
 import ManipulatorInterface from './ManipulatorInterface'
 import VirtualInstance, {
-  VirtualCDATASection,
   VirtualNode,
-  VirtualParentNode,
-  VirtualComment,
-  VirtualDocumentFragment,
-  VirtualElement,
   VirtualElementProps,
   VirtualNodeAttrDescriptor,
   VirtualNodeList,
   VirtualNodeType,
-  VirtualText,
 } from './VirtualInstance'
 
-export default class Commutator implements CommutatorInterface {
-  public mutateFromVirtualInstance<
-    VirtualElementExtendedProps extends VirtualElementProps,
-    Node,
-    ParentNode extends Node,
+export default class Hydrator<
+  OutputNode,
+  VirtualElementExtendedProps extends VirtualElementProps = VirtualElementProps
+> implements HydratorInterface<VirtualNode, OutputNode> {
+  public hydrate<
+    ParentNode extends OutputNode,
     DocumentFragment extends ParentNode,
     Element extends ParentNode,
-    Text extends Node,
-    Comment extends Node = Node,
-    CDATASection extends Node = Node
+    Text extends OutputNode,
+    Comment extends OutputNode = OutputNode,
+    CDATASection extends OutputNode = OutputNode
   >(
-    virtualInstance: VirtualInstance<VirtualElementExtendedProps>,
+    inputNode: VirtualInstance<VirtualElementExtendedProps>,
     manipulator: ManipulatorInterface<
-      Node,
+      OutputNode,
       ParentNode,
       DocumentFragment,
       Element,
@@ -37,20 +32,20 @@ export default class Commutator implements CommutatorInterface {
       Comment,
       CDATASection
     >
-  ): ParentNode | Text | Comment | CDATASection {
-    switch (virtualInstance.type) {
+  ): OutputNode {
+    switch (inputNode.type) {
       case VirtualNodeType.DOCUMENT_FRAGMENT_NODE:
         const documentFragment: DocumentFragment = manipulator.createDocumentFragment()
 
         this.appendVirtualNodeList(
           documentFragment,
-          virtualInstance.children,
+          inputNode.children,
           manipulator
         )
 
         return documentFragment
       case VirtualNodeType.ELEMENT_NODE:
-        const props: VirtualElementExtendedProps = virtualInstance.props
+        const props: VirtualElementExtendedProps = inputNode.props
         const element: Element = props.namespace
           ? manipulator.createElementNS(props.namespace, props.tag)
           : manipulator.createElement(props.tag)
@@ -71,45 +66,40 @@ export default class Commutator implements CommutatorInterface {
           })
         }
 
-        this.appendVirtualNodeList(
-          element,
-          virtualInstance.children,
-          manipulator
-        )
+        this.appendVirtualNodeList(element, inputNode.children, manipulator)
 
         return element
       case VirtualNodeType.TEXT_NODE:
         return manipulator.createText(
-          null != virtualInstance.text ? String(virtualInstance.text) : ''
+          null != inputNode.text ? String(inputNode.text) : ''
         )
       case VirtualNodeType.COMMENT_NODE:
         return manipulator.createComment(
-          null != virtualInstance.text ? String(virtualInstance.text) : ''
+          null != inputNode.text ? String(inputNode.text) : ''
         )
       case VirtualNodeType.CDATA_SECTION_NODE:
         return manipulator.createCDATASection(
-          null != virtualInstance.text ? String(virtualInstance.text) : ''
+          null != inputNode.text ? String(inputNode.text) : ''
         )
     }
 
     throw TypeError(
-      `Unsupported virtual node type "${(virtualInstance as VirtualNode).type}"`
+      `Unsupported virtual node type "${(inputNode as VirtualNode).type}"`
     )
   }
 
   protected appendVirtualNodeList<
-    Node,
-    ParentNode extends Node,
+    ParentNode extends OutputNode,
     DocumentFragment extends ParentNode,
     Element extends ParentNode,
-    Text extends Node,
-    Comment extends Node = Node,
-    CDATASection extends Node = Node
+    Text extends OutputNode,
+    Comment extends OutputNode = OutputNode,
+    CDATASection extends OutputNode = OutputNode
   >(
     parent: DocumentFragment | Element,
     nodeList: VirtualNodeList,
     renderer: ManipulatorInterface<
-      Node,
+      OutputNode,
       ParentNode,
       DocumentFragment,
       Element,
@@ -123,37 +113,13 @@ export default class Commutator implements CommutatorInterface {
         if (null != child) {
           renderer.appendChild(
             parent,
-            this.mutateFromVirtualInstance(child as VirtualInstance, renderer)
+            this.hydrate(
+              child as VirtualInstance<VirtualElementExtendedProps>,
+              renderer
+            )
           )
         }
       }
-    }
-  }
-
-  mutateToVirtualInstance<
-    VirtualElementExtendedProps extends VirtualElementProps,
-    Node,
-    ParentNode extends Node,
-    DocumentFragment extends ParentNode,
-    Element extends ParentNode,
-    Text extends Node,
-    Comment extends Node = Node,
-    CDATASection extends Node = Node
-  >(
-    instance: DocumentFragment | Element | Text | Comment | CDATASection,
-    virtualManipulator: ManipulatorInterface<
-      VirtualNode,
-      VirtualParentNode,
-      VirtualDocumentFragment,
-      VirtualElement<VirtualElementExtendedProps>,
-      VirtualText,
-      VirtualComment,
-      VirtualCDATASection
-    >
-  ): VirtualInstance {
-    return {
-      type: VirtualNodeType.TEXT_NODE,
-      text: '',
     }
   }
 }

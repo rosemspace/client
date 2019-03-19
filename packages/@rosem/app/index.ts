@@ -5,10 +5,9 @@
 
 // import Reaction from '@rosem/observable'
 // import Transition from '@rosem/ui-transition'
-import templateCompiler from '@rosem/template-compiler/test'
-import testUIPlatformWEB from '@rosem/ui-patform-web/test'
+import testCompiler from './testCompiler'
 
-console.log(testUIPlatformWEB(templateCompiler()));
+console.log(testCompiler());
 // console.log(testUIPlatformWEB())
 // Transition.test();
 // Reaction.test()
