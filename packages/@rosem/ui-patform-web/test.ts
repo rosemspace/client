@@ -1,11 +1,15 @@
-import Renderer from './Renderer'
-import VirtualHost from '@rosem/virtual-dom/VirtualHost'
+import HyperManipulator from '@rosem/virtual-dom/HyperManipulator'
+import Commutator from '@rosem/virtual-dom/Commutator'
+import { VirtualDocumentFragment } from '@rosem/virtual-dom/VirtualInstance'
+import Manipulator from './Manipulator'
 
-const virtualHost = new VirtualHost()
+const hyperRenderer = new HyperManipulator()
+const commutator = new Commutator()
+const h = (hyperRenderer.createInstance = hyperRenderer.createInstance.bind(
+  hyperRenderer
+))
 
-const h = virtualHost.createVirtualInstance
-
-export default function() {
+export default (documentFragment: VirtualDocumentFragment) => {
   const vnode = h(
     'svg',
     {
@@ -15,7 +19,7 @@ export default function() {
       },
     },
     [
-      h('P', undefined, 'pipi'),
+      h('P', 'pipi'),
       h('use', {
         attrs: {
           'xlink:href': {
@@ -25,14 +29,16 @@ export default function() {
         },
       }),
       h('ul', [
-        h(1, 'Some text'),
-        h(2, 'Some comment'),
+        h(2, 'Some text'),
+        h(3, ['Some comment']),
         h('li', 'item 1'),
         h('li', ['item 2']),
+        h([h('li', 'item 3'), h('', 'item 4')]),
+        h(0, [h('li', 'item 5'), 'item 6']),
       ]),
     ]
   )
-  console.log(vnode);
+  // console.log(vnode);
 
-  return virtualHost.renderVirtualInstance(vnode, new Renderer())
+  return commutator.mutateFromVirtualInstance(documentFragment, new Manipulator())
 }

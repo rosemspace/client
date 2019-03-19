@@ -1,6 +1,18 @@
 import no from '@rosem-util/common/no'
 import isProduction from '@rosem-util/env/isProduction'
-import potentialCustomElementNameCharRegExp from '@rosem-util/dom/potentialCustomElementNameCharRegExp'
+import {
+  isAnyRawTextElement,
+  shouldIgnoreFirstNewline,
+} from '@rosem-util/html-syntax'
+import {
+  potentialCustomElementNameCharRegExp,
+  commentStartToken,
+} from '@rosem-util/xml-syntax'
+import { startsWith, trimStart } from 'lodash-es'
+import ParsedAttribute from './ParsedAttribute'
+import ParsedTextContent from './ParsedTextContent'
+import ParsedEndTag from './ParsedEndTag'
+import ParsedStartTag from './ParsedStartTag'
 import getStackedTagRegExp from './getStackedTagRegExp'
 import isEscapableRawHTMLTextElement from './html/isEscapableRawTextElement'
 import isForeignHTMLTag from './html/isForeignElement'
@@ -20,10 +32,8 @@ import {
   typeMap,
   SourceSupportedType,
   TEXT_HTML_MIME_TYPE,
-  TEXT_XML_MIME_TYPE,
 } from './typeMap'
 
-export const processingInstructionRE = /^\s*<\?[^>]+\?>/
 export const xmlDeclarationRE = /^\s*<\?xml[^>]+>/
 export const doctypeDeclarationRE = /^\s*<!DOCTYPE [^>]+>/i
 // Non-colonized name e.g. "name"
@@ -57,41 +67,10 @@ export const CONDITIONAL_COMMENT_END_TOKEN = ']>'
 const conditionalCommentStartTokenLength = 3 // <![
 const conditionalCommentEndTokenLength = 2 // ]>
 
-type ParsedItem = {
-  matchStart: number
-  matchEnd: number
-}
-
-export type ParsedStartTag = {
-  name: string
-  nameLowerCased: string
-  namespace?: string
-  attrs: Array<ParsedAttribute>
-  void: boolean
-  unarySlash: string
-} & ParsedItem
-
-export type ParsedAttribute = {
-  name: string
-  nameLowerCased: string
-  namespace?: string
-  value: string
-} & ParsedItem
-
-export type ParsedEndTag = {
-  name: string
-  nameLowerCased: string
-} & ParsedItem
-
-export type ParsedText = {
-  text: string
-} & ParsedItem
-
 export type TemplateParserOptions = {
   decodeNewlines: boolean
   decodeNewlinesForHref: boolean
   keepComments: boolean
-  keepCDATASections: boolean
 }
 
 export type WarningData = {
@@ -105,25 +84,19 @@ const defaultOptions: TemplateParserOptions = {
   decodeNewlines: false,
   decodeNewlinesForHref: false,
   keepComments: true,
-  keepCDATASections: true,
-}
-
-// https://www.w3.org/TR/html5/syntax.html#restrictions-on-content-models
-function shouldIgnoreFirstNewline(tag: string, html: string) {
-  return '\n' === html[0] && /^pre|textarea$/i.test(tag)
 }
 
 export default class DOMLaxParser {
   protected readonly options: TemplateParserOptions
-  protected readonly moduleList: Array<ModuleInterface> = []
+  protected readonly moduleList: ModuleInterface[] = []
   protected type?: SourceSupportedType
   protected namespace?: string
   protected source: string = ''
-  protected index: number = 0
-  protected tagStack: Array<ParsedStartTag> = []
-  protected rootTagStack: Array<ParsedStartTag> = []
-  protected last: string | undefined
-  protected lastTagLowerCased: string | undefined
+  protected cursor: number = 0
+  protected tagStack: ParsedStartTag[] = []
+  protected rootTagStack: ParsedStartTag[] = []
+  protected lastSource: string = ''
+  protected lastTagLowerCased: string = ''
   protected expectHTML: boolean = false
   protected isEscapableRawTextElement: IsElement = no
   protected isForeignElement: IsElement = no
@@ -156,7 +129,6 @@ export default class DOMLaxParser {
 
     // noinspection FallThroughInSwitchStatementJS
     switch (type) {
-      case TEXT_XML_MIME_TYPE:
       case APPLICATION_XML_MIME_TYPE:
       case APPLICATION_MATHML_XML_MIME_TYPE:
         break
@@ -188,29 +160,24 @@ export default class DOMLaxParser {
     // Clear previous data
     this.tagStack = []
     this.rootTagStack = []
-    this.index = 0
-    this.source = source
+    this.cursor = 0
+    this.source = trimStart(source)
     this.switchParser(type)
     this.parseXMLDeclaration()
     this.parseDoctype()
 
     while (this.source) {
-      this.last = this.source
+      this.lastSource = this.source
 
-      // Make sure we're not in a raw text element like
-      // <script>, <style>, <textarea> or <title>
-      if (
-        !this.lastTagLowerCased ||
-        !(
-          this.isRawTextElement(this.lastTagLowerCased) ||
-          this.isEscapableRawTextElement(this.lastTagLowerCased)
-        )
-      ) {
+      // Make sure we're not in a raw text element like <script>, <style>,
+      // <textarea> or <title>
+      if (!isAnyRawTextElement(this.lastTagLowerCased)) {
         let textEndTokenIndex: number = this.source.indexOf('<')
 
         // We have no text, so will be searching for doctype/tag/comment
         if (0 === textEndTokenIndex) {
           // Comment:
+          // if (this.startsWith(commentStartToken)) {
           if (commentStartRE.test(this.source)) {
             const commentEndTokenIndex = this.source.indexOf(COMMENT_END_TOKEN)
 
@@ -218,13 +185,13 @@ export default class DOMLaxParser {
             if (commentEndTokenIndex >= commentStartTokenLength) {
               if (this.options.keepComments) {
                 this.comment({
-                  text: this.source.slice(
+                  textContent: this.source.slice(
                     commentStartTokenLength,
                     commentEndTokenIndex
                   ),
-                  matchStart: this.index,
+                  matchStart: this.cursor,
                   matchEnd:
-                    this.index + commentEndTokenIndex + commentEndTokenLength,
+                    this.cursor + commentEndTokenIndex + commentEndTokenLength,
                 })
               }
 
@@ -234,7 +201,7 @@ export default class DOMLaxParser {
             }
           }
 
-          // Character data:
+          // Character data section:
           if (cDataSectionStartRE.test(this.source)) {
             const cdataSectionEndTokenIndex = this.source.indexOf(
               CDATA_SECTION_END_TOKEN
@@ -242,19 +209,17 @@ export default class DOMLaxParser {
 
             // If CDATA section have end token
             if (cdataSectionEndTokenIndex >= cDATASectionStartTokenLength) {
-              if (this.options.keepCDATASections) {
-                this.cDataSection({
-                  text: this.source.slice(
-                    cDATASectionStartTokenLength,
-                    cdataSectionEndTokenIndex
-                  ),
-                  matchStart: this.index,
-                  matchEnd:
-                    this.index +
-                    cdataSectionEndTokenIndex +
-                    cDATASectionEndTokenLength,
-                })
-              }
+              this.cDataSection({
+                textContent: this.source.slice(
+                  cDATASectionStartTokenLength,
+                  cdataSectionEndTokenIndex
+                ),
+                matchStart: this.cursor,
+                matchEnd:
+                  this.cursor +
+                  cdataSectionEndTokenIndex +
+                  cDATASectionEndTokenLength,
+              })
             }
           }
 
@@ -283,10 +248,10 @@ export default class DOMLaxParser {
           const endTagMatch = this.source.match(endTagRE)
 
           if (endTagMatch) {
-            const startIndex = this.index
+            const cursor = this.cursor
 
             this.advance(endTagMatch[0].length)
-            this.parseEndTag(endTagMatch[1], startIndex, this.index)
+            this.parseEndTag(endTagMatch[1], cursor, this.cursor)
 
             continue
           }
@@ -315,7 +280,7 @@ export default class DOMLaxParser {
         }
 
         // We have text
-        let text: string
+        let textContent: string
 
         if (textEndTokenIndex >= 0) {
           let rest = this.source.slice(textEndTokenIndex)
@@ -333,80 +298,80 @@ export default class DOMLaxParser {
             rest = this.source.slice(textEndTokenIndex)
           }
 
-          text = this.source.slice(0, textEndTokenIndex)
+          textContent = this.source.slice(0, textEndTokenIndex)
         } else {
-          text = this.source
+          textContent = this.source
           this.source = ''
         }
 
         // todo I guess we will always have text
-        if (text) {
-          this.advance(text.length)
+        if (textContent) {
+          this.advance(textContent.length)
           this.text({
-            text,
-            matchStart: this.index - text.length,
-            matchEnd: this.index,
+            textContent,
+            matchStart: this.cursor - textContent.length,
+            matchEnd: this.cursor,
           })
         }
       }
-      // We are in a raw text element like <script>, <style>,
-      // <textarea> or <title>
+      // We are in a raw text element like <script>, <style>, <textarea> or
+      // <title>
       else {
         let endTagLength = 0
-        const stackedTagLowerCased = this.lastTagLowerCased
-        const stackedTagRE = getStackedTagRegExp(stackedTagLowerCased)
+        const lastTagLowerCased = this.lastTagLowerCased
+        const stackedTagRE = getStackedTagRegExp(lastTagLowerCased)
         const rest = this.source.replace(
           stackedTagRE,
-          (all: string, content: string, endTag: string): string => {
+          (all: string, text: string, endTag: string): string => {
             endTagLength = endTag.length
 
-            let text = content
+            let textContent = text
 
             if (
-              !(
-                this.isRawTextElement(stackedTagLowerCased) ||
-                this.isEscapableRawTextElement(stackedTagLowerCased)
-              ) &&
-              'noscript' !== stackedTagLowerCased
+              !isAnyRawTextElement(lastTagLowerCased) &&
+              'noscript' !== lastTagLowerCased
             ) {
-              text = text.replace(commentRE, '$1').replace(cDataSectionRE, '$1')
+              textContent = textContent
+                .replace(commentRE, '$1')
+                .replace(cDataSectionRE, '$1')
             }
 
-            if (shouldIgnoreFirstNewline(stackedTagLowerCased, text)) {
-              text = text.slice(1)
+            if (shouldIgnoreFirstNewline(lastTagLowerCased, text)) {
+              textContent = textContent.slice(1)
             }
 
             this.text({
-              text,
-              matchStart: this.index,
-              matchEnd: this.index + content.length,
+              textContent,
+              matchStart: this.cursor,
+              matchEnd: this.cursor + text.length,
             })
 
             return ''
           }
         )
 
-        this.index += this.source.length - rest.length
+        this.cursor += this.source.length - rest.length
         this.source = rest
 
         this.parseEndTag(
-          stackedTagLowerCased,
-          this.index - endTagLength,
-          this.index
+          lastTagLowerCased,
+          this.cursor - endTagLength,
+          this.cursor
         )
       }
 
-      if (this.source === this.last) {
+      // todo roshe: maybe better to use length?
+      if (this.source === this.lastSource) {
         this.text({
-          text: this.source,
-          matchStart: this.index,
-          matchEnd: this.index + this.source.length,
+          textContent: this.source,
+          matchStart: this.cursor,
+          matchEnd: this.cursor + this.source.length,
         })
 
         // When a template ends with "<..." (just the example)
         if (isNotProduction && !this.tagStack.length) {
           this.warn(`Mal-formatted tag at end of template: "${this.source}"`, {
-            start: this.index + this.source.length,
+            start: this.cursor + this.source.length,
           })
         }
         break
@@ -418,7 +383,7 @@ export default class DOMLaxParser {
   }
 
   protected advance(n: number) {
-    this.index += n
+    this.cursor += n
     this.source = this.source.slice(n)
   }
 
@@ -445,7 +410,7 @@ export default class DOMLaxParser {
   ): ParsedStartTag | undefined {
     const tagName = startTagOpenMatch[1]
     const tagNameLowerCased = tagName.toLowerCase()
-    const attrs: Array<ParsedAttribute> = []
+    const attrs: ParsedAttribute[] = []
     const parsedTag: ParsedStartTag = {
       name: tagName,
       nameLowerCased: tagNameLowerCased,
@@ -454,8 +419,8 @@ export default class DOMLaxParser {
       attrs,
       unarySlash: '',
       void: false,
-      matchStart: this.index,
-      matchEnd: this.index,
+      matchStart: this.cursor,
+      matchEnd: this.cursor,
     }
 
     this.advance(startTagOpenMatch[0].length)
@@ -468,7 +433,7 @@ export default class DOMLaxParser {
       !(startTagCloseTagMatch = this.source.match(startTagCloseRE)) &&
       (attrMatch = this.source.match(attributeRE))
     ) {
-      const start = this.index
+      const cursor = this.cursor
       // Full attribute name, i. e. "xlink:href"
       const attrNameLowerCased = attrMatch[1].toLowerCase()
       // Non-colonized attribute name, i. e. "xlink" (before ":")
@@ -486,8 +451,8 @@ export default class DOMLaxParser {
             : this.options.decodeNewlines
         ),
         matchStart:
-          start + (<RegExpMatchArray>attrMatch[0].match(/^\s*/)).length,
-        matchEnd: this.index,
+          cursor + (attrMatch[0].match(/^\s*/) as RegExpMatchArray).length,
+        matchEnd: this.cursor,
       }
 
       // todo: ns:name
@@ -517,7 +482,7 @@ export default class DOMLaxParser {
         this.isVoidElement(tagNameLowerCased) ||
         Boolean(startTagCloseTagMatch[1])
       this.advance(startTagCloseTagMatch[0].length)
-      parsedTag.matchEnd = this.index
+      parsedTag.matchEnd = this.cursor
 
       // We don't have namespace from previous tag
       if (
@@ -569,14 +534,14 @@ export default class DOMLaxParser {
         this.lastTagLowerCased === 'p' &&
         this.isNonPhrasingElement(tagNameLowerCased)
       ) {
-        this.parseEndTag(this.lastTagLowerCased, this.index, this.index)
+        this.parseEndTag(this.lastTagLowerCased, this.cursor, this.cursor)
       }
 
       if (
         this.isOptionalClosingElement(tagNameLowerCased) &&
         this.lastTagLowerCased === tagNameLowerCased
       ) {
-        this.parseEndTag(tagNameLowerCased, this.index, this.index)
+        this.parseEndTag(tagNameLowerCased, this.cursor, this.cursor)
       }
     }
 
@@ -590,7 +555,7 @@ export default class DOMLaxParser {
 
   protected parseEndTag(tagName: string, matchStart: number, matchEnd: number) {
     let tagNameLowerCased
-    let pos
+    let pos = 0
 
     // Find the closest opened tag of the same type
     if (tagName) {
@@ -621,9 +586,6 @@ export default class DOMLaxParser {
           break
         }
       }
-    } else {
-      // If no tag name is provided, clean shop
-      pos = 0
     }
 
     if (pos >= 0) {
@@ -650,7 +612,7 @@ export default class DOMLaxParser {
       // Remove the open elements from the stack
       this.tagStack.length = pos
       this.lastTagLowerCased =
-        pos > 0 ? this.tagStack[pos - 1].nameLowerCased : undefined
+        pos > 0 ? this.tagStack[pos - 1].nameLowerCased : ''
     } else if (tagNameLowerCased === 'br') {
       this.tagStart({
         name: tagName,
@@ -698,7 +660,7 @@ export default class DOMLaxParser {
     }
   }
 
-  protected text(parsedText: ParsedText) {
+  protected text(parsedText: ParsedTextContent) {
     let module
 
     for (module of this.moduleList) {
@@ -706,7 +668,7 @@ export default class DOMLaxParser {
     }
   }
 
-  protected comment(parsedComment: ParsedText) {
+  protected comment(parsedComment: ParsedTextContent) {
     let module
 
     for (module of this.moduleList) {
@@ -714,7 +676,7 @@ export default class DOMLaxParser {
     }
   }
 
-  protected cDataSection(parsedCDATASection: ParsedText) {
+  protected cDataSection(parsedCDATASection: ParsedTextContent) {
     let module
 
     for (module of this.moduleList) {

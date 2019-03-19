@@ -1,4 +1,5 @@
-export enum VirtualNodeType {
+export const enum VirtualNodeType {
+  DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   TEXT_NODE,
   COMMENT_NODE,
@@ -6,9 +7,9 @@ export enum VirtualNodeType {
 }
 
 export interface VirtualNode {
-  type: VirtualNodeType
-  parentElement?: VirtualElement
-  nextSibling?: VirtualInstance
+  type: VirtualNodeType,
+  parent?: VirtualParentNode
+  nextSibling?: VirtualNode
 }
 
 export type Primitive = string | number | boolean
@@ -20,41 +21,58 @@ export type VirtualNodeAttrDescriptor = {
   value: Primitive
 }
 
-export type VirtualNodeAttrMap = Record<string, VirtualNodeAttrDescriptor | Primitive>
+export type VirtualNodeAttrMap = Record<
+  string,
+  VirtualNodeAttrDescriptor | Primitive
+>
 
 export type VirtualElementProps = {
-  tag: string,
+  tag: string
   key: VirtualNodeKey
   namespace?: string
   attrs: VirtualNodeAttrMap
-}// & Record<string, Primitive>
+} // & Record<string, Primitive>
 
-type VirtualInstance = VirtualElement | VirtualText | VirtualComment | VirtualCDATASection
+type VirtualInstance<VirtualElementExtendedProps extends VirtualElementProps = VirtualElementProps> =
+  | VirtualDocumentFragment
+  | VirtualElement<VirtualElementExtendedProps>
+  | VirtualText
+  | VirtualComment
+  | VirtualCDATASection
 
-export type VirtualInstanceList = VirtualInstance[]
+export type VirtualNodeList = VirtualNode[]
 
-export type VirtualChildList = Array<VirtualInstance | Primitive>
+export type VirtualChildNodeList = Array<VirtualNode | Primitive>
 
-export interface VirtualElement extends VirtualNode {
+export interface VirtualParentNode extends VirtualNode {
+  children: VirtualNodeList
+}
+
+export interface VirtualContentNode extends VirtualNode {
+  text: Primitive
+}
+
+export interface VirtualDocumentFragment extends VirtualParentNode {
+  type: VirtualNodeType.DOCUMENT_FRAGMENT_NODE
+}
+
+export interface VirtualElement<
+  VirtualElementExtendedProps extends VirtualElementProps = VirtualElementProps
+> extends VirtualParentNode {
   type: VirtualNodeType.ELEMENT_NODE
-  props: VirtualElementProps
-  index: number
-  children: VirtualInstanceList
+  props: VirtualElementExtendedProps
 }
 
-export interface VirtualText extends VirtualNode {
+export interface VirtualText extends VirtualContentNode {
   type: VirtualNodeType.TEXT_NODE
-  text: Primitive
 }
 
-export interface VirtualComment extends VirtualNode {
+export interface VirtualComment extends VirtualContentNode {
   type: VirtualNodeType.COMMENT_NODE
-  text: Primitive
 }
 
-export interface VirtualCDATASection extends VirtualNode {
+export interface VirtualCDATASection extends VirtualContentNode {
   type: VirtualNodeType.CDATA_SECTION_NODE
-  text: Primitive
 }
 
 export default VirtualInstance

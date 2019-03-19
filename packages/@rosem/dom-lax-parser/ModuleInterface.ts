@@ -1,20 +1,18 @@
-import {
-  ParsedEndTag,
-  ParsedStartTag,
-  ParsedText,
-  WarningData,
-} from './DOMLaxParser'
+import { WarningData } from './DOMLaxParser'
+import ParsedEndTag from './ParsedEndTag'
+import ParsedStartTag from './ParsedStartTag'
+import ParsedTextContent from './ParsedTextContent'
 
 export default interface ModuleInterface {
   tagStart(parsedTag: ParsedStartTag): void
 
   tagEnd(parsedEndTag: ParsedEndTag): void
 
-  text(parsedText: ParsedText): void
+  text(parsedText: ParsedTextContent): void
 
-  comment(parsedComment: ParsedText): void
+  comment(parsedComment: ParsedTextContent): void
 
-  cDataSection(parsedCDATASection: ParsedText): void
+  cDataSection(parsedCDATASection: ParsedTextContent): void
 
   warn(message: string, data: WarningData): void
 }

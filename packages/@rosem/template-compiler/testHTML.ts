@@ -1,7 +1,4 @@
-import DOMLaxParser from './DOMLaxParser'
-
-export default function () {
-  return new DOMLaxParser().parseFromString(`
+export default `
 <!doctype html>
 <!--<html lang="en">-->
 <head>
@@ -81,5 +78,4 @@ export default function () {
 <div class="test"></div>
 <!--</body>-->
 <...
-`)
-}
+`

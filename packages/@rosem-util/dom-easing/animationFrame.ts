@@ -17,7 +17,7 @@ if (null != global && typeof global.requestAnimationFrame === 'function') {
   cancelAnimationFrame = global.cancelAnimationFrame.bind(global)
 } else {
   requestAnimationFrame = (callback: Function) =>
-    setTimeout(() => callback(Date.now()), 1000 / 60)
+    setTimeout(() => callback(Date.now()), 1_000 / 60)
   cancelAnimationFrame = clearTimeout
 }
 
