@@ -1,9 +1,10 @@
-import { WarningData } from '@rosem/dom-lax-parser/DOMLaxParser'
-import ModuleInterface from '@rosem/dom-lax-parser/ModuleInterface'
-import ParsedAttribute from '@rosem/dom-lax-parser/ParsedAttribute'
-import ParsedEndTag from '@rosem/dom-lax-parser/ParsedEndTag'
-import ParsedStartTag from '@rosem/dom-lax-parser/ParsedStartTag'
-import ParsedTextContent from '@rosem/dom-lax-parser/ParsedTextContent'
+import { SourceSupportedType } from '@rosem/html-parser/typeMap'
+import WarningData from '@rosem/xml-parser/WarningData'
+import ModuleInterface from '@rosem/xml-parser/ModuleInterface'
+import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
+import ParsedEndTag from '@rosem/xml-parser/node/ParsedEndTag'
+import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
+import ParsedContent from '@rosem/xml-parser/node/ParsedContent'
 import ManipulatorInterface from '@rosem/virtual-dom/ManipulatorInterface'
 
 export default class TemplateCompiler<
@@ -24,8 +25,9 @@ export default class TemplateCompiler<
     Comment,
     CDATASection
   >
-  protected rootDocumentFragment: DocumentFragment
-  protected cursorElement: ParentNode
+  private type!: SourceSupportedType
+  protected rootNode!: DocumentFragment
+  protected cursorNode!: ParentNode
 
   constructor(
     renderer: ManipulatorInterface<
@@ -39,20 +41,28 @@ export default class TemplateCompiler<
     >
   ) {
     this.renderer = renderer
-    this.rootDocumentFragment = this.cursorElement = this.renderer.createDocumentFragment()
   }
 
   getCompiledResult(): DocumentFragment {
-    return this.rootDocumentFragment
+    return this.rootNode
   }
 
-  tagStart(parsedTag: ParsedStartTag): void {
+  start(type: SourceSupportedType) {
+    this.type = type
+    this.rootNode = this.cursorNode = this.renderer.createDocumentFragment()
+  }
+
+  end(): void {}
+
+  processingInstruction(parsedProcessingInstruction: ParsedContent): void {}
+
+  startTag(parsedTag: ParsedStartTag): void {
     const element: Element = parsedTag.namespace
       ? this.renderer.createElementNS(parsedTag.namespace, parsedTag.name)
       : this.renderer.createElement(parsedTag.name)
 
     parsedTag.attrs.forEach(
-      (attr: ParsedAttribute): void => {
+      (attr: ParsedAttr): void => {
         attr.namespace
           ? this.renderer.setAttributeNS(
               element,
@@ -64,31 +74,38 @@ export default class TemplateCompiler<
       }
     )
 
-    this.renderer.appendChild(this.cursorElement, element)
+    this.renderer.appendChild(this.cursorNode, element)
 
     if (!parsedTag.void) {
-      this.cursorElement = element
+      this.cursorNode = element
     }
   }
 
-  tagEnd(parsedEndTag: ParsedEndTag): void {
-    this.cursorElement =
-      this.renderer.parent(this.cursorElement) || this.cursorElement
+  endTag(parsedEndTag: ParsedEndTag): void {
+    this.cursorNode = this.renderer.parent(this.cursorNode) || this.cursorNode
   }
 
-  text(parsedText: ParsedTextContent): void {
+  text(parsedText: ParsedContent): void {
     this.renderer.appendChild(
-      this.cursorElement,
-      this.renderer.createText(parsedText.textContent)
+      this.cursorNode,
+      this.renderer.createText(parsedText.content)
     )
   }
 
-  comment(parsedComment: ParsedTextContent): void {
-    this.text(parsedComment)
+  comment(parsedComment: ParsedContent): void {
+    this.renderer.appendChild(
+      this.cursorNode,
+      this.renderer.createComment(parsedComment.content)
+    )
   }
 
-  cDataSection(parsedCDATASection: ParsedTextContent): void {
-    this.text(parsedCDATASection)
+  cDataSection(parsedCDATASection: ParsedContent): void {
+    this.type.includes('html')
+      ? this.text(parsedCDATASection)
+      : this.renderer.appendChild(
+          this.cursorNode,
+          this.renderer.createCDATASection(parsedCDATASection.content)
+        )
   }
 
   warn(message: string, data: WarningData): void {

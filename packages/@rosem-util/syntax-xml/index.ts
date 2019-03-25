@@ -1,6 +1,11 @@
+export const anyCharCapturePart = '([\\s\\S]*?)'
+
+export const processingInstructionStartRegExp = /^<\?/
+
 export const processingInstructionRegExp = /^<\?([\s\S]*?)\?>/
 
-export function generateTokens(startName: string, endName: string) {
+// Used to avoid being passed as HTML comment when inlined in a page
+export function generateContentTokens(startName: string, endName: string) {
   return {
     start: `<!${startName}`,
     end: `${endName}>`,
@@ -8,19 +13,14 @@ export function generateTokens(startName: string, endName: string) {
 }
 
 export const {
-  start: conditionalCommentStartToken,
-  end: conditionalCommentEndToken,
-} = generateTokens('[', ']')
-
-export const {
   start: commentStartToken,
   end: commentEndToken,
-} = generateTokens('--', '--')
+} = generateContentTokens('--', '--')
 
 export const {
   start: characterDataSectionStartToken,
   end: characterDataSectionEndToken,
-} = generateTokens('[CDATA[', ']]')
+} = generateContentTokens('[CDATA[', ']]')
 
 /**
  * Unicode characters used for parsing html tags, component names and property paths.
@@ -52,7 +52,7 @@ export const startTagOpenRegExp = new RegExp(
 
 export const startTagCloseRegExp = /^\s*(\/?)>/
 
-// Regular Expressions for parsing tags and attributes
+// Regular expression for parsing attributes
 export const attributeRegExp = /^\s*([^\s"'<>/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 
 export const endTagRegExp = new RegExp(
@@ -61,10 +61,8 @@ export const endTagRegExp = new RegExp(
 
 export const commentStartRegExp = new RegExp(`^${commentStartToken}`)
 
-export const conditionalCommentStartRegExp = /^<!\[/
+export const commentRegExp = /<!-{2}([\s\S]*?)-{2}>/g
 
-export const commentRegExp = /<!-{2}([\s\S]*?)-->/g
+export const cDataSectionStartRegExp = /^<!\[CDATA\[/
 
-export const characterDataSectionStartRegExp = /^<!\[CDATA\[/
-
-export const cDataSectionRE = /<!\[CDATA\[([\s\S]*?)]]>/g
+export const cDataSectionRegExp = /<!\[CDATA\[([\s\S]*?)]{2}>/g
