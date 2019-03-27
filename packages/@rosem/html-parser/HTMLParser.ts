@@ -1,18 +1,19 @@
+import no from '@rosem-util/common/no'
 import isProduction from '@rosem-util/env/isProduction'
 import {
-  doctypeDeclarationRegExp,
-  conditionalCommentRegExp,
-  isAnyRawTextElement,
-  shouldIgnoreFirstNewline,
+  declarationStartRegExp,
+  declarationRegExp,
   conditionalCommentStartRegExp,
+  conditionalCommentRegExp,
   nonPhrasingElementRegExp,
+  voidElementRegExp,
   optionalClosingElementRegExp,
   foreignElementRegExp,
-  voidElementRegExp,
+  isAnyRawTextElement,
+  shouldIgnoreFirstNewline,
 } from '@rosem-util/syntax-html'
 import namespaceMap from '@rosem/xml-parser/namespaceMap'
-import XMLParser from '@rosem/xml-parser/XMLParser'
-import ModuleInterface from '@rosem/xml-parser/ModuleInterface'
+import XMLParser, { TemplateParserOptions } from '@rosem/xml-parser/XMLParser'
 import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
 import ParsedEndTag from '@rosem/xml-parser/node/ParsedEndTag'
 import ParsedContent from '@rosem/xml-parser/node/ParsedContent'
@@ -30,14 +31,31 @@ import getStackedTagRegExp from './getStackedTagRegExp'
 const isNotProduction = !isProduction
 
 export default class HTMLParser extends XMLParser {
-  protected type?: SourceSupportedType
+  protected type: SourceSupportedType = 'text/html'
   protected rootTagStack: ParsedStartTag[] = []
 
-  addModule(module: ModuleInterface): void {
-    this.moduleList.push(module)
+  constructor(options?: TemplateParserOptions) {
+    super(options)
+
+    this.addInstruction(this.parseDeclaration, no, 1)
+    this.addInstruction(this.parseConditionalComment, this.comment, 4)
+    this.addInstruction(this.parseRawText, this.text, 7)
   }
 
-  protected switchParser(type: SourceSupportedType = 'text/html'): void {
+  protected get lastTagNameLowerCased(): string {
+    return this.tagStack.length > 0
+      ? this.tagStack[this.tagStack.length - 1].nameLowerCased
+      : ''
+  }
+
+  public start(type: SourceSupportedType) {
+    // Clear previous data
+    this.rootTagStack = []
+    this.useParser(type)
+    super.start(type)
+  }
+
+  protected useParser(type: SourceSupportedType = this.type): void {
     if (type === this.type) {
       return
     }
@@ -64,64 +82,8 @@ export default class HTMLParser extends XMLParser {
     }
   }
 
-  parseFromString(
-    source: string,
-    type: SourceSupportedType = 'text/html'
-  ): void {
-    this.source = source
-    // Clear previous data
-    this.tagStack = []
-    this.rootTagStack = []
-    this.cursor = 0
-    this.switchParser(type)
-    this.start(type)
-
-    while (this.source) {
-      if (this.parseProcessingInstruction()) {
-        continue
-      }
-
-      if (this.parseDoctype()) {
-        continue
-      }
-
-      if (this.parseComment()) {
-        continue
-      }
-
-      // Character data section
-      if (this.parseCDataSection()) {
-        continue
-      }
-
-      // Conditional comment
-      if (this.parseConditionalComment()) {
-        continue
-      }
-
-      // End tag
-      if (this.parseEndTag()) {
-        continue
-      }
-
-      // Start tag
-      if (this.parseStartTag()) {
-        continue
-      }
-
-      // We are in a raw text element like <script>, <style>, <textarea> or
-      // <title>
-      if (this.parseRawText()) {
-        continue
-      }
-
-      // Text
-      this.parseText()
-    }
-
-    // Clean up any remaining tags
-    // this.parseEndTag(['', '']) // todo
-    this.end()
+  protected parseDeclaration(): ParsedContent | void {
+    return this.parseContent(declarationRegExp)
   }
 
   protected parseStartTag(): ParsedStartTag | void {
@@ -192,10 +154,6 @@ export default class HTMLParser extends XMLParser {
         }
       }
 
-      if (shouldIgnoreFirstNewline(parsedTag.name, this.source)) {
-        this.moveCursor(1)
-      }
-
       // We don't have namespace from previous tag
       if (
         !this.namespace &&
@@ -227,7 +185,7 @@ export default class HTMLParser extends XMLParser {
         this.rootTagStack.push(parsedTag)
 
         if (typeMap[tagNameLowerCased]) {
-          this.switchParser(typeMap[tagNameLowerCased])
+          this.useParser(typeMap[tagNameLowerCased])
           this.namespace = parsedTag.namespace =
             namespaceMap[parsedTag.nameLowerCased] || this.namespace
         } else {
@@ -235,24 +193,13 @@ export default class HTMLParser extends XMLParser {
         }
       }
 
-      this.startTag(parsedTag)
+      // this.startTag(parsedTag)
+
+      if (shouldIgnoreFirstNewline(parsedTag.name, this.source)) {
+        this.moveCursor(1)
+      }
 
       return parsedTag
-    }
-  }
-
-  protected parseDoctype(): ParsedContent | void {
-    const doctypeDeclarationMatch = this.source.match(doctypeDeclarationRegExp)
-
-    if (doctypeDeclarationMatch) {
-      // Ignore doctype and move forward
-      this.moveCursor(doctypeDeclarationMatch[0].length)
-
-      return {
-        content: doctypeDeclarationMatch[1],
-        matchStart: this.cursor - doctypeDeclarationMatch[0].length,
-        matchEnd: this.cursor,
-      } as ParsedContent
     }
   }
 
@@ -268,7 +215,7 @@ export default class HTMLParser extends XMLParser {
         matchEnd: this.cursor + matchArray[0].length,
       }
 
-      this.comment(parsedContent)
+      // this.comment(parsedContent)
       this.moveCursor(matchArray[0].length)
 
       return parsedContent
@@ -276,28 +223,28 @@ export default class HTMLParser extends XMLParser {
   }
 
   protected parseRawText(): ParsedContent | void {
-    if (isAnyRawTextElement(this.lastTagNameLowerCased)) {
-      let parsedRawText: ParsedContent | undefined
-      const lastTagNameLowerCased = this.lastTagNameLowerCased
-      const stackedTagRE = getStackedTagRegExp(lastTagNameLowerCased)
-      const rest = this.source.replace(
-        stackedTagRE,
-        (all: string, text: string, endTag: string): string => {
-          this.text(
-            (parsedRawText = {
-              content: text.slice(
-                Number(shouldIgnoreFirstNewline(lastTagNameLowerCased, text))
-              ),
-              matchStart: this.cursor,
-              matchEnd: this.cursor + text.length,
-            })
-          )
+    const lastTagNameLowerCased = this.lastTagNameLowerCased
 
-          return endTag
+    if (isAnyRawTextElement(lastTagNameLowerCased)) {
+      let parsedRawText: ParsedContent | undefined = undefined
+      const stackedTagRE = getStackedTagRegExp(lastTagNameLowerCased)
+      // debugger
+      this.source.replace(
+        stackedTagRE,
+        (all: string, text: string): string => {
+          parsedRawText = {
+            content: text.slice(
+              Number(shouldIgnoreFirstNewline(lastTagNameLowerCased, text))
+            ),
+            matchStart: this.cursor,
+            matchEnd: this.cursor + text.length,
+          }
+
+          this.moveCursor(text.length)
+
+          return ''
         }
       )
-
-      this.moveCursor(this.source.length - rest.length)
 
       return parsedRawText
     }
@@ -310,12 +257,13 @@ export default class HTMLParser extends XMLParser {
   protected startsWithInstruction(source: string): boolean {
     return (
       super.startsWithInstruction(source) ||
-      conditionalCommentStartRegExp.test(source)
+      conditionalCommentStartRegExp.test(source) ||
+      declarationStartRegExp.test(source)
     )
   }
 
-  protected hasMatchingStartTag(startTag: ParsedStartTag): void {
-    super.hasMatchingStartTag(startTag)
+  protected matchingStartTagFound(startTag: ParsedStartTag): void {
+    super.matchingStartTagFound(startTag)
 
     // Switch parser back before foreign tag
     if (
@@ -329,16 +277,16 @@ export default class HTMLParser extends XMLParser {
           this.rootTagStack.length - 1
         ]
 
-        this.switchParser(typeMap[previousRootTag.nameLowerCased])
+        this.useParser(typeMap[previousRootTag.nameLowerCased])
         this.namespace = previousRootTag.namespace
       } else {
-        this.switchParser('text/html')
+        this.useParser('text/html')
         this.namespace = undefined
       }
     }
   }
 
-  protected hasNoMatchingStartTag(endTag: ParsedEndTag): void {
+  protected matchingStartTagMissed(endTag: ParsedEndTag): void {
     if (/^(br|p)$/.test(endTag.name)) {
       const isVoid: boolean = endTag.name.length !== 1
 
@@ -353,13 +301,13 @@ export default class HTMLParser extends XMLParser {
       if (!isVoid) {
         this.endTag(endTag)
       }
-    } else if (voidElementRegExp.test(endTag.name)) {
+    } else if (isNotProduction && voidElementRegExp.test(endTag.name)) {
       this.warn(`Wrong closed void element <${endTag.name}>`, {
         matchStart: endTag.matchStart,
         matchEnd: endTag.matchEnd,
       })
     } else {
-      super.hasNoMatchingStartTag(endTag)
+      super.matchingStartTagMissed(endTag)
     }
   }
 }

@@ -3,4 +3,5 @@ import HTMLParser from './HTMLParser'
 export default HTMLParser
 
 //test
-new HTMLParser()
+// @ts-ignore
+window.htmlParser = new HTMLParser()

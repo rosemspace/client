@@ -2,25 +2,10 @@ export const anyCharCapturePart = '([\\s\\S]*?)'
 
 export const processingInstructionStartRegExp = /^<\?/
 
-export const processingInstructionRegExp = /^<\?([\s\S]*?)\?>/
-
-// Used to avoid being passed as HTML comment when inlined in a page
-export function generateContentTokens(startName: string, endName: string) {
-  return {
-    start: `<!${startName}`,
-    end: `${endName}>`,
-  }
-}
-
-export const {
-  start: commentStartToken,
-  end: commentEndToken,
-} = generateContentTokens('--', '--')
-
-export const {
-  start: characterDataSectionStartToken,
-  end: characterDataSectionEndToken,
-} = generateContentTokens('[CDATA[', ']]')
+export const processingInstructionRegExp = new RegExp(
+  `${processingInstructionStartRegExp.source}${anyCharCapturePart}\\?>`,
+  'i'
+)
 
 /**
  * Unicode characters used for parsing html tags, component names and property paths.
@@ -59,10 +44,15 @@ export const endTagRegExp = new RegExp(
   `^<\\/${qualifiedNameRegExpCapturePart}[^>]*>`
 )
 
-export const commentStartRegExp = new RegExp(`^${commentStartToken}`)
+// Used {2} to avoid being passed as HTML comment when inlined in a page
+export const commentStartRegExp = /^<!-{2}/
 
-export const commentRegExp = /<!-{2}([\s\S]*?)-{2}>/g
+export const commentRegExp = new RegExp(
+  `${commentStartRegExp.source}${anyCharCapturePart}-{2}>`
+)
 
 export const cDataSectionStartRegExp = /^<!\[CDATA\[/
 
-export const cDataSectionRegExp = /<!\[CDATA\[([\s\S]*?)]{2}>/g
+export const cDataSectionRegExp = new RegExp(
+  `${cDataSectionStartRegExp.source}${anyCharCapturePart}]{2}>`
+)

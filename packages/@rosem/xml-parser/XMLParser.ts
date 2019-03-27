@@ -1,16 +1,13 @@
 //todo
 // - make common method for content parsing
-// - change math interface to `matchStart` and `matchLength`
+// - change match interface to `matchStart` and `matchLength`
 // - remove warning about optional element closing
 // - switch parser functionality
 // - add instruction list functionality
+// - add middleware functionality
 
 import isProduction from '@rosem-util/env/isProduction'
 import {
-  characterDataSectionStartToken,
-  characterDataSectionEndToken,
-  commentStartToken,
-  commentEndToken,
   commentStartRegExp,
   cDataSectionStartRegExp,
   endTagRegExp,
@@ -20,21 +17,19 @@ import {
   qualifiedNameRegExp,
   processingInstructionRegExp,
   processingInstructionStartRegExp,
+  commentRegExp,
+  cDataSectionRegExp,
 } from '@rosem-util/syntax-xml'
+import MatchRange from '@rosem/xml-parser/node/MatchRange'
 import decodeAttrEntities from './decodeAttrEntities'
 import WarningData from './WarningData'
-import ModuleInterface from './ModuleInterface'
+import HookList, { ParsingHook } from './HookList'
 import namespaceMap from './namespaceMap'
 import ParsedAttr from './node/ParsedAttr'
 import ParsedContent from './node/ParsedContent'
 import ParsedEndTag from './node/ParsedEndTag'
 import ParsedStartTag from './node/ParsedStartTag'
 
-const commentStartTokenLength = commentStartToken.length // <!--
-const commentEndTokenLength = commentEndToken.length // -->
-const characterDataSectionStartTokenLength =
-  characterDataSectionStartToken.length // <![CDATA[
-const characterDataSectionEndTokenLength = characterDataSectionEndToken.length // ]]>
 const isNotProduction = !isProduction
 const defaultOptions: TemplateParserOptions = {
   decodeNewlines: false,
@@ -48,24 +43,46 @@ export type TemplateParserOptions = {
   keepComments: boolean
 }
 
-export default class XMLParser implements ModuleInterface {
+type ParsingMiddleware<T extends MatchRange> = () => T | void
+
+export default class XMLParser implements HookList {
   protected readonly options: TemplateParserOptions
-  protected readonly moduleList: ModuleInterface[] = []
+  protected readonly moduleList: HookList[] = []
+  protected instructionList: [
+    ParsingMiddleware<ParsedStartTag | ParsedEndTag | ParsedContent>,
+    ParsingHook<ParsedStartTag | ParsedEndTag | ParsedContent>
+  ][]
+  protected type: string = 'application/xml'
   protected namespace?: string
   protected source: string = ''
+  protected lastSource: string = ''
   protected cursor: number = 0
   protected tagStack: ParsedStartTag[] = []
-  protected lastSource: string = ''
-  protected lastTagNameLowerCased: string = ''
 
   constructor(options?: TemplateParserOptions) {
     this.options = {
       ...defaultOptions,
       ...(options || {}),
     }
+    this.instructionList = [
+      [this.parseProcessingInstruction, this.processingInstruction],
+      [this.parseComment, this.comment],
+      [this.parseCDataSection, this.cDataSection],
+      [this.parseEndTag, this.endTag],
+      [this.parseStartTag, this.startTag],
+      [this.parseText, this.text],
+    ]
   }
 
-  addModule(module: ModuleInterface): void {
+  addInstruction<T extends ParsedStartTag | ParsedEndTag | ParsedContent>(
+    parse: ParsingMiddleware<T>,
+    handle: ParsingHook<T>,
+    order: number = this.instructionList.length - 1
+  ) {
+    this.instructionList.splice(order, 0, [parse, handle])
+  }
+
+  addModule(module: HookList): void {
     this.moduleList.push(module)
   }
 
@@ -74,43 +91,48 @@ export default class XMLParser implements ModuleInterface {
     // Clear previous data
     this.tagStack = []
     this.cursor = 0
-    this.start('application/xml')
+    this.start(this.type)
+
+    let parsedNode: ParsedContent | ParsedStartTag | ParsedEndTag | void
 
     while (this.source) {
-      if (this.parseProcessingInstruction()) {
-        continue
-      }
+      for (const [middleware, hook] of this.instructionList) {
+        if ((parsedNode = middleware.call(this))) {
+          hook.call(this, parsedNode)
 
-      if (this.parseComment()) {
-        continue
+          break
+        }
       }
-
-      // Character data section
-      if (this.parseCDataSection()) {
-        continue
-      }
-
-      // End tag
-      if (this.parseEndTag()) {
-        continue
-      }
-
-      // Start tag
-      if (this.parseStartTag()) {
-        continue
-      }
-
-      // Text
-      this.parseText()
     }
 
     // Clean up any remaining tags
     // this.parseEndTag(['', '']) // todo
+    this.end()
   }
 
   protected moveCursor(n: number) {
     this.cursor += n
     this.source = this.source.slice(n)
+  }
+
+  protected parseContent(regExp: RegExp): ParsedContent | void {
+    const contentMatch: RegExpMatchArray | null = this.source.match(regExp)
+
+    if (contentMatch) {
+      const parsedContent: ParsedContent = {
+        content: contentMatch[1],
+        matchStart: this.cursor,
+        matchEnd: this.cursor + contentMatch[0].length,
+      }
+
+      this.moveCursor(contentMatch[0].length)
+
+      return parsedContent
+    }
+  }
+
+  protected parseProcessingInstruction(): ParsedContent | void {
+    return this.parseContent(processingInstructionRegExp)
   }
 
   protected parseStartTag(): ParsedStartTag | void {
@@ -199,7 +221,6 @@ export default class XMLParser implements ModuleInterface {
 
       if (!(parsedTag.void = this.isVoidTag(parsedTag))) {
         this.tagStack.push(parsedTag)
-        this.lastTagNameLowerCased = tagNameLowerCased
       }
 
       this.moveCursor(startTagCloseTagMatch[0].length)
@@ -218,26 +239,23 @@ export default class XMLParser implements ModuleInterface {
 
     const tagName: string = endTagMatch[1]
     const tagNameLowerCased: string = tagName.toLowerCase()
-    let lastIndex// = 0
+    let lastIndex // = 0
 
     // Find the closest opened tag of the same type
     // if (tagName) {
-      for (lastIndex = this.tagStack.length - 1; lastIndex >= 0; --lastIndex) {
-        if (tagNameLowerCased === this.tagStack[lastIndex].nameLowerCased) {
-          this.hasMatchingStartTag(this.tagStack[lastIndex])
+    for (lastIndex = this.tagStack.length - 1; lastIndex >= 0; --lastIndex) {
+      if (tagNameLowerCased === this.tagStack[lastIndex].nameLowerCased) {
+        this.matchingStartTagFound(this.tagStack[lastIndex])
 
-          break
-        }
+        break
       }
+    }
     // }
 
     // todo: maybe just ">"?
     if (lastIndex >= 0) {
-      let index
-
       // Close all the open elements, up the stack
-      // for (index = this.tagStack.length - 1; index >= lastIndex; --index) {
-      for (index = this.tagStack.length - 1; index > lastIndex; --index) {
+      for (let index = this.tagStack.length - 1; index > lastIndex; --index) {
         const stackTag = this.tagStack[index]
 
         if (isNotProduction && (index > lastIndex || !tagName)) {
@@ -247,34 +265,28 @@ export default class XMLParser implements ModuleInterface {
           })
         }
 
-        this.endTag(
-          {
-            name: stackTag.name,
-            // name: index === lastIndex ? tagName || stackTag.name : stackTag.name,
-            nameLowerCased: stackTag.nameLowerCased,
-            matchStart: this.cursor,
-            matchEnd: this.cursor,
-          }
-        )
+        this.endTag({
+          name: stackTag.name,
+          nameLowerCased: stackTag.nameLowerCased,
+          matchStart: this.cursor,
+          matchEnd: this.cursor,
+        })
       }
 
       const parsedEndTag: ParsedEndTag = {
         name: tagName,
         nameLowerCased: tagNameLowerCased,
         matchStart: this.cursor,
-        matchEnd: this.cursor + endTagMatch[0].length
+        matchEnd: this.cursor + endTagMatch[0].length,
       }
 
       // Remove the open elements from the stack
       this.tagStack.length = lastIndex
-      this.lastTagNameLowerCased =
-        lastIndex > 0 ? this.tagStack[lastIndex - 1].nameLowerCased : ''
-      this.endTag(parsedEndTag)
       this.moveCursor(endTagMatch[0].length)
 
       return parsedEndTag
     } else {
-      this.hasNoMatchingStartTag({
+      this.matchingStartTagMissed({
         name: tagName,
         nameLowerCased: tagNameLowerCased,
         matchStart: this.cursor,
@@ -285,84 +297,11 @@ export default class XMLParser implements ModuleInterface {
   }
 
   protected parseComment(): ParsedContent | void {
-    // Comment:
-    // if (this.startsWith(commentStartToken)) {
-    if (commentStartRegExp.test(this.source)) {
-      const commentEndTokenIndex = this.source.indexOf(commentEndToken)
-
-      // If comment have end token
-      if (commentEndTokenIndex >= commentStartTokenLength) {
-        const parsedComment: ParsedContent = {
-          content: this.source.slice(
-            commentStartTokenLength,
-            commentEndTokenIndex
-          ),
-          matchStart: this.cursor,
-          matchEnd: this.cursor + commentEndTokenIndex + commentEndTokenLength,
-        }
-
-        if (this.options.keepComments) {
-          this.comment(parsedComment)
-        }
-
-        this.moveCursor(commentEndTokenIndex + commentEndTokenLength)
-
-        return parsedComment
-      }
-    }
+    return this.parseContent(commentRegExp)
   }
 
   protected parseCDataSection(): ParsedContent | void {
-    if (cDataSectionStartRegExp.test(this.source)) {
-      const characterDataSectionEndTokenIndex = this.source.indexOf(
-        characterDataSectionEndToken
-      )
-
-      // If CDATA section have end token
-      if (
-        characterDataSectionEndTokenIndex >=
-        characterDataSectionStartTokenLength
-      ) {
-        const parsedCDataSection: ParsedContent = {
-          content: this.source.slice(
-            characterDataSectionStartTokenLength,
-            characterDataSectionEndTokenIndex
-          ),
-          matchStart: this.cursor,
-          matchEnd:
-            this.cursor +
-            characterDataSectionEndTokenIndex +
-            characterDataSectionEndTokenLength,
-        }
-
-        this.cDataSection(parsedCDataSection)
-
-        this.moveCursor(
-          characterDataSectionEndTokenIndex + characterDataSectionEndTokenLength
-        )
-
-        return parsedCDataSection
-      }
-    }
-  }
-
-  protected parseProcessingInstruction(): ParsedContent | void {
-    const processingInstructionMatch: RegExpMatchArray | null = this.source.match(
-      processingInstructionRegExp
-    )
-
-    if (processingInstructionMatch) {
-      const parsedProcessingInstruction: ParsedContent = {
-        content: processingInstructionMatch[1],
-        matchStart: this.cursor,
-        matchEnd: this.cursor + processingInstructionMatch[0].length,
-      }
-
-      this.processingInstruction(parsedProcessingInstruction)
-      this.moveCursor(processingInstructionMatch[0].length)
-
-      return parsedProcessingInstruction
-    }
+    return this.parseContent(cDataSectionRegExp)
   }
 
   protected parseText(): ParsedContent | void {
@@ -396,7 +335,6 @@ export default class XMLParser implements ModuleInterface {
         matchEnd: this.cursor + textContent.length,
       }
 
-      this.text(parsedText)
       this.moveCursor(textContent.length)
       this.lastSource = this.source
 
@@ -407,8 +345,6 @@ export default class XMLParser implements ModuleInterface {
         matchStart: this.cursor,
         matchEnd: this.cursor + this.source.length,
       }
-
-      this.text(parsedText)
 
       // When a template ends with "<..." (just the example)
       if (isNotProduction && !this.tagStack.length) {
@@ -439,81 +375,81 @@ export default class XMLParser implements ModuleInterface {
     )
   }
 
-  protected hasMatchingStartTag(startTag: ParsedStartTag): void {
-    // debugger
-  }
+  protected matchingStartTagFound(startTag: ParsedStartTag): void {}
 
-  protected hasNoMatchingStartTag(endTag: ParsedEndTag): void {
-    this.warn(`<${endTag.name}> element has no matching start tag`, {
-      matchStart: endTag.matchStart,
-      matchEnd: endTag.matchEnd,
-    })
+  protected matchingStartTagMissed(endTag: ParsedEndTag): void {
+    if (isNotProduction) {
+      this.warn(`<${endTag.name}> element has no matching start tag`, {
+        matchStart: endTag.matchStart,
+        matchEnd: endTag.matchEnd,
+      })
+    }
   }
 
   public start(type: string) {
-    let module
-
-    for (module of this.moduleList) {
+    for (const module of this.moduleList) {
       module.start(type)
     }
   }
 
-  public end(): void {}
+  public end(): void {
+    for (const module of this.moduleList) {
+      module.end()
+    }
+  }
 
-  public processingInstruction(
+  public processingInstruction: ParsingHook<ParsedContent> = (
     parsedProcessingInstruction: ParsedContent
-  ): void {
-    let module
-
-    for (module of this.moduleList) {
+  ): void => {
+    for (const module of this.moduleList) {
       module.processingInstruction(parsedProcessingInstruction)
     }
   }
 
-  public startTag(parsedTag: ParsedStartTag) {
-    let module
-
-    for (module of this.moduleList) {
+  public startTag: ParsingHook<ParsedStartTag> = (
+    parsedTag: ParsedStartTag
+  ): void => {
+    for (const module of this.moduleList) {
       module.startTag(parsedTag)
     }
   }
 
-  public endTag(parsedEndTag: ParsedEndTag) {
-    let module
-
-    for (module of this.moduleList) {
+  public endTag: ParsingHook<ParsedEndTag> = (
+    parsedEndTag: ParsedEndTag
+  ): void => {
+    for (const module of this.moduleList) {
       module.endTag(parsedEndTag)
     }
   }
 
-  public text(parsedText: ParsedContent) {
-    let module
-
-    for (module of this.moduleList) {
+  public text: ParsingHook<ParsedContent> = (
+    parsedText: ParsedContent
+  ): void => {
+    for (const module of this.moduleList) {
       module.text(parsedText)
     }
   }
 
-  public comment(parsedComment: ParsedContent) {
-    let module
-
-    for (module of this.moduleList) {
-      module.comment(parsedComment)
+  public comment: ParsingHook<ParsedContent> = (
+    parsedComment: ParsedContent
+  ): void => {
+    if (this.options.keepComments) {
+      for (const module of this.moduleList) {
+        module.comment(parsedComment)
+      }
     }
   }
 
-  public cDataSection(parsedCDATASection: ParsedContent) {
-    let module
-
-    for (module of this.moduleList) {
+  public cDataSection: ParsingHook<ParsedContent> = (
+    parsedCDATASection: ParsedContent
+  ): void => {
+    for (const module of this.moduleList) {
       module.cDataSection(parsedCDATASection)
     }
   }
 
   public warn(message: string, data: WarningData) {
-    let module
-
-    for (module of this.moduleList) {
+    for (const module of this.moduleList) {
       module.warn(message, data)
     }
   }

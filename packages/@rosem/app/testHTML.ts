@@ -3,6 +3,7 @@ export default `
 <?php echo 'test'; ?>
 <!doctype html>
 </br></hr>
+<!NOTe test>
 <div></div></>text
 <span></span>text</li>
 <!--<html lang="en">-->

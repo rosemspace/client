@@ -1,6 +1,7 @@
+import no from '@rosem-util/common/no'
 import { SourceSupportedType } from '@rosem/html-parser/typeMap'
 import WarningData from '@rosem/xml-parser/WarningData'
-import ModuleInterface from '@rosem/xml-parser/ModuleInterface'
+import HookList from '@rosem/xml-parser/HookList'
 import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
 import ParsedEndTag from '@rosem/xml-parser/node/ParsedEndTag'
 import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
@@ -15,7 +16,7 @@ export default class TemplateCompiler<
   Text extends Node,
   Comment extends Node = Node,
   CDATASection extends Node = Node
-> implements ModuleInterface {
+> implements HookList {
   protected renderer: ManipulatorInterface<
     Node,
     ParentNode,
@@ -52,9 +53,9 @@ export default class TemplateCompiler<
     this.rootNode = this.cursorNode = this.renderer.createDocumentFragment()
   }
 
-  end(): void {}
+  end: () => void = no
 
-  processingInstruction(parsedProcessingInstruction: ParsedContent): void {}
+  processingInstruction: (parsedProcessingInstruction: ParsedContent) => void  = no
 
   startTag(parsedTag: ParsedStartTag): void {
     const element: Element = parsedTag.namespace

@@ -1,10 +1,10 @@
-import { forEach } from 'lodash-es'
 import isPrimitive from '@rosem-util/common/isPrimitive'
+import { forEach } from 'lodash-es'
 import HydratorInterface from './HydratorInterface'
 import ManipulatorInterface from './ManipulatorInterface'
 import VirtualInstance, {
-  VirtualNode,
   VirtualElementProps,
+  VirtualNode,
   VirtualNodeAttrDescriptor,
   VirtualNodeList,
   VirtualNodeType,
@@ -70,22 +70,12 @@ export default class Hydrator<
 
         return element
       case VirtualNodeType.TEXT_NODE:
-        return manipulator.createText(
-          null != inputNode.text ? String(inputNode.text) : ''
-        )
+        return manipulator.createText(String(inputNode.text))
       case VirtualNodeType.COMMENT_NODE:
-        return manipulator.createComment(
-          null != inputNode.text ? String(inputNode.text) : ''
-        )
+        return manipulator.createComment(String(inputNode.text))
       case VirtualNodeType.CDATA_SECTION_NODE:
-        return manipulator.createCDATASection(
-          null != inputNode.text ? String(inputNode.text) : ''
-        )
+        return manipulator.createCDATASection(String(inputNode.text))
     }
-
-    throw TypeError(
-      `Unsupported virtual node type "${(inputNode as VirtualNode).type}"`
-    )
   }
 
   protected appendVirtualNodeList<
