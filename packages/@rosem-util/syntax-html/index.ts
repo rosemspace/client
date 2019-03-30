@@ -1,10 +1,3 @@
-export const declarationStartRegExp = /^<!/
-
-export const declarationRegExp = new RegExp(
-  `${declarationStartRegExp.source}(\\w+\\s+[^>]+)>`,
-  'i'
-)
-
 export const conditionalCommentStartRegExp = /^<!\[/
 
 export const conditionalCommentRegExp = /^<!(\[[\s\S]*?])>/

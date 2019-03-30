@@ -1,5 +1,4 @@
-import no from '@rosem-util/common/no'
-import { SourceSupportedType } from '@rosem/html-parser/typeMap'
+import { SourceSupportedType } from '@rosem/html-parser/HTMLParser'
 import WarningData from '@rosem/xml-parser/WarningData'
 import HookList from '@rosem/xml-parser/HookList'
 import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
@@ -53,21 +52,21 @@ export default class TemplateCompiler<
     this.rootNode = this.cursorNode = this.renderer.createDocumentFragment()
   }
 
-  end: () => void = no
+  end(): void {}
 
-  processingInstruction: (parsedProcessingInstruction: ParsedContent) => void  = no
+  processingInstruction(parsedProcessingInstruction: ParsedContent): void {}
 
   startTag(parsedTag: ParsedStartTag): void {
-    const element: Element = parsedTag.namespace
-      ? this.renderer.createElementNS(parsedTag.namespace, parsedTag.name)
+    const element: Element = parsedTag.namespaceURI
+      ? this.renderer.createElementNS(parsedTag.namespaceURI, parsedTag.name)
       : this.renderer.createElement(parsedTag.name)
 
     parsedTag.attrs.forEach(
       (attr: ParsedAttr): void => {
-        attr.namespace
+        attr.namespaceURI
           ? this.renderer.setAttributeNS(
               element,
-              attr.namespace,
+              attr.namespaceURI,
               attr.name,
               attr.value
             )
@@ -101,12 +100,7 @@ export default class TemplateCompiler<
   }
 
   cDataSection(parsedCDATASection: ParsedContent): void {
-    this.type.includes('html')
-      ? this.text(parsedCDATASection)
-      : this.renderer.appendChild(
-          this.cursorNode,
-          this.renderer.createCDATASection(parsedCDATASection.content)
-        )
+    this.text(parsedCDATASection)
   }
 
   warn(message: string, data: WarningData): void {

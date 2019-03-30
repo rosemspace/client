@@ -7,6 +7,13 @@ export const processingInstructionRegExp = new RegExp(
   'i'
 )
 
+export const declarationStartRegExp = /^<!/
+
+export const declarationRegExp = new RegExp(
+  `${declarationStartRegExp.source}([^>]*)>`,
+  'i'
+)
+
 /**
  * Unicode characters used for parsing html tags, component names and property paths.
  * Using https://www.w3.org/TR/html53/semantics-scripting.html#potentialcustomelementname
@@ -22,7 +29,7 @@ export const potentialCustomElementNameCharRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u
 // but for ui templates we can enforce a simple charset
 const ncNameRegExpPart = `[_${
   potentialCustomElementNameCharRegExp.source
-}][\\-\\.0-9_${potentialCustomElementNameCharRegExp.source}]*`
+}]?[\\-\\.0-9_${potentialCustomElementNameCharRegExp.source}]*`
 
 // Qualified name e.g. "namespace:name"
 export const qualifiedNameRegExp = new RegExp(

@@ -2,6 +2,7 @@ export default `
 <!doctype html>
 <?php echo 'test'; ?>
 <!doctype html>
+</input>
 </br></hr>
 <!NOTe test>
 <div></div></>text
@@ -98,7 +99,7 @@ if (test < 0) {
       In the context of SVG embeded into HTML, the XHTML namespace could
       be avoided, but it is mandatory in the context of an SVG document
     -->
-    <div >
+    <div xmlns="http://www.w3.org/1999/xhtml">
       Lorem ipsum dolor sit amet, consectetur adipiscing elit.
       Sed mollis mollis mi ut ultricies. Nullam magna ipsum,
       porta vel dui convallis, rutrum imperdiet eros. Aliquam
