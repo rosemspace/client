@@ -5,7 +5,7 @@ import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
 import ParsedEndTag from '@rosem/xml-parser/node/ParsedEndTag'
 import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
 import ParsedContent from '@rosem/xml-parser/node/ParsedContent'
-import ManipulatorInterface from '@rosem/virtual-dom/ManipulatorInterface'
+import Renderer from '@rosem/virtual-dom/Renderer'
 
 export default class TemplateCompiler<
   Node,
@@ -16,7 +16,7 @@ export default class TemplateCompiler<
   Comment extends Node = Node,
   CDATASection extends Node = Node
 > implements HookList {
-  protected renderer: ManipulatorInterface<
+  protected renderer: Renderer<
     Node,
     ParentNode,
     DocumentFragment,
@@ -30,7 +30,7 @@ export default class TemplateCompiler<
   protected cursorNode!: ParentNode
 
   constructor(
-    renderer: ManipulatorInterface<
+    renderer: Renderer<
       Node,
       ParentNode,
       DocumentFragment,
@@ -100,7 +100,10 @@ export default class TemplateCompiler<
   }
 
   cDataSection(parsedCDATASection: ParsedContent): void {
-    this.text(parsedCDATASection)
+    this.renderer.appendChild(
+      this.cursorNode,
+      this.renderer.createCDATASection(parsedCDATASection.content)
+    )
   }
 
   warn(message: string, data: WarningData): void {

@@ -7,7 +7,7 @@ export const enum VirtualNodeType {
 }
 
 export interface VirtualNode {
-  type: VirtualNodeType,
+  type: VirtualNodeType
   parent?: VirtualParentNode
   nextSibling?: VirtualNode
 }
@@ -17,25 +17,17 @@ export type Primitive = string | number | boolean
 export type VirtualNodeKey = Primitive
 
 export type VirtualNodeAttrDescriptor = {
-  namespace: string
+  prefix: string
+  localName: string
+  namespaceURI: string
   value: Primitive
 }
 
-export type VirtualNodeAttrMap = Record<
-  string,
-  VirtualNodeAttrDescriptor | Primitive
->
+export type VirtualNodeAttrMap = Record<string, VirtualNodeAttrDescriptor>
 
-export type VirtualElementProps = {
-  tag: string
-  key: VirtualNodeKey
-  namespace?: string
-  attrs: VirtualNodeAttrMap
-} // & Record<string, Primitive>
-
-type VirtualInstance<VirtualElementExtendedProps extends VirtualElementProps = VirtualElementProps> =
+type VirtualInstance<VirtualElementProps extends object> =
   | VirtualDocumentFragment
-  | VirtualElement<VirtualElementExtendedProps>
+  | VirtualElement<VirtualElementProps>
   | VirtualText
   | VirtualComment
   | VirtualCDATASection
@@ -56,11 +48,22 @@ export interface VirtualDocumentFragment extends VirtualParentNode {
   type: VirtualNodeType.DOCUMENT_FRAGMENT_NODE
 }
 
-export interface VirtualElement<
-  VirtualElementExtendedProps extends VirtualElementProps = VirtualElementProps
-> extends VirtualParentNode {
+export interface VirtualElement<VirtualElementProps extends object = {}>
+  extends VirtualParentNode {
   type: VirtualNodeType.ELEMENT_NODE
-  props: VirtualElementExtendedProps
+  tagName: string
+  attrs: VirtualNodeAttrMap
+  props: VirtualElementProps
+  namespaceURI: string
+  void: boolean
+  key: VirtualNodeKey
+}
+
+export interface VirtualCustomElement<
+  VirtualElementProps extends object,
+  VirtualCustomElementProps extends object
+> extends VirtualElement<VirtualElementProps> {
+  customProps: VirtualCustomElementProps
 }
 
 export interface VirtualText extends VirtualContentNode {

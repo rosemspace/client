@@ -44,6 +44,7 @@ module.exports = {
     // entry: {
     // transition:
     //   './packages/@rosem/ui/lib/components/Transition/TransitionGroup.js',
+    // htmlParser: './packages/@rosem/html-parser/index.ts',
     // },
     // Set up all the aliases we use in our app.
     resolve: {

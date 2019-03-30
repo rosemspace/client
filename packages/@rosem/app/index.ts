@@ -7,7 +7,7 @@
 // import Transition from '@rosem/ui-transition'
 import testCompiler from './testCompiler'
 
-console.log(testCompiler());
+console.log(testCompiler())
 // console.log(testUIPlatformWEB())
 // Transition.test();
 // Reaction.test()

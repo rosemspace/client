@@ -1,11 +1,10 @@
 import concatChildren from './concatChildren'
-import ManipulatorInterface from './ManipulatorInterface'
+import Renderer from '@rosem/virtual-dom/Renderer'
 import {
   VirtualCDATASection,
   VirtualComment,
   VirtualDocumentFragment,
   VirtualElement,
-  VirtualElementProps,
   VirtualNodeType,
   VirtualParentNode,
   VirtualText,
@@ -15,15 +14,13 @@ import {
 
 let key = 0
 
-export default class Manipulator<
-  VirtualElementExtendedProps extends VirtualElementProps = VirtualElementProps
->
+export default class VirtualRenderer<VirtualElementProps extends object>
   implements
-    ManipulatorInterface<
+    Renderer<
       VirtualNode,
       VirtualParentNode,
       VirtualDocumentFragment,
-      VirtualElement,
+      VirtualElement<VirtualElementProps>,
       VirtualText,
       VirtualComment,
       VirtualCDATASection
@@ -42,27 +39,26 @@ export default class Manipulator<
     }
   }
 
-  createElement(
-    qualifiedName: string
-  ): VirtualElement<VirtualElementExtendedProps> {
+  createElement(qualifiedName: string): VirtualElement<VirtualElementProps> {
     return {
       type: VirtualNodeType.ELEMENT_NODE,
-      props: {
-        tag: qualifiedName,
-        key: ++key,
-        attrs: {},
-      } as VirtualElementExtendedProps,
+      tagName: qualifiedName,
+      namespaceURI: '',
+      void: false,
+      key: ++key,
+      attrs: {},
+      props: {} as VirtualElementProps,
       children: [],
     }
   }
 
   createElementNS(
-    namespace: string,
+    namespaceURI: string,
     qualifiedName: string
-  ): VirtualElement<VirtualElementExtendedProps> {
+  ): VirtualElement<VirtualElementProps> {
     const element = this.createElement(qualifiedName)
 
-    element.props.namespace = namespace
+    element.namespaceURI = namespaceURI
 
     return element
   }
@@ -88,22 +84,36 @@ export default class Manipulator<
     }
   }
 
-  setAttribute<T extends VirtualElement>(
+  setAttribute<T extends VirtualElement<VirtualElementProps>>(
     element: T,
     qualifiedName: string,
     value: any
   ): void {
-    element.props.attrs[qualifiedName] = value
+    element.attrs[qualifiedName] = {
+      prefix: '',
+      localName: qualifiedName,
+      namespaceURI: '',
+      value,
+    }
   }
 
-  setAttributeNS<T extends VirtualElement>(
+  setAttributeNS<T extends VirtualElement<VirtualElementProps>>(
     element: T,
-    namespace: string,
+    namespaceURI: string,
     qualifiedName: string,
     value: any
   ): void {
-    element.props.attrs[qualifiedName] = {
-      namespace,
+    let [prefix, localName] = qualifiedName.split(':')
+
+    if (!localName) {
+      localName = prefix
+      prefix = ''
+    }
+
+    element.attrs[qualifiedName] = {
+      prefix,
+      localName,
+      namespaceURI,
       value,
     }
   }
@@ -224,7 +234,7 @@ export default class Manipulator<
     return node.nextSibling || null
   }
 
-  tagName<T extends VirtualElement>(element: T): string {
-    return element.props.tag
+  tagName<T extends VirtualElement<VirtualElementProps>>(element: T): string {
+    return element.tagName
   }
 }

@@ -1,8 +1,8 @@
-import ManipulatorInterface from '@rosem/virtual-dom/ManipulatorInterface'
+import Renderer from '@rosem/virtual-dom/Renderer'
 
-export default class Manipulator
+export default class WebRenderer
   implements
-    ManipulatorInterface<
+    Renderer<
       Node,
       Node & ParentNode,
       DocumentFragment,
@@ -19,8 +19,8 @@ export default class Manipulator
     return document.createElement(tagName)
   }
 
-  createElementNS(namespace: string, qualifiedName: string): Element {
-    return document.createElementNS(namespace, qualifiedName)
+  createElementNS(namespaceURI: string, qualifiedName: string): Element {
+    return document.createElementNS(namespaceURI, qualifiedName)
   }
 
   createText(text: string | number | boolean): Text {
@@ -32,7 +32,7 @@ export default class Manipulator
   }
 
   createCDATASection(data: string | number | boolean): CDATASection {
-    return document.createCDATASection(String(data))
+    return document.createTextNode(String(data))
   }
 
   setAttribute<T extends Element>(

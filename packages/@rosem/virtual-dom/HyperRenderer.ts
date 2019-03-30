@@ -1,103 +1,125 @@
 import isPrimitive from '@rosem-util/common/isPrimitive'
-import { isArray, isPlainObject, isString } from 'lodash-es'
-import Manipulator from './Manipulator'
+import { forEach, isArray, isPlainObject, isString } from 'lodash-es'
+import VirtualRenderer from '@rosem/virtual-dom/VirtualRenderer'
 import VirtualInstance, {
   Primitive,
   VirtualChildNodeList,
-  VirtualElementProps,
   VirtualNode,
+  VirtualNodeAttrDescriptor,
+  VirtualNodeKey,
   VirtualNodeType,
   VirtualParentNode,
 } from './VirtualInstance'
 
 export let key = 0
 
-export default class HyperManipulator<
-  VirtualElementExtendedProps extends VirtualElementProps = VirtualElementProps
-> extends Manipulator<VirtualElementExtendedProps> {
-  createInstance(
-    type: VirtualNodeType
-  ): VirtualInstance<VirtualElementExtendedProps>
+export type HyperRendererProps<
+  VirtualElementProps extends object,
+  VirtualCustomElementProps extends object
+> = Partial<{
+  tagName: string
+  attrs: Record<string, { namespaceURI: string; value: Primitive } | Primitive>
+  props: VirtualElementProps
+  customProps: VirtualCustomElementProps
+  namespaceURI: string
+  void: boolean
+  key: VirtualNodeKey
+}>
+
+export default class HyperRenderer<
+  VirtualElementProps extends object,
+  VirtualCustomElementProps extends object
+> extends VirtualRenderer<VirtualElementProps> {
+  createInstance(type: VirtualNodeType): VirtualInstance<VirtualElementProps>
 
   createInstance(
     type: VirtualNodeType,
     childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     type: VirtualNodeType,
     text: Primitive
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     type: VirtualNodeType,
-    props: Partial<VirtualElementExtendedProps>
-  ): VirtualInstance<VirtualElementExtendedProps>
+    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     type: VirtualNodeType,
-    props: Partial<VirtualElementExtendedProps>,
+    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
     childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     type: VirtualNodeType,
-    props: Partial<VirtualElementExtendedProps>,
+    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
     text: Primitive
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
-  createInstance(name: string): VirtualInstance<VirtualElementExtendedProps>
+  createInstance(name: string): VirtualInstance<VirtualElementProps>
 
   createInstance(
     name: string,
     childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     name: string,
     text: Primitive
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     name: string,
-    props: Partial<VirtualElementExtendedProps>
-  ): VirtualInstance<VirtualElementExtendedProps>
+    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     name: string,
-    props: Partial<VirtualElementExtendedProps>,
+    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
     childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     name: string,
-    props: Partial<VirtualElementExtendedProps>,
+    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
     text: Primitive
-  ): VirtualInstance<VirtualElementExtendedProps>
+  ): VirtualInstance<VirtualElementProps>
 
   createInstance(
     typeOrChildListOrName: VirtualNodeType | VirtualChildNodeList | string,
     propsOrChildListOrText?:
-      | Partial<VirtualElementExtendedProps>
+      | HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
       | VirtualChildNodeList
       | Primitive,
     childListOrText?: VirtualChildNodeList | Primitive
-  ): VirtualInstance<VirtualElementExtendedProps> {
-    let props: Partial<VirtualElementExtendedProps> = {}
+  ): VirtualInstance<VirtualElementProps> {
+    let props: HyperRendererProps<
+      VirtualElementProps,
+      VirtualCustomElementProps
+    > = {}
 
     if (arguments.length > 1) {
       if (childListOrText) {
-        props = propsOrChildListOrText as Partial<VirtualElementExtendedProps>
+        props = propsOrChildListOrText as HyperRendererProps<
+          VirtualElementProps,
+          VirtualCustomElementProps
+        >
 
         if (!isArray(childListOrText)) {
           childListOrText = [childListOrText as Primitive]
         }
       } else if (isPlainObject(propsOrChildListOrText)) {
-        props = propsOrChildListOrText as Partial<VirtualElementExtendedProps>
+        props = propsOrChildListOrText as HyperRendererProps<
+          VirtualElementProps,
+          VirtualCustomElementProps
+        >
         childListOrText = []
       } else if (isArray(propsOrChildListOrText)) {
         childListOrText = propsOrChildListOrText as VirtualChildNodeList
@@ -123,14 +145,15 @@ export default class HyperManipulator<
     }
 
     switch (type) {
-      case VirtualNodeType.DOCUMENT_FRAGMENT_NODE:
+      case VirtualNodeType.DOCUMENT_FRAGMENT_NODE: {
         const documentFragment = this.createDocumentFragment()
 
         this.appendChildNodeList(documentFragment, childListOrText)
 
         return documentFragment
-      case VirtualNodeType.ELEMENT_NODE:
-        typeOrChildListOrName = props.tag || typeOrChildListOrName
+      }
+      case VirtualNodeType.ELEMENT_NODE: {
+        typeOrChildListOrName = props.tagName || typeOrChildListOrName
 
         if (
           null == typeOrChildListOrName ||
@@ -142,16 +165,41 @@ export default class HyperManipulator<
               ? `Missed name of a virtual element`
               : isString(typeOrChildListOrName)
               ? `Invalid name "${(typeOrChildListOrName as string).toString()}" of a virtual element`
-              : `"tag" property is required for a virtual element`
+              : `"tagName" property is required for a virtual element`
           )
         }
 
         const virtualElement = this.createElement(typeOrChildListOrName)
 
-        Object.assign(virtualElement.props, props)
+        Object.assign(virtualElement, props)
+
+        forEach(
+          virtualElement.attrs,
+          (
+            attr: VirtualNodeAttrDescriptor | Primitive,
+            attrName: string
+          ): void => {
+            isPrimitive(attr)
+              ? this.setAttribute(virtualElement, attrName, attr)
+              : (attr as VirtualNodeAttrDescriptor).namespaceURI
+              ? this.setAttributeNS(
+                  virtualElement,
+                  (attr as VirtualNodeAttrDescriptor).namespaceURI,
+                  attrName,
+                  (attr as VirtualNodeAttrDescriptor).value
+                )
+              : this.setAttribute(
+                  virtualElement,
+                  attrName,
+                  (attr as VirtualNodeAttrDescriptor).value
+                )
+          }
+        )
+
         this.appendChildNodeList(virtualElement, childListOrText)
 
         return virtualElement
+      }
       case VirtualNodeType.TEXT_NODE:
         return this.createText((childListOrText[0] as Primitive) || '')
       case VirtualNodeType.COMMENT_NODE:
@@ -166,7 +214,7 @@ export default class HyperManipulator<
   protected appendChildNodeList(
     parent: VirtualParentNode,
     childNodeList: VirtualChildNodeList
-  ) {
+  ): void {
     // Convert VirtualChildNodeList to VirtualNodeList
     for (const child of childNodeList) {
       this.appendChild(

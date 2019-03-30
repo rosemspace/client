@@ -1,6 +1,6 @@
-import HyperManipulator from '@rosem/virtual-dom/HyperManipulator'
+import HyperRenderer from '@rosem/virtual-dom/HyperRenderer'
 
-const hyperRenderer = new HyperManipulator()
+const hyperRenderer = new HyperRenderer()
 const h = (hyperRenderer.createInstance = hyperRenderer.createInstance.bind(
   hyperRenderer
 ))
@@ -8,7 +8,7 @@ const h = (hyperRenderer.createInstance = hyperRenderer.createInstance.bind(
 const vnode = h(
   'svg',
   {
-    namespace: 'http://www.w3.org/2000/svg',
+    namespaceURI: 'http://www.w3.org/2000/svg',
     attrs: {
       viewBox: '0 0 100 150',
     },
@@ -18,7 +18,9 @@ const vnode = h(
     h('use', {
       attrs: {
         'xlink:href': {
-          namespace: 'http://www.w3.org/1999/xlink',
+          // prefix: 'xlink',
+          // localName: 'href',
+          namespaceURI: 'http://www.w3.org/1999/xlink',
           value: '#icon-test',
         },
       },
@@ -33,3 +35,5 @@ const vnode = h(
     ]),
   ]
 )
+
+export default vnode

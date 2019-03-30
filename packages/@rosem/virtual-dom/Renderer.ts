@@ -1,4 +1,4 @@
-export default interface ManipulatorInterface<
+export default interface Renderer<
   Node,
   ParentNode extends Node,
   DocumentFragment extends ParentNode,
@@ -11,7 +11,7 @@ export default interface ManipulatorInterface<
 
   createElement(qualifiedName: string): Element
 
-  createElementNS(namespace: string, qualifiedName: string): Element
+  createElementNS(namespaceURI: string, qualifiedName: string): Element
 
   createText(text: string | number | boolean): Text
 
@@ -23,7 +23,7 @@ export default interface ManipulatorInterface<
 
   setAttributeNS<T extends Element>(
     element: T,
-    namespace: string,
+    namespaceURI: string,
     qualifiedName: string,
     value: any
   ): void

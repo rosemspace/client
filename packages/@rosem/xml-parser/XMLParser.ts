@@ -272,6 +272,7 @@ export default class XMLParser implements Processor {
       let [attrPrefix, attrLocalName] = attrNameLowerCased.split(':')
       const attr: ParsedAttr = {
         name: attrMatch[1],
+        prefix: '',
         localName: attrLocalName,
         nameLowerCased: attrNameLowerCased,
         value: decodeAttrEntities(
@@ -289,7 +290,7 @@ export default class XMLParser implements Processor {
       if (attrLocalName) {
         attr.prefix = attrPrefix
 
-        const attrNamespaceURI = this.namespaceMap[attrLocalName]
+        const attrNamespaceURI = this.namespaceMap[attrPrefix]
 
         if (attrNamespaceURI) {
           attr.namespaceURI = attrNamespaceURI

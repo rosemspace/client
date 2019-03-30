@@ -1,7 +1,7 @@
 import { VirtualNodeType } from '../VirtualInstance'
-import hyperManipulatorFactory from '../__mocks__/hyperManipulatorFactory'
+import hyperRendererFactory from '@rosem/virtual-dom/__mocks__/hyperRendererFactory'
 
-const globalHyperManipulator = hyperManipulatorFactory()
+const globalHyperManipulator = hyperRendererFactory()
 
 describe('createInstance', () => {
   it('create empty document fragment', () => {
@@ -16,7 +16,7 @@ describe('createInstance', () => {
   })
 
   it('create empty element', () => {
-    const instance = hyperManipulatorFactory().createInstance('div')
+    const instance = hyperRendererFactory().createInstance('div')
 
     expect(instance).toEqual({
       type: VirtualNodeType.ELEMENT_NODE,
