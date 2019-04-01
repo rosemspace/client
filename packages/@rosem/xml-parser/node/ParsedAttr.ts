@@ -5,6 +5,6 @@ export default interface ParsedAttr extends MatchRange {
   localName: string
   nameLowerCased: string
   prefix: string
-  namespaceURI?: string
+  namespaceURI: string
   value: string
 }

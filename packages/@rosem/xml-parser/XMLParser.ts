@@ -26,7 +26,6 @@ import { APPLICATION_XML_MIME_TYPE } from '@rosem-util/w3/mimeTypes'
 import { XML_NAMESPACE, XMLNS_NAMESPACE } from '@rosem-util/w3/namespaces'
 import HookList from './HookList'
 import Processor, { ProcessorMap } from '@rosem/xml-parser/Processor'
-import WarningData from './WarningData'
 import MatchRange from './node/MatchRange'
 import ParsedAttr from './node/ParsedAttr'
 import ParsedContent from './node/ParsedContent'
@@ -51,6 +50,8 @@ type ParsingInstruction<T extends MatchRange> = () => T | void
 type ParsingHook<T extends MatchRange> = <U extends T>(parsedNode: U) => void
 
 export default class XMLParser implements Processor {
+  protected readonly defaultNamespaceURI: string = XML_NAMESPACE
+  protected namespaceURI: string = XML_NAMESPACE
   protected readonly options: XMLParserOptions
   protected readonly processorMap: ProcessorMap
   protected activeProcessor: Processor = this
@@ -65,20 +66,19 @@ export default class XMLParser implements Processor {
     ],
     [this.parseComment, this.comment as ParsingHook<ParsedContent>],
     [this.parseCDataSection, this.cDataSection as ParsingHook<ParsedContent>],
-    [this.parseDeclaration, this.comment as ParsingHook<ParsedContent>],
+    [this.parseDeclaration, this.declaration as ParsingHook<ParsedContent>],
     [this.parseEndTag, this.endTag as ParsingHook<ParsedEndTag>],
     [this.parseStartTag, this.startTag as ParsingHook<ParsedStartTag>],
     [this.parseText, this.text as ParsingHook<ParsedContent>],
   ]
   protected instructionIndex: number = 0
   protected typeMap: { [type: string]: string } = {
-    xml: APPLICATION_XML_MIME_TYPE,
+    [APPLICATION_XML_MIME_TYPE]: XML_NAMESPACE,
   }
   protected readonly namespaceMap: { [namespacePrefix: string]: string } = {
     xml: XML_NAMESPACE,
     xmlns: XMLNS_NAMESPACE,
   }
-  protected namespaceURI: string = ''
   protected source: string = ''
   // protected lastSource: string = ''
   protected cursor: number = 0
@@ -91,7 +91,7 @@ export default class XMLParser implements Processor {
       ...(options || {}),
     }
     this.processorMap = processorMap || {
-      [APPLICATION_XML_MIME_TYPE]: XMLParser.prototype,
+      [XML_NAMESPACE]: XMLParser.prototype,
     }
   }
 
@@ -102,7 +102,7 @@ export default class XMLParser implements Processor {
     this.source = source
     // Clear previous data
     this.cursor = this.rootTagStack.length = this.tagStack.length = 0
-    this.useProcessor(type)
+    this.useProcessor(this.typeMap[type])
     this.start(type)
 
     let parsedNode: ParsedContent | ParsedStartTag | ParsedEndTag | void
@@ -126,7 +126,12 @@ export default class XMLParser implements Processor {
     }
 
     // Clean up any remaining tags
-    // this.parseEndTag(['', '']) // todo
+    // const endTag = this.parseEndTag() //todo
+    //
+    // if (endTag) {
+    //   this.endTag(endTag);
+    // }
+
     this.end()
   }
 
@@ -134,9 +139,12 @@ export default class XMLParser implements Processor {
     this.namespaceMap[prefix] = namespaceURI
   }
 
-  addProcessor(type: string, associatedTag: string, processor: Processor) {
-    this.typeMap[associatedTag] = type
-    this.processorMap[type] = processor
+  addProcessor(
+    associatedType: string,
+    namespaceURI: string,
+    processor: Processor
+  ) {
+    this.processorMap[(this.typeMap[associatedType] = namespaceURI)] = processor
   }
 
   addModule(module: HookList): void {
@@ -153,9 +161,13 @@ export default class XMLParser implements Processor {
     this.instructionList.splice(order, 0, [parse, handle])
   }
 
-  protected useProcessor(type: string = APPLICATION_XML_MIME_TYPE): void {
-    if (!(this.activeProcessor = this.processorMap[type])) {
-      throw new TypeError(`Unsupported source type: ${type}`)
+  protected useProcessor(namespaceURI: string = XML_NAMESPACE): void {
+    if (!(this.activeProcessor = this.processorMap[namespaceURI])) {
+      throw new TypeError(
+        `Cannot process foreign element with ${
+          namespaceURI ? 'the namespace: ' + namespaceURI : 'empty namespace'
+        }`
+      )
     }
   }
 
@@ -200,7 +212,21 @@ export default class XMLParser implements Processor {
     this.nextToken()
   }
 
-  matchingEndTagMissed(startTag: ParsedStartTag): ParsedEndTag | void {}
+  matchingEndTagMissed(stackTag: ParsedStartTag): ParsedEndTag | void {
+    if (isNotProduction) {
+      this.warn(`<${stackTag.name}> element has no matching end tag`, {
+        matchStart: stackTag.matchStart,
+        matchEnd: stackTag.matchEnd,
+      })
+    }
+
+    this.endTag({
+      name: stackTag.name,
+      nameLowerCased: stackTag.nameLowerCased,
+      matchStart: this.cursor,
+      matchEnd: this.cursor,
+    })
+  }
 
   protected parseSection(regExp: RegExp): ParsedContent | void {
     const contentMatch: RegExpMatchArray | null = this.source.match(regExp)
@@ -235,7 +261,7 @@ export default class XMLParser implements Processor {
       return
     }
 
-    const tagName = startTagOpenMatch[1]
+    let tagName: string = startTagOpenMatch[1]
 
     if (!tagName) {
       return
@@ -246,9 +272,9 @@ export default class XMLParser implements Processor {
     const parsedTag: ParsedStartTag = {
       name: tagName,
       nameLowerCased: tagNameLowerCased,
-      namespaceURI:
-        this.namespaceURI ||
-        (this.namespaceURI = this.namespaceMap[tagNameLowerCased]),
+      namespaceURI: this.namespaceURI, //||
+      // (this.namespaceURI =
+      //   this.namespaceMap[tagNameLowerCased] || this.defaultNamespaceURI),
       attrs,
       unarySlash: '',
       void: false,
@@ -272,9 +298,10 @@ export default class XMLParser implements Processor {
       let [attrPrefix, attrLocalName] = attrNameLowerCased.split(':')
       const attr: ParsedAttr = {
         name: attrMatch[1],
-        prefix: '',
-        localName: attrLocalName,
         nameLowerCased: attrNameLowerCased,
+        namespaceURI: '',
+        prefix: attrPrefix,
+        localName: attrLocalName,
         value: decodeAttrEntities(
           attrMatch[3] || attrMatch[4] || attrMatch[5] || '',
           'a' === tagNameLowerCased && 'href' === attrNameLowerCased
@@ -286,26 +313,34 @@ export default class XMLParser implements Processor {
         matchEnd: this.moveCursor(attrMatch[0].length),
       }
 
-      // Add namespace of attribute
-      if (attrLocalName) {
-        attr.prefix = attrPrefix
-
-        const attrNamespaceURI = this.namespaceMap[attrPrefix]
-
-        if (attrNamespaceURI) {
-          attr.namespaceURI = attrNamespaceURI
-        }
-      } else {
-        attr.localName = attrLocalName = attrPrefix
-      }
-
       // todo: ns:name
       // 1. if tagStack is empty parse namespaces on root element.
       // 2. parse xmlns:prefix and add prefix to root tag namespaceMap
       // 3. parse xmlns and set namespace to its value
-      // Add namespace of tags
-      if ('xmlns' === attrNameLowerCased) {
-        this.namespaceURI = parsedTag.namespaceURI = attr.value
+      // Add namespace
+      if ('xmlns' === attrPrefix) {
+        if (attrLocalName) {
+          this.addNamespace(attrLocalName, attr.value)
+        } else {
+          this.addNamespace(
+            tagNameLowerCased,
+            (this.namespaceURI = parsedTag.namespaceURI = attr.value)
+          )
+        }
+      } else if (attrLocalName) {
+        // Add namespace of attribute
+        if (
+          !(attr.namespaceURI = this.namespaceMap[attrPrefix] || '') &&
+          isNotProduction
+        ) {
+          this.warn(`Namespace not found for attribute prefix: ${attrPrefix}`, {
+            matchStart: attr.matchStart,
+            matchEnd: attr.matchStart + attrPrefix.length,
+          })
+        }
+      } else {
+        attr.localName = attrPrefix
+        attr.prefix = ''
       }
 
       attrs.push(attr)
@@ -315,6 +350,21 @@ export default class XMLParser implements Processor {
     if (startTagCloseTagMatch) {
       parsedTag.unarySlash = startTagCloseTagMatch[1]
       parsedTag.matchEnd = this.moveCursor(startTagCloseTagMatch[0].length)
+
+      let tagPrefix: string = startTagOpenMatch[2]
+
+      if (tagPrefix) {
+        let namespaceURI: string
+
+        if ((namespaceURI = this.namespaceMap[tagPrefix])) {
+          this.namespaceURI = parsedTag.namespaceURI = namespaceURI
+        } else if (isNotProduction) {
+          this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
+            matchStart: this.cursor,
+            matchEnd: this.cursor + tagPrefix.length,
+          })
+        }
+      }
 
       return parsedTag
     } else {
@@ -344,10 +394,11 @@ export default class XMLParser implements Processor {
     // Find the closest opened tag of the same type
     for (lastIndex = this.tagStack.length - 1; lastIndex >= 0; --lastIndex) {
       if (tagNameLowerCased === this.tagStack[lastIndex].nameLowerCased) {
-        // Switch extension back before foreign tag
+        // Switch processor back before foreign tag
         if (
+          this.rootTagStack.length &&
           this.tagStack[lastIndex].nameLowerCased ===
-          this.rootTagStack[this.rootTagStack.length - 1].nameLowerCased
+            this.rootTagStack[this.rootTagStack.length - 1].nameLowerCased
         ) {
           this.rootTagStack.pop()
 
@@ -356,11 +407,12 @@ export default class XMLParser implements Processor {
               this.rootTagStack.length - 1
             ]
 
-            this.namespaceURI = previousRootTag.namespaceURI
-            this.useProcessor(this.typeMap[tagNameLowerCased])
+            this.useProcessor(
+              (this.namespaceURI =
+                previousRootTag.namespaceURI || this.defaultNamespaceURI)
+            )
           } else {
-            this.namespaceURI = ''
-            this.useProcessor()
+            this.useProcessor((this.namespaceURI = this.defaultNamespaceURI))
           }
         }
 
@@ -372,21 +424,10 @@ export default class XMLParser implements Processor {
     if (lastIndex >= 0) {
       // Close all the open elements, up the stack
       for (let index = this.tagStack.length - 1; index > lastIndex; --index) {
-        const stackTag = this.tagStack[index]
-
-        if (isNotProduction && (index > lastIndex || !tagName)) {
-          this.warn(`<${stackTag.name}> element has no matching end tag`, {
-            matchStart: stackTag.matchStart,
-            matchEnd: stackTag.matchEnd,
-          })
-        }
-
-        this.endTag({
-          name: stackTag.name,
-          nameLowerCased: stackTag.nameLowerCased,
-          matchStart: this.cursor,
-          matchEnd: this.cursor,
-        })
+        this.activeProcessor.matchingEndTagMissed.call(
+          this,
+          this.tagStack[index]
+        )
       }
 
       const parsedEndTag: ParsedEndTag = {
@@ -496,9 +537,9 @@ export default class XMLParser implements Processor {
     }
   }
 
-  public warn(message: string, data: WarningData) {
+  public warn(message: string, matchRange: MatchRange) {
     for (const module of this.moduleList) {
-      module.warn(message, data)
+      module.warn(message, matchRange)
     }
   }
 
@@ -510,48 +551,37 @@ export default class XMLParser implements Processor {
     }
   }
 
+  public declaration<T extends ParsedContent>(declaration: T): void {
+    for (const module of this.moduleList) {
+      module.declaration(declaration)
+    }
+  }
+
   public startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
     const tagNameLowerCased = parsedStartTag.nameLowerCased
 
-    // We don't have namespace from previous tag
+    // We don't have namespace from closest foreign element
     if (
       !this.namespaceURI &&
       this.rootTagStack.length &&
-      this.rootTagStack[this.rootTagStack.length - 1].namespaceURI
+      !this.rootTagStack[this.rootTagStack.length - 1].namespaceURI
     ) {
-      const rootTag = this.rootTagStack[this.rootTagStack.length - 1]
-
-      this.namespaceURI = parsedStartTag.namespaceURI = rootTag.namespaceURI
-
       if (isNotProduction) {
         this.warn(
           `<${parsedStartTag.name}> element is not allowed in context of <${
-            rootTag.name
+            this.rootTagStack[this.rootTagStack.length - 1].name
           }> element without namespace.`,
           {
             matchStart: parsedStartTag.matchStart,
             matchEnd: parsedStartTag.matchEnd,
           }
         )
-      }
-    }
-
-    // Switch parser for foreign tag
-    if (
-      !this.rootTagStack.length ||
-      this.activeProcessor.isForeignElement.call(this, tagNameLowerCased)
-    ) {
-      if (!parsedStartTag.void) {
-        this.rootTagStack.push(parsedStartTag)
+        this.useProcessor((this.namespaceURI = this.defaultNamespaceURI))
       }
 
-      if (this.typeMap[tagNameLowerCased]) {
-        this.namespaceURI = parsedStartTag.namespaceURI =
-          this.namespaceMap[tagNameLowerCased] || this.namespaceURI
-        this.useProcessor(this.typeMap[tagNameLowerCased])
-      } else {
-        this.namespaceURI = ''
-      }
+      // this.namespaceURI = parsedStartTag.namespaceURI = ''
+      // // Use default processor when a user didn't specify a namespace
+      // this.useProcessor()
     }
 
     // Add start tag to the stack of opened tags
@@ -562,6 +592,40 @@ export default class XMLParser implements Processor {
       ))
     ) {
       this.tagStack.push(parsedStartTag)
+
+      // Switch parser for foreign tag
+      if (
+        // !this.rootTagStack.length ||
+        this.activeProcessor.isForeignElement.call(this, tagNameLowerCased)
+      ) {
+        if (!parsedStartTag.void) {
+          this.rootTagStack.push(parsedStartTag)
+          this.useProcessor(
+            (this.namespaceURI = parsedStartTag.namespaceURI =
+              this.namespaceMap[tagNameLowerCased] || '') ||
+              this.defaultNamespaceURI
+          )
+
+          // if (this.namespaceMap[tagNameLowerCased]) {
+          //   this.useProcessor(this.namespaceURI)
+          // } else {
+          //   this.namespaceURI = ''
+          // }
+        }
+
+        // debugger // if `foreignObject`
+        // if (this.namespaceMap[tagNameLowerCased]) {
+        //   this.useProcessor(
+        //     (this.namespaceURI = parsedStartTag.namespaceURI =
+        //       this.namespaceMap[tagNameLowerCased])// || this.namespaceURI)
+        //   )
+        // } else if (this.namespaceURI) {
+        // this.useProcessor(this.namespaceURI)
+        // } else {
+        //   this.namespaceURI = ''
+        //   this.useProcessor()
+        // }
+      }
     }
 
     for (const module of this.moduleList) {

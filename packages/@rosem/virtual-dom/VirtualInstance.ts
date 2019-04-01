@@ -25,7 +25,7 @@ export type VirtualNodeAttrDescriptor = {
 
 export type VirtualNodeAttrMap = Record<string, VirtualNodeAttrDescriptor>
 
-type VirtualInstance<VirtualElementProps extends object> =
+type VirtualInstance<VirtualElementProps extends object = {}> =
   | VirtualDocumentFragment
   | VirtualElement<VirtualElementProps>
   | VirtualText

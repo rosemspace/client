@@ -13,8 +13,8 @@ export const NON_ENUMERABLE_DESCRIPTOR = {
 export default interface GenericPropertyDescriptor {
   configurable?: boolean
   enumerable?: boolean
-  value?: any
   writable?: boolean
+  value?: any
   get?(...args: any): any
   set?(...args: any): any
 }

@@ -36,7 +36,7 @@ export const qualifiedNameRegExp = new RegExp(
   `^(?:(${ncNameRegExpPart}):)?(${ncNameRegExpPart})$`
 )
 
-const qualifiedNameRegExpCapturePart = `((?:${ncNameRegExpPart}\\:)?${ncNameRegExpPart})`
+const qualifiedNameRegExpCapturePart = `((?:(${ncNameRegExpPart})\\:)?${ncNameRegExpPart})`
 
 export const startTagOpenRegExp = new RegExp(
   `^<${qualifiedNameRegExpCapturePart}`

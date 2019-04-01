@@ -7,7 +7,7 @@ import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
 import ParsedContent from '@rosem/xml-parser/node/ParsedContent'
 import Renderer from '@rosem/virtual-dom/Renderer'
 
-export default class TemplateCompiler<
+export default class TemplateRenderer<
   Node,
   ParentNode extends Node,
   DocumentFragment extends ParentNode,

@@ -6,7 +6,7 @@ export default `
 </br></hr>
 <!NOTe test>
 <div></div></>text
-<span></span>text</li>
+<span></span>text</li><!--<li>-->
 <!--<html lang="en">-->
 <![if !IE]>
 <link href="non-ie.css" rel="stylesheet">
@@ -38,7 +38,7 @@ export default `
 <svg>
   <use xlink:href="icons.svg#test"/>
 </svg>
-<div>Test of <![cond]> <![CDATA[ok]>]]> section</div>
+<tg:div nf:test="NF" xmlns:tg="http://www.w3.org/1999/rosem"><i></i>Test of <![cond]> <![CDATA[ok]>]]> section</tg:div>
 <div>
   <p>Paragraph 1
   <p>Paragraph 2
@@ -78,6 +78,7 @@ if (test < 0) {
     <title>My image</title>
   </image>
 </svg>
+<div class="test"></div>
 <svg viewBox="0 0 200 200">
   <!--xmlns="http://www.w3.org/2000/svg"-->
   <style>
@@ -94,7 +95,7 @@ if (test < 0) {
   <polygon points="5,5 195,10 185,185 10,195" />
 
   <!-- Common use case: embed HTML text into SVG -->
-  <foreignObject x="20" y="20" width="160" height="160">
+  <foreignObject x="20" y="20" width="160" height="160"><!-- xmlns="http://www.w3.org/1999/xhtml">-->
     <!--
       In the context of SVG embeded into HTML, the XHTML namespace could
       be avoided, but it is mandatory in the context of an SVG document
@@ -110,7 +111,6 @@ if (test < 0) {
     </div>
   </foreignObject>
 </svg>
-<div class="test"></div>
 <!--</body>-->
 <0,;
 `

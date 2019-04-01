@@ -30,6 +30,11 @@ export default class HyperRenderer<
   VirtualElementProps extends object,
   VirtualCustomElementProps extends object
 > extends VirtualRenderer<VirtualElementProps> {
+  constructor() {
+    super()
+    this.createInstance = this.createInstance.bind(this)
+  }
+
   createInstance(type: VirtualNodeType): VirtualInstance<VirtualElementProps>
 
   createInstance(

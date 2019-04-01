@@ -13,7 +13,10 @@ import {
   APPLICATION_MATHML_XML_MIME_TYPE,
   TEXT_HTML_MIME_TYPE,
 } from '@rosem-util/w3/mimeTypes'
-import { HTML_NAMESPACE, MATHML_NAMESPACE } from '@rosem-util/w3/namespaces'
+import {
+  HTML_NAMESPACE,
+  MATHML_NAMESPACE
+} from '@rosem-util/w3/namespaces'
 import SVGParser from '@rosem/svg-parser/SVGParser'
 import { ProcessorMap } from '@rosem/xml-parser/Processor'
 import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
@@ -32,15 +35,18 @@ export type SourceSupportedType =
   | 'image/svg+xml'
 
 export default class HTMLParser extends SVGParser {
+  protected readonly defaultNamespaceURI: string = HTML_NAMESPACE
+  protected namespaceURI: string = HTML_NAMESPACE
+
   constructor(options?: XMLParserOptions, extensionsMap?: ProcessorMap) {
     super(options, extensionsMap)
 
     this.addNamespace('html', HTML_NAMESPACE)
     this.addNamespace('math', MATHML_NAMESPACE)
-    this.addProcessor(TEXT_HTML_MIME_TYPE, 'html', HTMLParser.prototype)
+    this.addProcessor(TEXT_HTML_MIME_TYPE, HTML_NAMESPACE, HTMLParser.prototype)
     this.addProcessor(
       APPLICATION_MATHML_XML_MIME_TYPE,
-      'math',
+      MATHML_NAMESPACE,
       XMLParser.prototype
     )
     this.addInstruction(this.parseConditionalComment, this.comment, 4)
@@ -51,8 +57,8 @@ export default class HTMLParser extends SVGParser {
     super.parseFromString(source, type)
   }
 
-  protected useProcessor(type: string = TEXT_HTML_MIME_TYPE): void {
-    super.useProcessor(type)
+  protected useProcessor(namespaceURI: string = HTML_NAMESPACE): void {
+    super.useProcessor(namespaceURI)
   }
 
   isForeignElement(tagName: string): boolean {
@@ -154,6 +160,19 @@ export default class HTMLParser extends SVGParser {
       this.nextToken()
     } else {
       return super.matchingStartTagMissed(endTag)
+    }
+  }
+
+  matchingEndTagMissed(stackTag: ParsedStartTag): ParsedEndTag | void {
+    if (optionalClosingElementRegExp.test(stackTag.name)) {
+      this.endTag({
+        name: stackTag.name,
+        nameLowerCased: stackTag.nameLowerCased,
+        matchStart: this.cursor,
+        matchEnd: this.cursor,
+      })
+    } else {
+      super.matchingEndTagMissed(stackTag)
     }
   }
 

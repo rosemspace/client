@@ -1,9 +1,7 @@
 import HyperRenderer from '@rosem/virtual-dom/HyperRenderer'
 
 const hyperRenderer = new HyperRenderer()
-const h = (hyperRenderer.createInstance = hyperRenderer.createInstance.bind(
-  hyperRenderer
-))
+const h = hyperRenderer.createInstance
 
 const vnode = h(
   'svg',
