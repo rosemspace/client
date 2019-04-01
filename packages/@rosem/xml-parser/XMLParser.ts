@@ -272,9 +272,7 @@ export default class XMLParser implements Processor {
     const parsedTag: ParsedStartTag = {
       name: tagName,
       nameLowerCased: tagNameLowerCased,
-      namespaceURI: this.namespaceURI, //||
-      // (this.namespaceURI =
-      //   this.namespaceMap[tagNameLowerCased] || this.defaultNamespaceURI),
+      namespaceURI: this.namespaceURI,
       attrs,
       unarySlash: '',
       void: false,
@@ -576,12 +574,10 @@ export default class XMLParser implements Processor {
             matchEnd: parsedStartTag.matchEnd,
           }
         )
+        // Use default processor when a user didn't specify a namespace
+        // todo: do we need it?
         this.useProcessor((this.namespaceURI = this.defaultNamespaceURI))
       }
-
-      // this.namespaceURI = parsedStartTag.namespaceURI = ''
-      // // Use default processor when a user didn't specify a namespace
-      // this.useProcessor()
     }
 
     // Add start tag to the stack of opened tags
@@ -594,10 +590,7 @@ export default class XMLParser implements Processor {
       this.tagStack.push(parsedStartTag)
 
       // Switch parser for foreign tag
-      if (
-        // !this.rootTagStack.length ||
-        this.activeProcessor.isForeignElement.call(this, tagNameLowerCased)
-      ) {
+      if (this.activeProcessor.isForeignElement.call(this, tagNameLowerCased)) {
         if (!parsedStartTag.void) {
           this.rootTagStack.push(parsedStartTag)
           this.useProcessor(
@@ -605,26 +598,7 @@ export default class XMLParser implements Processor {
               this.namespaceMap[tagNameLowerCased] || '') ||
               this.defaultNamespaceURI
           )
-
-          // if (this.namespaceMap[tagNameLowerCased]) {
-          //   this.useProcessor(this.namespaceURI)
-          // } else {
-          //   this.namespaceURI = ''
-          // }
         }
-
-        // debugger // if `foreignObject`
-        // if (this.namespaceMap[tagNameLowerCased]) {
-        //   this.useProcessor(
-        //     (this.namespaceURI = parsedStartTag.namespaceURI =
-        //       this.namespaceMap[tagNameLowerCased])// || this.namespaceURI)
-        //   )
-        // } else if (this.namespaceURI) {
-        // this.useProcessor(this.namespaceURI)
-        // } else {
-        //   this.namespaceURI = ''
-        //   this.useProcessor()
-        // }
       }
     }
 
