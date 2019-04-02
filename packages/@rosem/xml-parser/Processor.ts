@@ -11,11 +11,7 @@ export default interface Processor extends HookList {
 
   startsWithInstruction(source: string): boolean
 
-  // matchingStartTagFound(startTag: ParsedStartTag): void
-
   matchingStartTagMissed(endTag: ParsedEndTag): ParsedEndTag | void
-
-  // matchingEndTagFound(endTag: ParsedEndTag): void
 
   matchingEndTagMissed(startTag: ParsedStartTag): ParsedEndTag | void
 }

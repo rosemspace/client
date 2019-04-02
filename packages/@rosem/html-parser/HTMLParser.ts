@@ -1,11 +1,11 @@
-import isProduction from '@rosem-util/env/isProduction'
 import {
   conditionalCommentStartRegExp,
   conditionalCommentRegExp,
-  nonPhrasingElementRegExp,
-  voidElementRegExp,
-  optionalClosingElementRegExp,
   foreignElementRegExp,
+  nonPhrasingElementRegExp,
+  optionalClosingElementRegExp,
+  reservedAttrRegExp,
+  voidElementRegExp,
   isAnyRawTextElement,
   shouldIgnoreFirstNewline,
 } from '@rosem-util/syntax-html'
@@ -13,19 +13,15 @@ import {
   APPLICATION_MATHML_XML_MIME_TYPE,
   TEXT_HTML_MIME_TYPE,
 } from '@rosem-util/w3/mimeTypes'
-import {
-  HTML_NAMESPACE,
-  MATHML_NAMESPACE
-} from '@rosem-util/w3/namespaces'
-import SVGParser from '@rosem/svg-parser/SVGParser'
+import { HTML_NAMESPACE, MATHML_NAMESPACE } from '@rosem-util/w3/namespaces'
+import XMLParser, { XMLParserOptions } from '@rosem/xml-parser/XMLParser'
 import { ProcessorMap } from '@rosem/xml-parser/Processor'
+import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
 import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
 import ParsedEndTag from '@rosem/xml-parser/node/ParsedEndTag'
 import ParsedContent from '@rosem/xml-parser/node/ParsedContent'
-import XMLParser, { XMLParserOptions } from '@rosem/xml-parser/XMLParser'
+import SVGParser from '@rosem/svg-parser/SVGParser'
 import getStackedTagRegExp from './getStackedTagRegExp'
-
-const isNotProduction = !isProduction
 
 export type SourceSupportedType =
   | 'application/mathml+xml'
@@ -151,7 +147,10 @@ export default class HTMLParser extends SVGParser {
       }
 
       this.nextToken()
-    } else if (isNotProduction && voidElementRegExp.test(endTag.name)) {
+    } else if (
+      !this.options.suppressWarnings &&
+      voidElementRegExp.test(endTag.name)
+    ) {
       this.warn(`Wrong closed void element <${endTag.name}>`, {
         matchStart: endTag.matchStart,
         matchEnd: endTag.matchEnd,
@@ -176,7 +175,7 @@ export default class HTMLParser extends SVGParser {
     }
   }
 
-  public startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
+  startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
     const lastTagNameLowerCased: string = this.lastTagNameLowerCased
     const tagNameLowerCased = parsedStartTag.nameLowerCased
 
@@ -241,5 +240,16 @@ export default class HTMLParser extends SVGParser {
     }
 
     super.startTag(parsedStartTag)
+  }
+
+  attribute<T extends ParsedAttr>(attr: T): void {
+    if (!this.options.suppressWarnings && reservedAttrRegExp.test(attr.name)) {
+      this.warn(`Attribute name reserved: ${attr.name}`, {
+        matchStart: attr.matchStart,
+        matchEnd: attr.matchEnd,
+      })
+    }
+
+    super.attribute(attr)
   }
 }

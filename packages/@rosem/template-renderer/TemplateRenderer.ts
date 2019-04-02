@@ -28,6 +28,7 @@ export default class TemplateRenderer<
   private type!: SourceSupportedType
   protected rootNode!: DocumentFragment
   protected cursorNode!: ParentNode
+  protected element!: Element
 
   constructor(
     renderer: Renderer<
@@ -61,28 +62,26 @@ export default class TemplateRenderer<
   }
 
   startTag(parsedTag: ParsedStartTag): void {
-    const element: Element = parsedTag.namespaceURI
+    this.element = parsedTag.namespaceURI
       ? this.renderer.createElementNS(parsedTag.namespaceURI, parsedTag.name)
       : this.renderer.createElement(parsedTag.name)
 
-    parsedTag.attrs.forEach(
-      (attr: ParsedAttr): void => {
-        attr.namespaceURI
-          ? this.renderer.setAttributeNS(
-              element,
-              attr.namespaceURI,
-              attr.name,
-              attr.value
-            )
-          : this.renderer.setAttribute(element, attr.name, attr.value)
-      }
-    )
-
-    this.renderer.appendChild(this.cursorNode, element)
+    this.renderer.appendChild(this.cursorNode, this.element)
 
     if (!parsedTag.void) {
-      this.cursorNode = element
+      this.cursorNode = this.element
     }
+  }
+
+  attribute<T extends ParsedAttr>(attr: T): void {
+    attr.namespaceURI
+      ? this.renderer.setAttributeNS(
+          this.element,
+          attr.namespaceURI,
+          attr.name,
+          attr.value
+        )
+      : this.renderer.setAttribute(this.element, attr.name, attr.value)
   }
 
   endTag(parsedEndTag: ParsedEndTag): void {

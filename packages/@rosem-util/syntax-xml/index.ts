@@ -27,9 +27,9 @@ export const potentialCustomElementNameCharRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u
 // could use CombiningChar and Extender characters
 // (https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName)
 // but for ui templates we can enforce a simple charset
-const ncNameRegExpPart = `[_${
+const ncNameRegExpPart = `[_${potentialCustomElementNameCharRegExp.source}]?[${
   potentialCustomElementNameCharRegExp.source
-}]?[\\-\\.0-9_${potentialCustomElementNameCharRegExp.source}]*`
+}][0-9\\-_\\.${potentialCustomElementNameCharRegExp.source}]*`
 
 // Qualified name e.g. "namespace:name"
 export const qualifiedNameRegExp = new RegExp(
@@ -48,7 +48,7 @@ export const startTagCloseRegExp = /^\s*(\/?)>/
 export const attributeRegExp = /^\s*([^\s"'<>/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 
 export const endTagRegExp = new RegExp(
-  `^<\\/${qualifiedNameRegExpCapturePart}[^>]*>`
+  `^<\\/(?:${qualifiedNameRegExpCapturePart})?[^>]*>`
 )
 
 // Used {2} to avoid being passed as HTML comment when inlined in a page

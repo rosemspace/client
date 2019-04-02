@@ -5,18 +5,19 @@ export default `
 </input>
 </br></hr>
 <!NOTe test>
-<div></div></>text
+<div></div></>text<article><span></article>
 <span></span>text</li><!--<li>-->
 <!--<html lang="en">-->
 <![if !IE]>
 <link href="non-ie.css" rel="stylesheet">
 <![endif]>
+<hum><b</hum>
 <table>
 <thead>
   <tr>
     <th>Table heading 1
     <th>Table heading 2
-<tbody>
+<tbody x-arrow="reserved">
   <tr>
     <td colspan="2">Column data 1
     <td>Column data 2
@@ -38,7 +39,8 @@ export default `
 <svg>
   <use xlink:href="icons.svg#test"/>
 </svg>
-<tg:div nf:test="NF" xmlns:tg="http://www.w3.org/1999/rosem"><i></i>Test of <![cond]> <![CDATA[ok]>]]> section</tg:div>
+<tg:div nf:test="NF"><i></i>Test of <![cond]> <![CDATA[ok]>]]> section</tg:div>
+<rosem:btn xmlns:rosem="http://www.w3.org/1999/rosem"/>
 <div>
   <p>Paragraph 1
   <p>Paragraph 2
@@ -111,6 +113,7 @@ if (test < 0) {
     </div>
   </foreignObject>
 </svg>
+<_base></_base>
 <!--</body>-->
-<0,;
+<t0,;
 `

@@ -1,5 +1,4 @@
 //todo
-// - make common method for content parsing
 // - change match interface to `matchStart` and `matchLength`
 // - remove warning about optional element closing
 // - switch parser functionality
@@ -7,7 +6,6 @@
 // - add middleware functionality
 // - migrate extension from mime types to namespaces
 
-import isProduction from '@rosem-util/env/isProduction'
 import {
   commentStartRegExp,
   cDataSectionStartRegExp,
@@ -33,17 +31,18 @@ import ParsedEndTag from './node/ParsedEndTag'
 import ParsedStartTag from './node/ParsedStartTag'
 import decodeAttrEntities from './decodeAttrEntities'
 
-const isNotProduction = !isProduction
 const defaultOptions: XMLParserOptions = {
   decodeNewlines: false,
   decodeNewlinesForHref: false,
-  keepComments: true,
+  suppressComments: false,
+  suppressWarnings: false,
 }
 
 export type XMLParserOptions = {
   decodeNewlines: boolean
   decodeNewlinesForHref: boolean
-  keepComments: boolean
+  suppressComments: boolean
+  suppressWarnings: boolean
 }
 
 type ParsingInstruction<T extends MatchRange> = () => T | void
@@ -80,7 +79,6 @@ export default class XMLParser implements Processor {
     xmlns: XMLNS_NAMESPACE,
   }
   protected source: string = ''
-  // protected lastSource: string = ''
   protected cursor: number = 0
   protected readonly rootTagStack: ParsedStartTag[] = []
   protected readonly tagStack: ParsedStartTag[] = []
@@ -201,7 +199,7 @@ export default class XMLParser implements Processor {
   }
 
   matchingStartTagMissed(endTag: ParsedEndTag): ParsedEndTag | void {
-    if (isNotProduction) {
+    if (!this.options.suppressWarnings) {
       this.warn(`<${endTag.name}> element has no matching start tag`, {
         matchStart: endTag.matchStart,
         matchEnd: endTag.matchEnd,
@@ -213,7 +211,7 @@ export default class XMLParser implements Processor {
   }
 
   matchingEndTagMissed(stackTag: ParsedStartTag): ParsedEndTag | void {
-    if (isNotProduction) {
+    if (!this.options.suppressWarnings) {
       this.warn(`<${stackTag.name}> element has no matching end tag`, {
         matchStart: stackTag.matchStart,
         matchEnd: stackTag.matchEnd,
@@ -290,7 +288,7 @@ export default class XMLParser implements Processor {
       !(startTagCloseTagMatch = this.source.match(startTagCloseRegExp)) &&
       (attrMatch = this.source.match(attributeRegExp))
     ) {
-      // Full name of an attribute, i. e. "xlink:href"
+      // Qualified name of an attribute, i. e. "xlink:href"
       const attrNameLowerCased = attrMatch[1].toLowerCase()
       // Local name of an attribute, i. e. "xlink" (before ":")
       let [attrPrefix, attrLocalName] = attrNameLowerCased.split(':')
@@ -311,10 +309,6 @@ export default class XMLParser implements Processor {
         matchEnd: this.moveCursor(attrMatch[0].length),
       }
 
-      // todo: ns:name
-      // 1. if tagStack is empty parse namespaces on root element.
-      // 2. parse xmlns:prefix and add prefix to root tag namespaceMap
-      // 3. parse xmlns and set namespace to its value
       // Add namespace
       if ('xmlns' === attrPrefix) {
         if (attrLocalName) {
@@ -329,7 +323,7 @@ export default class XMLParser implements Processor {
         // Add namespace of attribute
         if (
           !(attr.namespaceURI = this.namespaceMap[attrPrefix] || '') &&
-          isNotProduction
+          !this.options.suppressWarnings
         ) {
           this.warn(`Namespace not found for attribute prefix: ${attrPrefix}`, {
             matchStart: attr.matchStart,
@@ -356,7 +350,7 @@ export default class XMLParser implements Processor {
 
         if ((namespaceURI = this.namespaceMap[tagPrefix])) {
           this.namespaceURI = parsedTag.namespaceURI = namespaceURI
-        } else if (isNotProduction) {
+        } else if (!this.options.suppressWarnings) {
           this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
             matchStart: this.cursor,
             matchEnd: this.cursor + tagPrefix.length,
@@ -366,7 +360,20 @@ export default class XMLParser implements Processor {
 
       return parsedTag
     } else {
-      // todo
+      if (!this.options.suppressWarnings) {
+        // When a tag starts with "<abc<" (just the example)
+        this.warn(
+          `Mal-formatted tag${
+            this.tagStack.length ? '' : ' at end of template'
+          }: <${parsedTag.name}`,
+          {
+            matchStart: parsedTag.matchStart,
+            matchEnd: this.cursor,
+          }
+        )
+      }
+
+      this.nextToken()
     }
   }
 
@@ -387,7 +394,7 @@ export default class XMLParser implements Processor {
     }
 
     const tagNameLowerCased: string = tagName.toLowerCase()
-    let lastIndex // = 0
+    let lastIndex
 
     // Find the closest opened tag of the same type
     for (lastIndex = this.tagStack.length - 1; lastIndex >= 0; --lastIndex) {
@@ -418,7 +425,6 @@ export default class XMLParser implements Processor {
       }
     }
 
-    // todo: maybe just ">"?
     if (lastIndex >= 0) {
       // Close all the open elements, up the stack
       for (let index = this.tagStack.length - 1; index > lastIndex; --index) {
@@ -466,10 +472,6 @@ export default class XMLParser implements Processor {
       let rest = this.source.slice(textEndTokenIndex)
       let ignoreCharIndex
 
-      if (textEndTokenIndex === 0) {
-        debugger
-      }
-
       // Do not treat character "<" in plain text as parser instruction
       while (
         !this.activeProcessor.startsWithInstruction.call(this, rest) &&
@@ -482,7 +484,6 @@ export default class XMLParser implements Processor {
       textContent = this.source.slice(0, textEndTokenIndex)
     } else {
       textContent = this.source
-      // this.source = '' // todo: we need it?
     }
 
     // Ensure we don't have an empty string
@@ -494,54 +495,40 @@ export default class XMLParser implements Processor {
       }
 
       this.moveCursor(textContent.length)
-      // this.lastSource = this.source
 
       return parsedText
-      // } else if (this.source.length === this.lastSource.length) {
     } else if (!textEndTokenIndex) {
-      // const textEndTokenIndex: number = this.source.slice(1).indexOf('<')
       const parsedText: ParsedContent = {
         content: this.source,
         matchStart: this.cursor,
         matchEnd: this.cursor + this.source.length,
       }
 
-      // When a template ends with "<..." (just the example)
-      if (isNotProduction && !this.tagStack.length) {
-        this.warn(`Mal-formatted tag at end of template: "${this.source}"`, {
-          matchStart: this.cursor,
-          matchEnd: this.cursor + this.source.length,
-        })
-      }
-
       this.moveCursor(this.source.length)
-      // this.lastSource = this.source
 
       return parsedText
-    } else {
-      // todo
     }
   }
 
-  public start(type: string) {
+  start(type: string) {
     for (const module of this.moduleList) {
       module.start(type)
     }
   }
 
-  public end(): void {
+  end(): void {
     for (const module of this.moduleList) {
       module.end()
     }
   }
 
-  public warn(message: string, matchRange: MatchRange) {
+  warn(message: string, matchRange: MatchRange) {
     for (const module of this.moduleList) {
       module.warn(message, matchRange)
     }
   }
 
-  public processingInstruction<T extends ParsedContent>(
+  processingInstruction<T extends ParsedContent>(
     parsedProcessingInstruction: T
   ): void {
     for (const module of this.moduleList) {
@@ -549,13 +536,13 @@ export default class XMLParser implements Processor {
     }
   }
 
-  public declaration<T extends ParsedContent>(declaration: T): void {
+  declaration<T extends ParsedContent>(declaration: T): void {
     for (const module of this.moduleList) {
       module.declaration(declaration)
     }
   }
 
-  public startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
+  startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
     const tagNameLowerCased = parsedStartTag.nameLowerCased
 
     // We don't have namespace from closest foreign element
@@ -564,7 +551,7 @@ export default class XMLParser implements Processor {
       this.rootTagStack.length &&
       !this.rootTagStack[this.rootTagStack.length - 1].namespaceURI
     ) {
-      if (isNotProduction) {
+      if (!this.options.suppressWarnings) {
         this.warn(
           `<${parsedStartTag.name}> element is not allowed in context of <${
             this.rootTagStack[this.rootTagStack.length - 1].name
@@ -574,8 +561,7 @@ export default class XMLParser implements Processor {
             matchEnd: parsedStartTag.matchEnd,
           }
         )
-        // Use default processor when a user didn't specify a namespace
-        // todo: do we need it?
+
         this.useProcessor((this.namespaceURI = this.defaultNamespaceURI))
       }
     }
@@ -593,11 +579,13 @@ export default class XMLParser implements Processor {
       if (this.activeProcessor.isForeignElement.call(this, tagNameLowerCased)) {
         if (!parsedStartTag.void) {
           this.rootTagStack.push(parsedStartTag)
-          this.useProcessor(
+
+          if (
             (this.namespaceURI = parsedStartTag.namespaceURI =
-              this.namespaceMap[tagNameLowerCased] || '') ||
-              this.defaultNamespaceURI
-          )
+              this.namespaceMap[tagNameLowerCased] || '')
+          ) {
+            this.useProcessor(this.namespaceURI)
+          }
         }
       }
     }
@@ -605,29 +593,39 @@ export default class XMLParser implements Processor {
     for (const module of this.moduleList) {
       module.startTag(parsedStartTag)
     }
+
+    parsedStartTag.attrs.forEach((attr: ParsedAttr) => {
+      this.attribute(attr)
+    })
   }
 
-  public endTag<T extends ParsedEndTag>(parsedEndTag: T): void {
+  attribute<T extends ParsedAttr>(attr: T): void {
+    for (const module of this.moduleList) {
+      module.attribute(attr)
+    }
+  }
+
+  endTag<T extends ParsedEndTag>(parsedEndTag: T): void {
     for (const module of this.moduleList) {
       module.endTag(parsedEndTag)
     }
   }
 
-  public text<T extends ParsedContent>(parsedText: T) {
+  text<T extends ParsedContent>(parsedText: T) {
     for (const module of this.moduleList) {
       module.text(parsedText)
     }
   }
 
-  public comment<T extends ParsedContent>(parsedComment: T) {
-    if (this.options.keepComments) {
+  comment<T extends ParsedContent>(parsedComment: T) {
+    if (!this.options.suppressComments) {
       for (const module of this.moduleList) {
         module.comment(parsedComment)
       }
     }
   }
 
-  public cDataSection<T extends ParsedContent>(parsedCDATASection: T): void {
+  cDataSection<T extends ParsedContent>(parsedCDATASection: T): void {
     for (const module of this.moduleList) {
       module.cDataSection(parsedCDATASection)
     }
