@@ -1,14 +1,13 @@
 // require('@rosem/ui')
-// import Transition from '@rosem/ui-transition/Transition'
+import Transition from '@rosem/ui-transition'
 //
 // const t = new Transition(host.body)
 // console.log(t)
 
 // import Reaction from '@rosem/observable'
-// import Transition from '@rosem/ui-transition'
 import testCompiler from './testCompiler'
 
-console.log(testCompiler())
+// console.log(testCompiler())
 // console.log(testUIPlatformWEB())
-// Transition.test();
+Transition.test();
 // Reaction.test()

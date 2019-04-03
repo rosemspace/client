@@ -1,11 +1,11 @@
-import ModuleInterface, { Detail, Phase } from './ModuleInterface'
-import ModuleDispatcherInterface from './ModuleDispatcherInterface'
+import Module, { Detail, Phase } from './Module'
+import ModuleDispatcher from './ModuleDispatcher'
 
-export default class Stage implements ModuleDispatcherInterface {
+export default class Stage implements ModuleDispatcher {
   public readonly name: string
   public readonly duration?: number
   public readonly isExplicitDuration: boolean = false
-  private moduleList: ModuleInterface[] = []
+  private moduleList: Module[] = []
 
   constructor(name: string, duration?: number) {
     this.name = name
@@ -18,7 +18,7 @@ export default class Stage implements ModuleDispatcherInterface {
     }
   }
 
-  public addModule(middleware: ModuleInterface) {
+  public addModule(middleware: Module) {
     this.moduleList.push(middleware)
   }
 

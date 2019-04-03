@@ -24,7 +24,7 @@ if (null != global && typeof global.requestAnimationFrame === 'function') {
 export { requestAnimationFrame, cancelAnimationFrame }
 
 // Any rAFs queued in a rAF will be executed in the next frame​.
-export function onNextFrame(fn: any) {
+export function nextFrame(fn: any) {
   return requestAnimationFrame(function() {
     requestAnimationFrame(fn)
   })

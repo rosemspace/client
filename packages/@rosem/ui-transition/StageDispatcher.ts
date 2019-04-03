@@ -9,7 +9,7 @@ import {
   cancelAnimationFrame,
 } from '@rosem-util/dom-easing/animationFrame'
 import setStyle from '@rosem-util/dom/setStyle'
-import { Detail, Phase, PhaseEnum } from './ModuleInterface'
+import { Detail, Phase, PhaseEnum } from './Module'
 import Stage from './Stage'
 
 export type StageDispatcherOptions = {
@@ -27,8 +27,8 @@ export default class StageDispatcher {
     timeout: 0,
   }
 
-  protected element: HTMLElement | SVGElement
-  protected target: HTMLElement | SVGElement
+  protected element: Element
+  protected target: Element
   protected options: StageDispatcherOptions = {
     name: 'transition',
     stageIndex: 0,
@@ -45,7 +45,7 @@ export default class StageDispatcher {
   protected resolve?: (value?: Detail | PromiseLike<Detail>) => void
 
   constructor(
-    element: HTMLElement | SVGElement,
+    element: Element,
     stages = [],
     options?: StageDispatcherOptions
   ) {
@@ -83,9 +83,9 @@ export default class StageDispatcher {
 
   protected nextFrame(callback: FrameRequestCallback): void {
     // Any rAFs queued in a rAF will be executed in the next frame​.
-    this.frameId = requestAnimationFrame(() => {
+    // this.frameId = requestAnimationFrame(() => {
       this.frameId = requestAnimationFrame(callback)
-    })
+    // })
   }
 
   protected cancelNextFrame(): void {

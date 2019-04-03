@@ -30,7 +30,7 @@ export type Detail = {
 
 export type PhaseHook = (detail: Detail) => void
 
-export default interface ModuleInterface {
+export default interface Module {
   cleanup: PhaseHook
   beforeStart: PhaseHook
   start: PhaseHook

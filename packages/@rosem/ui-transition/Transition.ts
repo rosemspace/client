@@ -1,8 +1,10 @@
+import AutoSizeEnter from '@rosem/ui-transition/module/AutoSizeEnter'
+import AutoSizeLeave from '@rosem/ui-transition/module/AutoSizeLeave'
 import { isEmpty, isPlainObject } from 'lodash-es'
-import { Detail } from './ModuleInterface'
+import { Detail } from './Module'
 import Stage from './Stage'
 import StageDispatcher, { StageDispatcherOptions } from './StageDispatcher'
-import CSSClass from './module/CSSClass'
+import PhaseClass from './module/PhaseClass'
 import EventDispatcher from './module/EventDispatcher'
 import RemoveBeforeStart from './module/RemoveBeforeStart'
 import SetAfterEnd, { AttrMap, StyleMap } from './module/SetAfterEnd'
@@ -26,20 +28,20 @@ export type TransitionOptions = {
   afterLeaveClassList?: string[] | string
   afterLeaveStyleMap?: StyleMap
   afterLeaveAttributeMap?: AttrMap
-  auto?: boolean | string | string[]
+  autoSize?: boolean | ('width' | 'height') | ('width' | 'height')[]
   events?: boolean
   forceUpdate?: boolean
 } & StageDispatcherOptions
 
 export const defaultOptions: TransitionOptions = {
-  name: 'transition',
+  name: '-',
   stageIndex: 0,
-  forceUpdate: true,
+  forceUpdate: false,
   css: true,
   events: true,
-  auto: false,
+  autoSize: false,
   afterLeaveClassList: [],
-  afterLeaveStyleMap: {'display': 'none'},
+  afterLeaveStyleMap: { display: 'none' },
   afterLeaveAttributeMap: {},
 }
 
@@ -49,7 +51,7 @@ export default class Transition extends StageDispatcher {
 
   protected options: TransitionOptions
 
-  constructor(element: HTMLElement | SVGElement, options?: TransitionOptions) {
+  constructor(element: Element, options?: TransitionOptions) {
     super(element, [], options)
     this.options = {
       ...defaultOptions,
@@ -70,7 +72,7 @@ export default class Transition extends StageDispatcher {
 
     if (this.options.css) {
       leaveStage.addModule(
-        new CSSClass(`${this.options.name}-${leaveStage.name}`, {
+        new PhaseClass(`${this.options.name}-${leaveStage.name}`, {
           fromClass: this.options.leaveClass,
           activeClass: this.options.leaveActiveClass,
           toClass: this.options.leaveToClass,
@@ -78,7 +80,7 @@ export default class Transition extends StageDispatcher {
         })
       )
       enterStage.addModule(
-        new CSSClass(`${this.options.name}-${enterStage.name}`, {
+        new PhaseClass(`${this.options.name}-${enterStage.name}`, {
           fromClass: this.options.enterClass,
           activeClass: this.options.enterActiveClass,
           toClass: this.options.enterToClass,
@@ -104,18 +106,21 @@ export default class Transition extends StageDispatcher {
       )
     }
 
-    // if (this.options.auto) {
-    //   let auto = this.options.auto
-    //
-    //   if (!Array.isArray(auto)) {
-    //     auto = [auto]
-    //   }
-    //
-    //   if (auto.length) {
-    //     leaveStage.use(new LeaveRectAutoValueTransitionMiddleware(auto))
-    //     enterStage.use(new EnterRectAutoValueTransitionMiddleware(auto))
-    //   }
-    // }
+    if (this.options.autoSize) {
+      let autoSize:
+        | boolean
+        | ('width' | 'height')
+        | ('width' | 'height')[] = this.options.autoSize
+
+      if (!Array.isArray(autoSize)) {
+        autoSize = autoSize === true ? ['width', 'height'] : [autoSize]
+      }
+
+      if (autoSize.length) {
+        leaveStage.addModule(new AutoSizeLeave(autoSize))
+        enterStage.addModule(new AutoSizeEnter(autoSize))
+      }
+    }
 
     if (this.options.events) {
       leaveStage.addModule(new EventDispatcher(leaveStage.name))

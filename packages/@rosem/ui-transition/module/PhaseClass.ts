@@ -1,14 +1,14 @@
-import { Detail, DetailInit } from '../ModuleInterface'
-import AbstractModule from '../AbstractModule'
+import { Detail, DetailInit } from '../Module'
+import ModuleInit from '../ModuleInit'
 
-export type CSSClassOptions = {
+export type PhaseClassOptions = {
   fromClass?: string
   activeClass?: string
   toClass?: string
   doneClass?: string
 }
 
-export default class CSSClass extends AbstractModule {
+export default class PhaseClass extends ModuleInit {
   static CLASS_PREFIX_FROM: string = ''
   static CLASS_PREFIX_ACTIVE: string = ''
   static CLASS_PREFIX_TO: string = ''
@@ -19,9 +19,9 @@ export default class CSSClass extends AbstractModule {
   static CLASS_SUFFIX_DONE: string = '-done'
 
   private readonly name: string
-  private readonly options: CSSClassOptions
+  private readonly options: PhaseClassOptions
 
-  constructor(name: string, options: CSSClassOptions) {
+  constructor(name: string, options: PhaseClassOptions) {
     super()
     this.name = name
     this.options = options
@@ -30,28 +30,28 @@ export default class CSSClass extends AbstractModule {
   get fromClass(): string {
     return (
       this.options.fromClass ||
-      CSSClass.CLASS_PREFIX_FROM + this.name + CSSClass.CLASS_SUFFIX_FROM
+      PhaseClass.CLASS_PREFIX_FROM + this.name + PhaseClass.CLASS_SUFFIX_FROM
     )
   }
 
   get activeClass(): string {
     return (
       this.options.activeClass ||
-      CSSClass.CLASS_PREFIX_ACTIVE + this.name + CSSClass.CLASS_SUFFIX_ACTIVE
+      PhaseClass.CLASS_PREFIX_ACTIVE + this.name + PhaseClass.CLASS_SUFFIX_ACTIVE
     )
   }
 
   get toClass(): string {
     return (
       this.options.toClass ||
-      CSSClass.CLASS_PREFIX_TO + this.name + CSSClass.CLASS_SUFFIX_TO
+      PhaseClass.CLASS_PREFIX_TO + this.name + PhaseClass.CLASS_SUFFIX_TO
     )
   }
 
   get doneClass(): string {
     return (
       this.options.doneClass ||
-      CSSClass.CLASS_PREFIX_DONE + this.name + CSSClass.CLASS_SUFFIX_DONE
+      PhaseClass.CLASS_PREFIX_DONE + this.name + PhaseClass.CLASS_SUFFIX_DONE
     )
   }
 

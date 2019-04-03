@@ -1,7 +1,7 @@
-import { Detail, DetailInit } from '../ModuleInterface'
-import AbstractModule from '../AbstractModule'
+import { Detail, DetailInit } from '../Module'
+import ModuleInit from '../ModuleInit'
 
-export default class EventDispatcher extends AbstractModule {
+export default class EventDispatcher extends ModuleInit {
   private readonly stageName: string
 
   constructor(stageName: string) {
