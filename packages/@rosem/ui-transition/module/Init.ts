@@ -1,6 +1,6 @@
-import Module, { Detail, DetailInit } from './Module'
+import Module, { Detail } from '../Module'
 
-export default abstract class ModuleInit implements Module {
+export default abstract class Init implements Module {
   cleanup(detail: Detail): void {}
 
   beforeStart(detail: Detail): void {}
@@ -11,7 +11,7 @@ export default abstract class ModuleInit implements Module {
 
   cancelled(detail: Detail): void {}
 
-  getDetail(): DetailInit {
+  getDetail(): Partial<Detail> {
     return {}
   }
 }

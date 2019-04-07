@@ -2,20 +2,30 @@ import Transition from './Transition'
 
 export default new class {
   public test() {
-    const el: HTMLElement | SVGElement | null = document.querySelector('#app')
+    const el: HTMLElement | SVGSVGElement | null = document.querySelector('#app')
 
     if (!el) {
       return
     }
 
     let style = document.createElement('style')
-    style.textContent = `.list {/*padding: 30px;*/width: 100px;background: red;}
+    style.textContent = `*{box-sizing: border-box;} body {margin: 0}
+      .list {padding: 15px 30px;margin: 10px;/*width: 100px;*/background: red;}
+      .list > li {padding: 10px 20px;}
+      .square {width: 50px; height: 50px; background: orange;}
+      
       .fade-enter-active, .fade-leave-active {
-        transition: opacity .5s, height .5s;
+        transition: all .5s;
       }
       .fade-enter, .fade-leave-to {
-        opacity: 0;
+        /*opacity: 0;*/
+        margin-top: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
         height: 0;
+        border-top-width: 0;
+        border-bottom-width: 0;
       }
     `
     document.body.appendChild(style)
@@ -31,6 +41,9 @@ export default new class {
     ul.appendChild(li2)
     ul.appendChild(li3)
     el.appendChild(ul)
+    let square = document.createElement('div')
+    square.classList.add('square')
+    el.appendChild(square)
     let btn = document.createElement('button')
     btn.textContent = 'toggle'
     el.prepend(btn)
@@ -39,7 +52,7 @@ export default new class {
       name: 'fade',
       stageIndex: 0,
       forceUpdate: true,
-      autoSize: 'height',
+      autoSize: true,
     });
 
     btn.addEventListener('click', () => {

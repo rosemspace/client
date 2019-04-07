@@ -1,5 +1,5 @@
 import { Detail, DetailInit } from '../Module'
-import ModuleInit from '../ModuleInit'
+import Init from './Init'
 
 export type PhaseClassOptions = {
   fromClass?: string
@@ -8,7 +8,7 @@ export type PhaseClassOptions = {
   doneClass?: string
 }
 
-export default class PhaseClass extends ModuleInit {
+export default class PhaseClass extends Init {
   static CLASS_PREFIX_FROM: string = ''
   static CLASS_PREFIX_ACTIVE: string = ''
   static CLASS_PREFIX_TO: string = ''
@@ -55,12 +55,9 @@ export default class PhaseClass extends ModuleInit {
     )
   }
 
-  cleanup({ target }: Detail): void {
-    target.classList.remove(
-      this.fromClass,
-      this.activeClass,
-      this.toClass,
-      this.doneClass
+  cleanup(detail: Detail): void {
+    detail.target.classList.remove(
+      this.doneClass,
     )
   }
 
@@ -77,6 +74,13 @@ export default class PhaseClass extends ModuleInit {
   afterEnd({ target }: Detail): void {
     target.classList.remove(this.activeClass, this.toClass)
     target.classList.add(this.doneClass)
+  }
+
+  cancelled(detail: Detail): void {
+    detail.target.classList.remove(
+      this.activeClass,
+      this.toClass,
+    )
   }
 
   getDetail(): DetailInit {

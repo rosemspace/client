@@ -1,9 +1,9 @@
-import AutoSizeEnter from '@rosem/ui-transition/module/AutoSizeEnter'
-import AutoSizeLeave from '@rosem/ui-transition/module/AutoSizeLeave'
 import { isEmpty, isPlainObject } from 'lodash-es'
 import { Detail } from './Module'
 import Stage from './Stage'
 import StageDispatcher, { StageDispatcherOptions } from './StageDispatcher'
+import AutoSizeEnter from './module/AutoSizeEnter'
+import AutoSizeLeave from './module/AutoSizeLeave'
 import PhaseClass from './module/PhaseClass'
 import EventDispatcher from './module/EventDispatcher'
 import RemoveBeforeStart from './module/RemoveBeforeStart'
@@ -45,13 +45,19 @@ export const defaultOptions: TransitionOptions = {
   afterLeaveAttributeMap: {},
 }
 
+export const STAGE_LEAVE_ORDER = 0
+export const STAGE_ENTER_ORDER = 1
+
 export default class Transition extends StageDispatcher {
-  public static STAGE_LEAVE_ORDER: number = 0
-  public static STAGE_ENTER_ORDER: number = 1
+  public static STAGE_LEAVE_ORDER: number = STAGE_LEAVE_ORDER
+  public static STAGE_ENTER_ORDER: number = STAGE_ENTER_ORDER
 
   protected options: TransitionOptions
 
-  constructor(element: Element, options?: TransitionOptions) {
+  constructor(
+    element: HTMLElement | SVGSVGElement,
+    options?: TransitionOptions
+  ) {
     super(element, [], options)
     this.options = {
       ...defaultOptions,
@@ -70,33 +76,7 @@ export default class Transition extends StageDispatcher {
     const leaveStage = new Stage('leave', leaveDuration)
     const enterStage = new Stage('enter', enterDuration)
 
-    if (this.options.css) {
-      leaveStage.addModule(
-        new PhaseClass(`${this.options.name}-${leaveStage.name}`, {
-          fromClass: this.options.leaveClass,
-          activeClass: this.options.leaveActiveClass,
-          toClass: this.options.leaveToClass,
-          doneClass: this.options.leaveDoneClass,
-        })
-      )
-      enterStage.addModule(
-        new PhaseClass(`${this.options.name}-${enterStage.name}`, {
-          fromClass: this.options.enterClass,
-          activeClass: this.options.enterActiveClass,
-          toClass: this.options.enterToClass,
-          doneClass: this.options.enterDoneClass,
-        })
-      )
-    }
-
     if (this.hideAfterLeave) {
-      leaveStage.addModule(
-        new SetAfterEnd(
-          this.options.afterLeaveClassList || [],
-          this.options.afterLeaveStyleMap || {},
-          this.options.afterLeaveAttributeMap || {}
-        )
-      )
       enterStage.addModule(
         new RemoveBeforeStart(
           this.options.afterLeaveClassList || [],
@@ -117,9 +97,41 @@ export default class Transition extends StageDispatcher {
       }
 
       if (autoSize.length) {
-        leaveStage.addModule(new AutoSizeLeave(autoSize))
-        enterStage.addModule(new AutoSizeEnter(autoSize))
+        leaveStage.addModule(new AutoSizeLeave())
+        enterStage.addModule(new AutoSizeEnter())
       }
+    }
+
+    if (this.options.css) {
+      enterStage.addModule(
+        new PhaseClass(`${this.options.name}-${enterStage.name}`, {
+          fromClass: this.options.enterClass,
+          activeClass: this.options.enterActiveClass,
+          toClass: this.options.enterToClass,
+          doneClass: this.options.enterDoneClass,
+        })
+      )
+    }
+
+    if (this.options.css) {
+      leaveStage.addModule(
+        new PhaseClass(`${this.options.name}-${leaveStage.name}`, {
+          fromClass: this.options.leaveClass,
+          activeClass: this.options.leaveActiveClass,
+          toClass: this.options.leaveToClass,
+          doneClass: this.options.leaveDoneClass,
+        })
+      )
+    }
+
+    if (this.hideAfterLeave) {
+      leaveStage.addModule(
+        new SetAfterEnd(
+          this.options.afterLeaveClassList || [],
+          this.options.afterLeaveStyleMap || {},
+          this.options.afterLeaveAttributeMap || {}
+        )
+      )
     }
 
     if (this.options.events) {
@@ -149,37 +161,26 @@ export default class Transition extends StageDispatcher {
     )
   }
 
-  dispatchByIndex(stageIndex: number = 0): Promise<Detail> {
-    // if (this.options.css) {
-    //   // clear classes of previous stage
-    //   stageIndex === Transition.STAGE_LEAVE_ORDER
-    //     ? this.middleware.enterCSSClasses.clear(this.delegatedTarget)
-    //     : this.middleware.leaveCSSClasses.clear(this.delegatedTarget)
-    // }
-
-    return super.dispatchByIndex(stageIndex)
-  }
-
   forceLeave(): void {
-    this.forceDispatchByIndex(Transition.STAGE_LEAVE_ORDER)
+    this.forceDispatchByIndex(STAGE_LEAVE_ORDER)
   }
 
   forceEnter(): void {
-    this.forceDispatchByIndex(Transition.STAGE_ENTER_ORDER)
+    this.forceDispatchByIndex(STAGE_ENTER_ORDER)
   }
 
   forceUpdate(): void {
-    this.stageIndex !== Transition.STAGE_LEAVE_ORDER
+    this.stageIndex !== STAGE_LEAVE_ORDER
       ? this.forceEnter()
       : this.forceLeave()
   }
 
   leave(): Promise<Detail> {
-    return this.dispatchByIndex(Transition.STAGE_LEAVE_ORDER)
+    return this.dispatchByIndex(STAGE_LEAVE_ORDER)
   }
 
   enter(): Promise<Detail> {
-    return this.dispatchByIndex(Transition.STAGE_ENTER_ORDER)
+    return this.dispatchByIndex(STAGE_ENTER_ORDER)
   }
 
   toggle(stageIndex?: number): Promise<Detail> {
@@ -187,8 +188,6 @@ export default class Transition extends StageDispatcher {
       stageIndex = Number(!this.stageIndex)
     }
 
-    return stageIndex !== Transition.STAGE_LEAVE_ORDER
-      ? this.enter()
-      : this.leave()
+    return stageIndex !== STAGE_LEAVE_ORDER ? this.enter() : this.leave()
   }
 }

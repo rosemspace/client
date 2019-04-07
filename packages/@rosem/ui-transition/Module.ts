@@ -14,19 +14,22 @@ export type Phase =
   | PhaseEnum.Cancelled
 
 export type DetailInit = {
-  target?: Element
+  target?: HTMLElement | SVGSVGElement
   [name: string]: any
 }
 
 export type Detail = {
   name: string,
-  currentTarget: Element,
-  target: Element,
-  delegateTarget: Element,
+  currentTarget: HTMLElement | SVGSVGElement,
+  target: HTMLElement | SVGSVGElement,
+  delegateTarget: HTMLElement | SVGSVGElement,
   stageIndex: number,
   stageName: string,
   duration: number,
-} & DetailInit
+  done?: () => Detail
+  computedStyle: CSSStyleDeclaration,
+  defferFrame: () => void
+} & Record<string, any>
 
 export type PhaseHook = (detail: Detail) => void
 
@@ -36,5 +39,5 @@ export default interface Module {
   start: PhaseHook
   afterEnd: PhaseHook
   cancelled: PhaseHook
-  getDetail(): DetailInit
+  getDetail(): Partial<Detail>
 }

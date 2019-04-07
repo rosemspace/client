@@ -1,9 +1,9 @@
 import { isArray } from 'lodash-es'
 import setStyle from '@rosem-util/dom/setStyle'
 import { Detail, DetailInit } from '../Module'
-import ModuleInit from '../ModuleInit'
+import Init from './Init'
 
-export default class RemoveBeforeStart extends ModuleInit {
+export default class RemoveBeforeStart extends Init {
   classList: string[]
   stylePropertyList: string[]
   attributeList: string[]

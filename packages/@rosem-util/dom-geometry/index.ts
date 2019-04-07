@@ -1,5 +1,5 @@
 import defineConfigurableProperties from '@rosem-util/common/defineConfigurableProperties'
-import inBrowser from '@rosem-util/env/inBrowser.js'
+import inBrowser from '@rosem-util/env/inBrowser'
 import getGlobalOf from '@rosem-util/env/getGlobalOf'
 import isDocumentElement from '@rosem-util/dom/isDocumentElement'
 import isSVGGraphicsElement from '@rosem-util/dom/isSVGGraphicsElement'
@@ -39,13 +39,35 @@ function toFloat(value?: string | number | null): number {
 }
 
 /**
+ * Extracts size from provided styles.
+ *
+ * @param {string} name
+ * @param {CSSStyleDeclaration} styles
+ * @param {...string} edgeNameList - Border edge (inline-start, block-end, ...)
+ * @returns {number}
+ */
+export function getEdgeSum(
+  name: string,
+  styles: CSSStyleDeclaration,
+  ...edgeNameList: EdgeNameList
+): number {
+  return edgeNameList.reduce((size: number, edgeName: EdgeName): number => {
+    const value: string = styles.getPropertyValue(
+      `${name}-${edgeNameToPositionNameMap[edgeName]}`
+    )
+
+    return size + toFloat(value)
+  }, 0)
+}
+
+/**
  * Extracts borders size from provided styles.
  *
  * @param {CSSStyleDeclaration} styles
  * @param {...string} edgeNameList - Border edge (inline-start, block-end, ...)
  * @returns {number}
  */
-export function getBorderSize(
+export function getBorderSum(
   styles: CSSStyleDeclaration,
   ...edgeNameList: EdgeNameList
 ): number {
@@ -56,6 +78,29 @@ export function getBorderSize(
 
     return size + toFloat(value)
   }, 0)
+}
+
+export function getInlineBorderValue(style: CSSStyleDeclaration) {
+  return getBorderSum(style, 'inlineStart', 'inlineEnd')
+}
+
+export function getBlockBorderValue(style: CSSStyleDeclaration) {
+  return getBorderSum(style, 'blockStart', 'blockEnd')
+}
+
+export function getPaddingSum(
+  styles: CSSStyleDeclaration,
+  ...edgeNameList: EdgeNameList
+) {
+  return getEdgeSum('padding', styles, ...edgeNameList)
+}
+
+export function getInlinePaddingValue(styles: CSSStyleDeclaration) {
+  return getPaddingSum(styles, 'inlineStart', 'inlineEnd')
+}
+
+export function getBlockPaddingValue(styles: CSSStyleDeclaration) {
+  return getPaddingSum(styles, 'blockStart', 'blockEnd')
 }
 
 /**
@@ -94,7 +139,8 @@ function getSVGGraphicsElementContentRect(
 /**
  * Calculates content rectangle of provided HTMLElement.
  *
- * @param {HTMLElement} target - Element for which to calculate the content rectangle.
+ * @param {HTMLElement} target - Element for which to calculate the content
+ *   rectangle.
  * @returns {DOMRectInit}
  */
 function getHTMLElementContentRect(target: HTMLElement): DOMRectInit {
@@ -138,11 +184,11 @@ function getHTMLElementContentRect(target: HTMLElement): DOMRectInit {
     // properties then it's either IE, and thus we don't need to subtract
     // anything, or an element merely doesn't have paddings/borders styles.
     if (Math.round(width + inlinePadding) !== clientWidth) {
-      width -= getBorderSize(styles, 'inlineStart', 'inlineEnd') + inlinePadding
+      width -= getBorderSum(styles, 'inlineStart', 'inlineEnd') + inlinePadding
     }
 
     if (Math.round(height + blockPadding) !== clientHeight) {
-      height -= getBorderSize(styles, 'blockStart', 'blockEnd') + blockPadding
+      height -= getBorderSum(styles, 'blockStart', 'blockEnd') + blockPadding
     }
   }
 
@@ -183,9 +229,11 @@ function getHTMLElementContentRect(target: HTMLElement): DOMRectInit {
 }
 
 /**
- * Calculates an appropriate content rectangle for provided html or svg element.
+ * Calculates an appropriate content rectangle for provided html or svg
+ * element.
  *
- * @param {HTMLElement|SVGGraphicsElement} target - Element content rectangle of which needs to be calculated.
+ * @param {HTMLElement|SVGGraphicsElement} target - Element content rectangle
+ *   of which needs to be calculated.
  * @returns {DOMRectInit}
  */
 export function getElementContentRect(target: Element): DOMRectInit {
@@ -204,7 +252,8 @@ export function getElementContentRect(target: Element): DOMRectInit {
  * Creates rectangle with an interface of the DOMRectReadOnly.
  * Spec: https://drafts.fxtf.org/geometry/#domrectreadonly
  *
- * @param {DOMRectInit} rectInit - Object with rectangle's x/y coordinates and dimensions.
+ * @param {DOMRectInit} rectInit - Object with rectangle's x/y coordinates and
+ *   dimensions.
  * @returns {DOMRectReadOnly}
  */
 export function createRectReadOnly({
@@ -233,8 +282,8 @@ export function createRectReadOnly({
 }
 
 /**
- * Creates DOMRectInit object based on the provided dimensions and the x/y coordinates.
- * Spec: https://drafts.fxtf.org/geometry/#dictdef-domrectinit
+ * Creates DOMRectInit object based on the provided dimensions and the x/y
+ * coordinates. Spec: https://drafts.fxtf.org/geometry/#dictdef-domrectinit
  *
  * @param {number} x - X coordinate.
  * @param {number} y - Y coordinate.

@@ -1,43 +1,17 @@
-import setStyle from '@rosem-util/dom/setStyle'
-import ModuleInit from '../ModuleInit'
 import { Detail } from '../Module'
+import AutoSize from './AutoSize'
 
-export default class AutoSizeLeave extends ModuleInit {
-  protected readonly autoSizeList: ('width' | 'height')[]
-
-  constructor(autoSizeList: ('width' | 'height')[]) {
-    super()
-    this.autoSizeList = autoSizeList
-  }
-
-  beforeStart({ target }: Detail) {
-    if (this.autoSizeList.length) {
-      setStyle(target, 'display', '')
-
-      const boundingClientRect = target.getBoundingClientRect()
-
-      this.autoSizeList.forEach(property => {
-        setStyle(target, property, boundingClientRect[property] + 'px')
-      })
-    }
-  }
-
-  start({ target }: Detail) {
-    this.autoSizeList.forEach(property => {
-      setStyle(target, property, '')
+export default class AutoSizeLeave extends AutoSize {
+  beforeStart(detail: Detail): void {
+    this.propertyList.forEach((property, index) => {
+      detail.target.style.setProperty(
+        this.sizeList[index],
+        `${(detail[property] = (detail.target as HTMLElement)[property])}px` //todo
+      )
     })
   }
 
-  cancelled({ target }: Detail) {
-    this.autoSizeList.forEach(property => {
-      setStyle(target, property, '')
-    })
-  }
-
-  getDetails() {
-    return {
-      auto: true,
-      autoSizeList: this.autoSizeList,
-    }
+  start(detail: Detail): void {
+    this.removeStyles(detail)
   }
 }

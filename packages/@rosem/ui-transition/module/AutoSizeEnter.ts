@@ -1,53 +1,51 @@
-import setStyle from '@rosem-util/dom/setStyle'
-import ModuleInit from '../ModuleInit'
+import {
+  getInlinePaddingValue,
+  getBlockPaddingValue,
+  getBlockBorderValue,
+  getInlineBorderValue,
+} from '@rosem-util/dom-geometry'
 import { Detail } from '../Module'
+import AutoSize from './AutoSize'
 
-export default class AutoSizeEnter extends ModuleInit {
-  protected readonly autoSizeList: ('width' | 'height')[]
+const contentBoxSubtractSizeMap = {
+  offsetWidth: (style: CSSStyleDeclaration) =>
+    getInlinePaddingValue(style) + getInlineBorderValue(style),
+  offsetHeight: (style: CSSStyleDeclaration) =>
+    getBlockPaddingValue(style) + getBlockBorderValue(style),
+}
 
-  constructor(autoSizeList: ('width' | 'height')[] = ['width', 'height']) {
-    super()
-    this.autoSizeList = autoSizeList
-  }
+export default class AutoSizeEnter extends AutoSize {
+  beforeStart(detail: Detail): void {
+    if (!detail.autoSizeCalculated) {
+      // const isDisplayNone = detail.target.style.display === 'none'
+      const isContentBox = detail.computedStyle.boxSizing === 'content-box'
 
-  beforeStart(detail: Detail) {
-    if (this.autoSizeList.length) {
-      const target = detail.target
+      // detail.target.style.setProperty('display', '')
+      this.propertyList.forEach((property) => {
+        detail[property] = (detail.target as HTMLElement)[property] // todo
 
-      detail.autoValues = {}
-      setStyle(target, 'display', '')
-
-      let boundingClientRect: ClientRect = target.getBoundingClientRect()
-      const values: number[] = []
-
-      this.autoSizeList.forEach((property: keyof ClientRect) => {
-        values.push(boundingClientRect[property])
-        setStyle(target, property, 'auto')
+        if (isContentBox) {
+          detail[property] -= contentBoxSubtractSizeMap[property](
+            detail.computedStyle
+          )
+        }
       })
-      boundingClientRect = target.getBoundingClientRect()
-      this.autoSizeList.forEach((property, index) => {
-        detail.autoValues[property] = boundingClientRect[property]
-        setStyle(target, property, `${values[index]}px`)
-      })
+
+      detail.target.style.setProperty('display', 'none')
+      detail.autoSizeCalculated = true
+      detail.defferFrame()
     }
   }
 
-  start({ target, autoValues }: Detail) {
-    this.autoSizeList.forEach((property) => {
-      setStyle(target, property, `${autoValues[property]}px`)
-    })
+  start(detail: Detail): void {
+    this.sizeList.forEach(
+      (size, index): void => {
+        detail.target.style[size] = `${detail[this.propertyList[index]]}px`
+      }
+    )
   }
 
-  afterEnd({ target }: Detail) {
-    this.autoSizeList.forEach((property) => {
-      setStyle(target, property, '')
-    })
-  }
-
-  getDetails() {
-    return {
-      auto: true,
-      autoSizeList: this.autoSizeList,
-    }
+  afterEnd(detail: Detail): void {
+    this.removeStyles(detail)
   }
 }

@@ -18,19 +18,16 @@ export default class Stage implements ModuleDispatcher {
     }
   }
 
-  public addModule(middleware: Module) {
-    this.moduleList.push(middleware)
+  addModule(module: Module) {
+    this.moduleList.push(module)
   }
 
-  public dispatch(phase: Phase, details: Detail): Detail {
+  dispatch(phase: Phase, detail: Detail): Detail {
     this.moduleList.forEach((module) => {
-      if (null != module.getDetail) {
-        Object.assign(details, module.getDetail())
-      }
-
-      module[phase](details)
+      Object.assign(detail, module.getDetail())
+      module[phase](detail)
     })
 
-    return details
+    return detail
   }
 }

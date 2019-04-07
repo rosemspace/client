@@ -1,12 +1,12 @@
 import setStyle from '@rosem-util/dom/setStyle'
 import { Detail, DetailInit } from '../Module'
-import ModuleInit from '../ModuleInit'
+import Init from './Init'
 
 export type ClassList = string[]
 export type AttrMap = Record<string, string | number | boolean>
 export type StyleMap = Record<string, string | number>
 
-export default class SetAfterEnd extends ModuleInit {
+export default class SetAfterEnd extends Init {
   classList: ClassList
   styleMap: StyleMap
   attributeMap: AttrMap
@@ -45,7 +45,7 @@ export default class SetAfterEnd extends ModuleInit {
     }
   }
 
-  getDetails(): DetailInit {
+  getDetail(): DetailInit {
     return {
       setClassListAfterEnd: this.classList,
       setStyleMapAfterEnd: this.styleMap,
