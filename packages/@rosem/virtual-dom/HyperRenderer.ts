@@ -1,4 +1,4 @@
-import isPrimitive from '@rosem-util/common/isPrimitive'
+import isPrimitive from '@rosem/common-util/isPrimitive'
 import { forEach, isArray, isPlainObject, isString } from 'lodash-es'
 import VirtualRenderer from '@rosem/virtual-dom/VirtualRenderer'
 import VirtualInstance, {
@@ -22,7 +22,6 @@ export type HyperRendererProps<
   props: VirtualElementProps
   customProps: VirtualCustomElementProps
   namespaceURI: string
-  void: boolean
   key: VirtualNodeKey
 }>
 

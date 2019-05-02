@@ -55,7 +55,6 @@ export interface VirtualElement<VirtualElementProps extends object = {}>
   attrs: VirtualNodeAttrMap
   props: VirtualElementProps
   namespaceURI: string
-  void: boolean
   key: VirtualNodeKey
 }
 

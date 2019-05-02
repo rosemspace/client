@@ -1,0 +1,25 @@
+<script>
+  const itemList = [
+    '1',
+    '2',
+    '3',
+  ]
+</script>
+
+<h1>Test</h1>
+<? if (itemCount > 10) { ?>
+<ul class="list">
+  <script>
+  const dynamicValue = 'd'
+  </script>
+  <? for (let item of itemList) { ?>
+  <li>{ item.name }</li>
+  <? } ?>
+</ul>
+<? } ?>
+
+<style>
+.list {
+  background-color: gray;
+}
+</style>

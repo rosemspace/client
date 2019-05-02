@@ -11,8 +11,10 @@ const virtualHydrator = new VirtualHydrator<Node>()
 const vm = {
   template: '<div class="title">Hello, {{ this.name }}!</div>',
   render(h: Function): VirtualInstance {
+    // @ts-ignore
     const vnode = h('div', { attrs: { class: 'title' } }, `Hello, ${this.name}!`)
     console.log(vnode)
+    // @ts-ignore
     document.body.firstElementChild.replaceWith(virtualHydrator.hydrate(vnode, webRenderer))
     return vnode
   },
@@ -25,7 +27,9 @@ const vm = {
 
 const $data = ObservableObject.create(vm.data())
 vm.render = vm.render.bind($data, hyperRenderer.createInstance)
+// @ts-ignore
 vm.render()
 ObservableObject.observeProperty($data, 'name', vm.render)
 
+// @ts-ignore
 window.$data = $data

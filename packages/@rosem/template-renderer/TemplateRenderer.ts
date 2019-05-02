@@ -1,10 +1,12 @@
 import { SourceSupportedType } from '@rosem/html-parser/HTMLParser'
-import HookList from '@rosem/xml-parser/HookList'
-import MatchRange from '@rosem/xml-parser/node/MatchRange'
-import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
-import ParsedEndTag from '@rosem/xml-parser/node/ParsedEndTag'
-import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
-import ParsedContent from '@rosem/xml-parser/node/ParsedContent'
+import { HookList } from '@rosem/xml-parser'
+import {
+  MatchRange,
+  ParsedAttr,
+  ParsedEndTag,
+  ParsedStartTag,
+  ParsedContent,
+} from '@rosem/xml-parser/node'
 import Renderer from '@rosem/virtual-dom/Renderer'
 
 export default class TemplateRenderer<

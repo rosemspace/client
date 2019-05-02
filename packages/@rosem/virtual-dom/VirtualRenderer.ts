@@ -44,7 +44,6 @@ export default class VirtualRenderer<VirtualElementProps extends object>
       type: VirtualNodeType.ELEMENT_NODE,
       tagName: qualifiedName,
       namespaceURI: '',
-      void: false,
       key: ++key,
       attrs: {},
       props: {} as VirtualElementProps,

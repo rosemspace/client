@@ -19,9 +19,12 @@ import {
   cDataSectionRegExp,
   declarationStartRegExp,
   declarationRegExp,
-} from '@rosem-util/syntax-xml'
-import { APPLICATION_XML_MIME_TYPE } from '@rosem-util/w3/mimeTypes'
-import { XML_NAMESPACE, XMLNS_NAMESPACE } from '@rosem-util/w3/namespaces'
+} from '@rosem/xml-syntax'
+import {
+  APPLICATION_XML_MIME_TYPE,
+  XML_NAMESPACE,
+  XMLNS_NAMESPACE,
+} from '@rosem/w3-util'
 import HookList from './HookList'
 import Processor, { ProcessorMap } from '@rosem/xml-parser/Processor'
 import MatchRange from './node/MatchRange'

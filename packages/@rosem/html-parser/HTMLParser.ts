@@ -8,18 +8,24 @@ import {
   voidElementRegExp,
   isAnyRawTextElement,
   shouldIgnoreFirstNewline,
-} from '@rosem-util/syntax-html'
+} from '@rosem/html-syntax'
 import {
   APPLICATION_MATHML_XML_MIME_TYPE,
   TEXT_HTML_MIME_TYPE,
-} from '@rosem-util/w3/mimeTypes'
-import { HTML_NAMESPACE, MATHML_NAMESPACE } from '@rosem-util/w3/namespaces'
-import XMLParser, { XMLParserOptions } from '@rosem/xml-parser/XMLParser'
-import { ProcessorMap } from '@rosem/xml-parser/Processor'
-import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
-import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
-import ParsedEndTag from '@rosem/xml-parser/node/ParsedEndTag'
-import ParsedContent from '@rosem/xml-parser/node/ParsedContent'
+  HTML_NAMESPACE,
+  MATHML_NAMESPACE,
+} from '@rosem/w3-util'
+import {
+  default as XMLParser,
+  XMLParserOptions,
+  ProcessorMap,
+} from '@rosem/xml-parser'
+import {
+  ParsedAttr,
+  ParsedStartTag,
+  ParsedEndTag,
+  ParsedContent,
+} from '@rosem/xml-parser/node'
 import SVGParser from '@rosem/svg-parser/SVGParser'
 import getStackedTagRegExp from './getStackedTagRegExp'
 

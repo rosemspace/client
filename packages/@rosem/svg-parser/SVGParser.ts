@@ -1,11 +1,10 @@
-import { foreignElementRegExp } from '@rosem-util/syntax-svg'
-import { IMAGE_SVG_XML_MIME_TYPE } from '@rosem-util/w3/mimeTypes'
+import { foreignElementRegExp } from '@rosem/svg-syntax'
 import {
+  IMAGE_SVG_XML_MIME_TYPE,
   SVG_NAMESPACE,
-  XLINK_NAMESPACE
-} from '@rosem-util/w3/namespaces'
-import { ProcessorMap } from '@rosem/xml-parser/Processor'
-import XMLParser, { XMLParserOptions } from '@rosem/xml-parser/XMLParser'
+  XLINK_NAMESPACE,
+} from '@rosem/w3-util'
+import XMLParser, { XMLParserOptions, ProcessorMap } from '@rosem/xml-parser'
 
 export default class SVGParser extends XMLParser {
   protected readonly defaultNamespaceURI: string = SVG_NAMESPACE
@@ -16,7 +15,11 @@ export default class SVGParser extends XMLParser {
 
     this.addNamespace('svg', SVG_NAMESPACE)
     this.addNamespace('xlink', XLINK_NAMESPACE)
-    this.addProcessor(IMAGE_SVG_XML_MIME_TYPE, SVG_NAMESPACE, SVGParser.prototype)
+    this.addProcessor(
+      IMAGE_SVG_XML_MIME_TYPE,
+      SVG_NAMESPACE,
+      SVGParser.prototype
+    )
   }
 
   parseFromString(
