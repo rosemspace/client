@@ -1,11 +1,11 @@
 import { VirtualNodeType } from '../VirtualInstance'
 import hyperRendererFactory from '@rosem/virtual-dom/__mocks__/hyperRendererFactory'
 
-const globalHyperManipulator = hyperRendererFactory()
+const globalHyperRenderer = hyperRendererFactory()
 
 describe('createInstance', () => {
   it('create empty document fragment', () => {
-    const instance = globalHyperManipulator.createInstance(
+    const instance = globalHyperRenderer.createInstance(
       VirtualNodeType.DOCUMENT_FRAGMENT_NODE
     )
 

@@ -19,7 +19,7 @@ export default class VirtualHydrator<OutputNode>
     CDATASection extends OutputNode = OutputNode
   >(
     inputNode: VirtualInstance<VirtualElementProps>,
-    manipulator: Renderer<
+    renderer: Renderer<
       OutputNode,
       ParentNode,
       DocumentFragment,
@@ -31,23 +31,23 @@ export default class VirtualHydrator<OutputNode>
   ): OutputNode {
     switch (inputNode.type) {
       case VirtualNodeType.DOCUMENT_FRAGMENT_NODE: {
-        const documentFragment: DocumentFragment = manipulator.createDocumentFragment()
+        const documentFragment: DocumentFragment = renderer.createDocumentFragment()
 
         this.appendVirtualNodeList(
           documentFragment,
           inputNode.children as VirtualInstance<VirtualElementProps>[],
-          manipulator
+          renderer
         )
 
         return documentFragment
       }
       case VirtualNodeType.ELEMENT_NODE: {
         const element: Element = inputNode.namespaceURI
-          ? manipulator.createElementNS(
+          ? renderer.createElementNS(
               inputNode.namespaceURI,
               inputNode.tagName
             )
-          : manipulator.createElement(inputNode.tagName)
+          : renderer.createElement(inputNode.tagName)
 
         if (inputNode.attrs) {
           forEach(inputNode.attrs, function(
@@ -55,30 +55,30 @@ export default class VirtualHydrator<OutputNode>
             key: string
           ) {
             attr.namespaceURI
-              ? manipulator.setAttributeNS(
+              ? renderer.setAttributeNS(
                   element,
                   (attr as VirtualNodeAttrDescriptor).namespaceURI,
                   key,
                   (attr as VirtualNodeAttrDescriptor).value
                 )
-              : manipulator.setAttribute(element, key, attr.value)
+              : renderer.setAttribute(element, key, attr.value)
           })
         }
 
         this.appendVirtualNodeList(
           element,
           inputNode.children as VirtualInstance<VirtualElementProps>[],
-          manipulator
+          renderer
         )
 
         return element
       }
       case VirtualNodeType.TEXT_NODE:
-        return manipulator.createText(String(inputNode.text))
+        return renderer.createText(String(inputNode.text))
       case VirtualNodeType.COMMENT_NODE:
-        return manipulator.createComment(String(inputNode.text))
+        return renderer.createComment(String(inputNode.text))
       case VirtualNodeType.CDATA_SECTION_NODE:
-        return manipulator.createCDATASection(String(inputNode.text))
+        return renderer.createCDATASection(String(inputNode.text))
     }
   }
 

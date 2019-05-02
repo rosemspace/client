@@ -10,7 +10,7 @@ export default interface Hydrator<InputNode, OutputNode> {
     CDATASection extends OutputNode = OutputNode
   >(
     inputNode: InputNode,
-    manipulator: Renderer<
+    renderer: Renderer<
       OutputNode,
       ParentNode,
       DocumentFragment,
