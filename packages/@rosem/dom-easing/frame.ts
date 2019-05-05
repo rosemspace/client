@@ -1,5 +1,3 @@
-import { global } from '@rosem/env'
-
 export const FPS = Math.floor(1_000 / 60)
 
 /**
@@ -11,12 +9,12 @@ export const FPS = Math.floor(1_000 / 60)
 let raf: (callback: FrameRequestCallback) => number
 let caf: (handle: number) => void
 
-if (null != global && typeof global.requestAnimationFrame === 'function') {
+if (null != globalThis && typeof globalThis.requestAnimationFrame === 'function') {
   // It's required to use a bounded function because IE sometimes throws
   // an "Invalid calling object" error if rAF is invoked without the global
   // object on the left hand side.
-  raf = global.requestAnimationFrame.bind(global)
-  caf = global.cancelAnimationFrame.bind(global)
+  raf = globalThis.requestAnimationFrame.bind(globalThis)
+  caf = globalThis.cancelAnimationFrame.bind(globalThis)
 } else {
   raf = (callback: Function) => setTimeout(() => callback(Date.now()), FPS)
   caf = clearTimeout

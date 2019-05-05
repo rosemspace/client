@@ -1,19 +1,18 @@
-import { global } from '@rosem/env'
-
-const documentElement = global.document.documentElement
+const { getComputedStyle } = globalThis
+const documentElement = globalThis.document.documentElement
 const { display, height, overflowX, msOverflowStyle } = documentElement.style
 
 documentElement.style.display = 'block'
 documentElement.style.height = '100%'
 
-const initialHeight = getStyleNumericValue(global.getComputedStyle(documentElement), 'height')
+const initialHeight = getStyleNumericValue(getComputedStyle(documentElement), 'height')
 
 documentElement.style.overflowX = 'scroll'
 documentElement.style.msOverflowStyle = 'scrollbar' // needed for WinJS apps
 
 const scrollbarDefaultHeight =
   initialHeight -
-  getStyleNumericValue(global.getComputedStyle(documentElement), 'height')
+  getStyleNumericValue(getComputedStyle(documentElement), 'height')
 
 documentElement.style.display = display
 documentElement.style.height = height
@@ -34,5 +33,5 @@ export function getStyleNumericValue(
 }
 
 export function getScrollbarWidth(el: HTMLElement) {
-  return global.getComputedStyle(el, '-webkit-scrollbar') //scrollbarDefaultWidth
+  return getComputedStyle(el, '-webkit-scrollbar') //scrollbarDefaultWidth
 }

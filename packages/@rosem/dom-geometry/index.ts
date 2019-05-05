@@ -1,8 +1,8 @@
-import defineConfigurableProperties from '@rosem-util/common/defineConfigurableProperties'
-import inBrowser from '@rosem-util/env/inBrowser'
-import getGlobalOf from '@rosem-util/env/getGlobalOf'
-import isDocumentElement from '@rosem-util/dom/isDocumentElement'
-import isSVGGraphicsElement from '@rosem-util/dom/isSVGGraphicsElement'
+import defineConfigurableProperties from '@rosem/common-util/defineConfigurableProperties'
+import inBrowser from '@rosem/env/inBrowser'
+import getGlobalOf from '@rosem/env/getGlobalOf'
+import isDocumentElement from '@rosem/dom-util/isDocumentElement'
+import isSVGGraphicsElement from '@rosem/dom-util/isSVGGraphicsElement'
 
 type PositionName = 'top' | 'right' | 'bottom' | 'left'
 type EdgeName = 'inlineStart' | 'inlineEnd' | 'blockStart' | 'blockEnd'

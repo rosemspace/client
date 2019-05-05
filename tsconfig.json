@@ -20,9 +20,6 @@
     "paths": {
       "@rosem/*": [
         "packages/@rosem/*"
-      ],
-      "@rosem-util/*": [
-        "packages/@rosem-util/*"
       ]
     },
     "lib": [
