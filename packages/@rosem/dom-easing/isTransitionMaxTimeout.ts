@@ -12,9 +12,6 @@ export default function isTransitionMaxTimeout(
       ? properties.indexOf(property)
       : 0
 
-  console.log(convertSStringToMs(delays[propertyIndex]) +
-    convertSStringToMs(durations[propertyIndex]),
-    timeout, property);
   return (
     convertSStringToMs(delays[propertyIndex]) +
       convertSStringToMs(durations[propertyIndex]) ===

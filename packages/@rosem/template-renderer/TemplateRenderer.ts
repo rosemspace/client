@@ -28,7 +28,7 @@ export default class TemplateRenderer<
     CDATASection
   >
   private type!: SourceSupportedType
-  protected rootNode!: DocumentFragment
+  protected rootNode: DocumentFragment
   protected cursorNode!: ParentNode
   protected element!: Element
 
@@ -44,6 +44,7 @@ export default class TemplateRenderer<
     >
   ) {
     this.renderer = renderer
+    this.rootNode = this.renderer.createDocumentFragment()
   }
 
   getCompiledResult(): DocumentFragment {
@@ -52,7 +53,7 @@ export default class TemplateRenderer<
 
   start(type: SourceSupportedType) {
     this.type = type
-    this.rootNode = this.cursorNode = this.renderer.createDocumentFragment()
+    this.cursorNode = this.rootNode = this.renderer.createDocumentFragment()
   }
 
   end(): void {}
@@ -76,14 +77,14 @@ export default class TemplateRenderer<
   }
 
   attribute<T extends ParsedAttr>(attr: T): void {
-    attr.namespaceURI
-      ? this.renderer.setAttributeNS(
+    null == attr.namespaceURI
+      ? this.renderer.setAttribute(this.element, attr.name, attr.value)
+      : this.renderer.setAttributeNS(
           this.element,
           attr.namespaceURI,
           attr.name,
           attr.value
         )
-      : this.renderer.setAttribute(this.element, attr.name, attr.value)
   }
 
   endTag(parsedEndTag: ParsedEndTag): void {

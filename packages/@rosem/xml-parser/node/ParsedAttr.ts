@@ -4,7 +4,7 @@ export default interface ParsedAttr extends MatchRange {
   name: string
   localName: string
   nameLowerCased: string
-  prefix: string
-  namespaceURI: string
+  prefix?: string
+  namespaceURI?: string
   value: string
 }

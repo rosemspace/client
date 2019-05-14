@@ -1,5 +1,15 @@
 export default `
 <!doctype html>
+<?yml
+home: true
+heroImage: /hero.png
+?>
+<?json
+{
+  "home": "true",
+  "heroImage": "/hero.png",
+}
+?>
 <?php echo 'test'; ?>
 <!doctype html>
 </input>

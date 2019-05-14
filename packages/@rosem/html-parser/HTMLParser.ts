@@ -51,8 +51,8 @@ export default class HTMLParser extends SVGParser {
       MATHML_NAMESPACE,
       XMLParser.prototype
     )
+    this.addInstruction(this.parseRawText, this.text, 2)
     this.addInstruction(this.parseConditionalComment, this.comment, 4)
-    this.addInstruction(this.parseRawText, this.text, 7)
   }
 
   parseFromString(source: string, type: string = TEXT_HTML_MIME_TYPE): void {
@@ -127,8 +127,13 @@ export default class HTMLParser extends SVGParser {
           return ''
         }
       )
+      // Parse end tag
+      // this.instructionIndex = 6
 
-      return parsedRawText
+      // Ensure we don't have an empty string
+      if (parsedRawText && (parsedRawText as ParsedContent).content) {
+        return parsedRawText
+      }
     }
   }
 

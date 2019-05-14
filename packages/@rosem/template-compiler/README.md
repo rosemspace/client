@@ -11,3 +11,13 @@
 </ul>
 <? } ?>
 ```
+
+```javascript
+export default function render() {
+  return (createComponent || createElement)(
+    'div',
+    { staticClass: 'greeting' },
+    [createText(`\n Hello ${escapeHTML(vm.name)}!\n`)]
+  )
+}
+```

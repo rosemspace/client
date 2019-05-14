@@ -17,9 +17,9 @@ export type Primitive = string | number | boolean
 export type VirtualNodeKey = Primitive
 
 export type VirtualNodeAttrDescriptor = {
-  prefix: string
+  prefix?: string
   localName: string
-  namespaceURI: string
+  namespaceURI?: string
   value: Primitive
 }
 
@@ -52,6 +52,8 @@ export interface VirtualElement<VirtualElementProps extends object = {}>
   extends VirtualParentNode {
   type: VirtualNodeType.ELEMENT_NODE
   tagName: string
+  prefix?: string
+  localName: string
   attrs: VirtualNodeAttrMap
   props: VirtualElementProps
   namespaceURI: string

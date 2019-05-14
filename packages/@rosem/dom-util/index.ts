@@ -5,7 +5,10 @@ const { display, height, overflowX, msOverflowStyle } = documentElement.style
 documentElement.style.display = 'block'
 documentElement.style.height = '100%'
 
-const initialHeight = getStyleNumericValue(getComputedStyle(documentElement), 'height')
+const initialHeight = getStyleNumericValue(
+  getComputedStyle(documentElement),
+  'height'
+)
 
 documentElement.style.overflowX = 'scroll'
 documentElement.style.msOverflowStyle = 'scrollbar' // needed for WinJS apps

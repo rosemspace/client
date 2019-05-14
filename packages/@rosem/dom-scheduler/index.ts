@@ -12,7 +12,7 @@ function runTasks(tasks: Function[]) {
   while ((task = tasks.shift())) task()
 }
 
-export default new class DOMScheduler {
+export default new (class DOMScheduler {
   reads: Function[] = []
   writes: Function[] = []
   scheduled: boolean = false
@@ -33,7 +33,6 @@ export default new class DOMScheduler {
   }
 
   clear<T extends Function>(task: T): boolean {
-    console.log('Clear');
     return remove(this.reads, task) || remove(this.writes, task)
   }
 
@@ -71,4 +70,4 @@ export default new class DOMScheduler {
       }
     }
   }
-}()
+})()

@@ -34,6 +34,11 @@ import ParsedEndTag from './node/ParsedEndTag'
 import ParsedStartTag from './node/ParsedStartTag'
 import decodeAttrEntities from './decodeAttrEntities'
 
+const defaultNamespaceMap = {
+  xml: XML_NAMESPACE,
+  xmlns: XMLNS_NAMESPACE,
+}
+
 const defaultOptions: XMLParserOptions = {
   decodeNewlines: false,
   decodeNewlinesForHref: false,
@@ -66,8 +71,8 @@ export default class XMLParser implements Processor {
       this.parseProcessingInstruction,
       this.processingInstruction as ParsingHook<ParsedContent>,
     ],
-    [this.parseComment, this.comment as ParsingHook<ParsedContent>],
     [this.parseCDataSection, this.cDataSection as ParsingHook<ParsedContent>],
+    [this.parseComment, this.comment as ParsingHook<ParsedContent>],
     [this.parseDeclaration, this.declaration as ParsingHook<ParsedContent>],
     [this.parseEndTag, this.endTag as ParsingHook<ParsedEndTag>],
     [this.parseStartTag, this.startTag as ParsingHook<ParsedStartTag>],
@@ -77,10 +82,7 @@ export default class XMLParser implements Processor {
   protected typeMap: { [type: string]: string } = {
     [APPLICATION_XML_MIME_TYPE]: XML_NAMESPACE,
   }
-  protected readonly namespaceMap: { [namespacePrefix: string]: string } = {
-    xml: XML_NAMESPACE,
-    xmlns: XMLNS_NAMESPACE,
-  }
+  protected namespaceMap: { [namespacePrefix: string]: string } = {...defaultNamespaceMap}
   protected source: string = ''
   protected cursor: number = 0
   protected readonly rootTagStack: ParsedStartTag[] = []
@@ -96,12 +98,28 @@ export default class XMLParser implements Processor {
     }
   }
 
+  get rootNamespaceURI(): string {
+    if (this.rootTagStack.length) {
+      const rootTagNamespaceURI = this.rootTagStack[
+        this.rootTagStack.length - 1
+      ].namespaceURI
+
+      if (null != rootTagNamespaceURI) {
+        return rootTagNamespaceURI
+      }
+    }
+
+    return this.defaultNamespaceURI
+  }
+
   parseFromString(
     source: string,
     type: string = APPLICATION_XML_MIME_TYPE
   ): void {
     this.source = source
     // Clear previous data
+    this.namespaceURI = this.defaultNamespaceURI
+    this.namespaceMap = {...defaultNamespaceMap}
     this.cursor = this.rootTagStack.length = this.tagStack.length = 0
     this.useProcessor(this.typeMap[type])
     this.start(type)
@@ -121,7 +139,7 @@ export default class XMLParser implements Processor {
         if ((parsedNode = parsingInstruction.call(this))) {
           hook.call(this, parsedNode)
 
-          break
+          // break
         }
       }
     }
@@ -179,7 +197,7 @@ export default class XMLParser implements Processor {
   }
 
   protected nextToken() {
-    this.instructionIndex = 0
+    this.instructionIndex = -1
   }
 
   isForeignElement(tagName: string): boolean {
@@ -269,9 +287,12 @@ export default class XMLParser implements Processor {
     }
 
     const tagNameLowerCased = tagName.toLowerCase()
+    const [tagPrefix, tagLocalName] = tagNameLowerCased.split(':', 2)
     const attrs: ParsedAttr[] = []
     const parsedTag: ParsedStartTag = {
       name: tagName,
+      prefix: tagPrefix,
+      localName: tagLocalName,
       nameLowerCased: tagNameLowerCased,
       namespaceURI: this.namespaceURI,
       attrs,
@@ -279,6 +300,11 @@ export default class XMLParser implements Processor {
       void: false,
       matchStart: this.cursor,
       matchEnd: this.cursor,
+    }
+
+    if (null != tagLocalName) {
+      parsedTag.localName = tagPrefix
+      parsedTag.prefix = undefined
     }
 
     this.moveCursor(startTagOpenMatch[0].length)
@@ -294,11 +320,11 @@ export default class XMLParser implements Processor {
       // Qualified name of an attribute, i. e. "xlink:href"
       const attrNameLowerCased = attrMatch[1].toLowerCase()
       // Local name of an attribute, i. e. "xlink" (before ":")
-      let [attrPrefix, attrLocalName] = attrNameLowerCased.split(':')
+      const [attrPrefix, attrLocalName] = attrNameLowerCased.split(':', 2)
       const attr: ParsedAttr = {
         name: attrMatch[1],
         nameLowerCased: attrNameLowerCased,
-        namespaceURI: '',
+        namespaceURI: undefined,
         prefix: attrPrefix,
         localName: attrLocalName,
         value: decodeAttrEntities(
@@ -314,28 +340,38 @@ export default class XMLParser implements Processor {
 
       // Add namespace
       if ('xmlns' === attrPrefix) {
-        if (attrLocalName) {
+        // if (attr.value) {
+        if (null != attrLocalName) {
           this.addNamespace(attrLocalName, attr.value)
+          // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
         } else {
           this.addNamespace(
             tagNameLowerCased,
             (this.namespaceURI = parsedTag.namespaceURI = attr.value)
           )
-        }
-      } else if (attrLocalName) {
+          attr.localName = attrPrefix
+          attr.prefix = undefined
+        } // else {
+        //   this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
+        // }
+        // }
+      } else if (null != attrLocalName) {
         // Add namespace of attribute
         if (
-          !(attr.namespaceURI = this.namespaceMap[attrPrefix] || '') &&
+          null == (attr.namespaceURI = this.namespaceMap[attrPrefix]) &&
           !this.options.suppressWarnings
         ) {
           this.warn(`Namespace not found for attribute prefix: ${attrPrefix}`, {
             matchStart: attr.matchStart,
             matchEnd: attr.matchStart + attrPrefix.length,
           })
+        } else {
+        // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
         }
       } else {
         attr.localName = attrPrefix
-        attr.prefix = ''
+        attr.prefix = undefined
+        // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
       }
 
       attrs.push(attr)
@@ -346,12 +382,12 @@ export default class XMLParser implements Processor {
       parsedTag.unarySlash = startTagCloseTagMatch[1]
       parsedTag.matchEnd = this.moveCursor(startTagCloseTagMatch[0].length)
 
-      let tagPrefix: string = startTagOpenMatch[2]
+      const tagPrefix: string = startTagOpenMatch[2]
 
       if (tagPrefix) {
-        let namespaceURI: string
+        const namespaceURI: string = this.namespaceMap[tagPrefix]
 
-        if ((namespaceURI = this.namespaceMap[tagPrefix])) {
+        if (null != namespaceURI) {
           this.namespaceURI = parsedTag.namespaceURI = namespaceURI
         } else if (!this.options.suppressWarnings) {
           this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
@@ -410,17 +446,8 @@ export default class XMLParser implements Processor {
         ) {
           this.rootTagStack.pop()
 
-          if (this.rootTagStack.length) {
-            const previousRootTag: ParsedStartTag = this.rootTagStack[
-              this.rootTagStack.length - 1
-            ]
-
-            this.useProcessor(
-              (this.namespaceURI =
-                previousRootTag.namespaceURI || this.defaultNamespaceURI)
-            )
-          } else {
-            this.useProcessor((this.namespaceURI = this.defaultNamespaceURI))
+          if (null != (this.namespaceURI = this.rootNamespaceURI)) {
+            this.useProcessor(this.namespaceURI)
           }
         }
 
@@ -550,7 +577,7 @@ export default class XMLParser implements Processor {
 
     // We don't have namespace from closest foreign element
     if (
-      !this.namespaceURI &&
+      null == this.namespaceURI &&
       this.rootTagStack.length &&
       !this.rootTagStack[this.rootTagStack.length - 1].namespaceURI
     ) {
@@ -584,8 +611,10 @@ export default class XMLParser implements Processor {
           this.rootTagStack.push(parsedStartTag)
 
           if (
-            (this.namespaceURI = parsedStartTag.namespaceURI =
-              this.namespaceMap[tagNameLowerCased] || '')
+            null !=
+            (this.namespaceURI = parsedStartTag.namespaceURI = this.namespaceMap[
+              tagNameLowerCased
+            ])
           ) {
             this.useProcessor(this.namespaceURI)
           }
@@ -600,6 +629,7 @@ export default class XMLParser implements Processor {
     parsedStartTag.attrs.forEach((attr: ParsedAttr) => {
       this.attribute(attr)
     })
+    this.nextToken()
   }
 
   attribute<T extends ParsedAttr>(attr: T): void {
@@ -612,6 +642,8 @@ export default class XMLParser implements Processor {
     for (const module of this.moduleList) {
       module.endTag(parsedEndTag)
     }
+
+    this.nextToken()
   }
 
   text<T extends ParsedContent>(parsedText: T) {

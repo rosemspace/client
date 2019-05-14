@@ -28,7 +28,7 @@ export default class TemplateCompiler<
     CDATASection
   >
   private type!: SourceSupportedType
-  protected rootNode!: DocumentFragment
+  protected rootNode: DocumentFragment
   protected cursorNode!: ParentNode
   protected element!: Element
 
@@ -44,6 +44,7 @@ export default class TemplateCompiler<
     >
   ) {
     this.renderer = renderer
+    this.rootNode = this.renderer.createDocumentFragment()
   }
 
   getCompiledResult(): DocumentFragment {
@@ -52,19 +53,21 @@ export default class TemplateCompiler<
 
   start(type: SourceSupportedType) {
     this.type = type
-    this.rootNode = this.cursorNode = this.renderer.createDocumentFragment()
+    this.cursorNode = this.rootNode = this.renderer.createDocumentFragment()
   }
 
   end(): void {}
 
-  processingInstruction(parsedProcessingInstruction: ParsedContent): void {}
+  processingInstruction(parsedProcessingInstruction: ParsedContent): void {
+    // Ignore
+  }
 
   declaration(declaration: ParsedContent): void {
     this.comment(declaration)
   }
 
   startTag(parsedTag: ParsedStartTag): void {
-    this.element = parsedTag.namespaceURI
+    this.element = null != parsedTag.namespaceURI
       ? this.renderer.createElementNS(parsedTag.namespaceURI, parsedTag.name)
       : this.renderer.createElement(parsedTag.name)
 
@@ -76,7 +79,7 @@ export default class TemplateCompiler<
   }
 
   attribute<T extends ParsedAttr>(attr: T): void {
-    attr.namespaceURI
+    null != attr.namespaceURI
       ? this.renderer.setAttributeNS(
           this.element,
           attr.namespaceURI,

@@ -40,8 +40,17 @@ export default class VirtualRenderer<VirtualElementProps extends object>
   }
 
   createElement(qualifiedName: string): VirtualElement<VirtualElementProps> {
+    let [prefix, localName] = qualifiedName.split(':', 2)
+
+    if (null == localName) {
+      localName = prefix
+      prefix = undefined!
+    }
+
     return {
       type: VirtualNodeType.ELEMENT_NODE,
+      prefix,
+      localName,
       tagName: qualifiedName,
       namespaceURI: '',
       key: ++key,
@@ -88,12 +97,7 @@ export default class VirtualRenderer<VirtualElementProps extends object>
     qualifiedName: string,
     value: any
   ): void {
-    element.attrs[qualifiedName] = {
-      prefix: '',
-      localName: qualifiedName,
-      namespaceURI: '',
-      value,
-    }
+    this.setAttributeNS(element, undefined!, qualifiedName, value)
   }
 
   setAttributeNS<T extends VirtualElement<VirtualElementProps>>(
@@ -102,11 +106,11 @@ export default class VirtualRenderer<VirtualElementProps extends object>
     qualifiedName: string,
     value: any
   ): void {
-    let [prefix, localName] = qualifiedName.split(':')
+    let [prefix, localName] = qualifiedName.split(':', 2)
 
-    if (!localName) {
+    if (null == localName) {
       localName = prefix
-      prefix = ''
+      prefix = undefined!
     }
 
     element.attrs[qualifiedName] = {
