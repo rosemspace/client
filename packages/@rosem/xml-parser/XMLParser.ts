@@ -82,7 +82,9 @@ export default class XMLParser implements Processor {
   protected typeMap: { [type: string]: string } = {
     [APPLICATION_XML_MIME_TYPE]: XML_NAMESPACE,
   }
-  protected namespaceMap: { [namespacePrefix: string]: string } = {...defaultNamespaceMap}
+  protected namespaceMap: { [namespacePrefix: string]: string } = {
+    ...defaultNamespaceMap,
+  }
   protected source: string = ''
   protected cursor: number = 0
   protected readonly rootTagStack: ParsedStartTag[] = []
@@ -119,7 +121,7 @@ export default class XMLParser implements Processor {
     this.source = source
     // Clear previous data
     this.namespaceURI = this.defaultNamespaceURI
-    this.namespaceMap = {...defaultNamespaceMap}
+    this.namespaceMap = { ...defaultNamespaceMap }
     this.cursor = this.rootTagStack.length = this.tagStack.length = 0
     this.useProcessor(this.typeMap[type])
     this.start(type)
@@ -241,6 +243,8 @@ export default class XMLParser implements Processor {
 
     this.endTag({
       name: stackTag.name,
+      prefix: stackTag.prefix,
+      localName: stackTag.localName,
       nameLowerCased: stackTag.nameLowerCased,
       matchStart: this.cursor,
       matchEnd: this.cursor,
@@ -287,7 +291,13 @@ export default class XMLParser implements Processor {
     }
 
     const tagNameLowerCased = tagName.toLowerCase()
-    const [tagPrefix, tagLocalName] = tagNameLowerCased.split(':', 2)
+    let [tagPrefix, tagLocalName] = tagNameLowerCased.split(':', 2)
+
+    if (null != tagLocalName) {
+      tagLocalName = tagPrefix
+      tagPrefix = undefined!
+    }
+
     const attrs: ParsedAttr[] = []
     const parsedTag: ParsedStartTag = {
       name: tagName,
@@ -300,11 +310,6 @@ export default class XMLParser implements Processor {
       void: false,
       matchStart: this.cursor,
       matchEnd: this.cursor,
-    }
-
-    if (null != tagLocalName) {
-      parsedTag.localName = tagPrefix
-      parsedTag.prefix = undefined
     }
 
     this.moveCursor(startTagOpenMatch[0].length)
@@ -366,7 +371,7 @@ export default class XMLParser implements Processor {
             matchEnd: attr.matchStart + attrPrefix.length,
           })
         } else {
-        // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
+          // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
         }
       } else {
         attr.localName = attrPrefix
@@ -433,7 +438,13 @@ export default class XMLParser implements Processor {
     }
 
     const tagNameLowerCased: string = tagName.toLowerCase()
+    let [tagPrefix, tagLocalName] = tagNameLowerCased.split(':', 2)
     let lastIndex
+
+    if (null != tagLocalName) {
+      tagLocalName = tagPrefix
+      tagPrefix = undefined!
+    }
 
     // Find the closest opened tag of the same type
     for (lastIndex = this.tagStack.length - 1; lastIndex >= 0; --lastIndex) {
@@ -466,6 +477,8 @@ export default class XMLParser implements Processor {
 
       const parsedEndTag: ParsedEndTag = {
         name: tagName,
+        prefix: tagPrefix,
+        localName: tagLocalName,
         nameLowerCased: tagNameLowerCased,
         matchStart: this.cursor,
         matchEnd: this.cursor + endTagMatch[0].length,
@@ -479,6 +492,8 @@ export default class XMLParser implements Processor {
     } else {
       return this.activeProcessor.matchingStartTagMissed.call(this, {
         name: tagName,
+        prefix: tagPrefix,
+        localName: tagLocalName,
         nameLowerCased: tagNameLowerCased,
         matchStart: this.cursor,
         matchEnd: this.cursor + endTagMatch[0].length,
