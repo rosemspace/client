@@ -54,14 +54,14 @@ export default class VirtualHydrator<OutputNode>
             attr: VirtualNodeAttrDescriptor,
             key: string
           ) {
-            attr.namespaceURI
-              ? renderer.setAttributeNS(
+            null == attr.namespaceURI
+              ? renderer.setAttribute(element, key, attr.value)
+              : renderer.setAttributeNS(
                   element,
-                  (attr as VirtualNodeAttrDescriptor).namespaceURI,
+                  (attr as VirtualNodeAttrDescriptor).namespaceURI as string,
                   key,
                   (attr as VirtualNodeAttrDescriptor).value
                 )
-              : renderer.setAttribute(element, key, attr.value)
           })
         }
 

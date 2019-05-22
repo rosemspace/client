@@ -185,15 +185,15 @@ export default class HyperRenderer<
           ): void => {
             isPrimitive(attr)
               ? this.setAttribute(virtualElement, attrName, attr)
-              : (attr as VirtualNodeAttrDescriptor).namespaceURI
-              ? this.setAttributeNS(
+              : null == (attr as VirtualNodeAttrDescriptor).namespaceURI
+              ? this.setAttribute(
                   virtualElement,
-                  (attr as VirtualNodeAttrDescriptor).namespaceURI,
                   attrName,
                   (attr as VirtualNodeAttrDescriptor).value
                 )
-              : this.setAttribute(
+              : this.setAttributeNS(
                   virtualElement,
+                  (attr as VirtualNodeAttrDescriptor).namespaceURI as string,
                   attrName,
                   (attr as VirtualNodeAttrDescriptor).value
                 )

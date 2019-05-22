@@ -176,8 +176,7 @@ export default class HTMLParser extends SVGParser {
   matchingEndTagMissed(stackTag: ParsedStartTag): ParsedEndTag | void {
     if (optionalClosingElementRegExp.test(stackTag.name)) {
       this.endTag({
-        name: stackTag.name,
-        nameLowerCased: stackTag.nameLowerCased,
+        ...stackTag,
         matchStart: this.cursor,
         matchEnd: this.cursor,
       })
@@ -195,8 +194,7 @@ export default class HTMLParser extends SVGParser {
       nonPhrasingElementRegExp.test(tagNameLowerCased)
     ) {
       this.endTag({
-        name: parsedStartTag.name,
-        nameLowerCased: lastTagNameLowerCased,
+        ...parsedStartTag,
         matchStart: this.cursor,
         matchEnd: this.cursor,
       })
@@ -206,8 +204,7 @@ export default class HTMLParser extends SVGParser {
       lastTagNameLowerCased === tagNameLowerCased
     ) {
       this.endTag({
-        name: parsedStartTag.name,
-        nameLowerCased: tagNameLowerCased,
+        ...parsedStartTag,
         matchStart: this.cursor,
         matchEnd: this.cursor,
       })
@@ -228,8 +225,7 @@ export default class HTMLParser extends SVGParser {
 
           if (optionalClosingElementRegExp.test(stackTag.name)) {
             this.endTag({
-              name: stackTag.name,
-              nameLowerCased: stackTag.nameLowerCased,
+              ...stackTag,
               matchStart: this.cursor,
               matchEnd: this.cursor,
             })
