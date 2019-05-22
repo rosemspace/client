@@ -10,7 +10,7 @@ module.exports = {
     // Output filename is inferred to be `admin.html`.
     index: {
       // entry for the page
-      entry: 'packages/@rosem/app/index.ts',
+      entry: 'packages/@rosem/vue-app/main.ts',
       // the source template
       template: 'packages/@rosem/app/index.html',
       // output as dist/index.html
@@ -41,11 +41,10 @@ module.exports = {
     // config.module.rule('ts')
   },
   configureWebpack: {
-    // entry: {
-    // transition:
-    //   './packages/@rosem/ui/lib/components/Transition/TransitionGroup.js',
+    entry: {
+    // transition: './packages/@rosem/ui-transition/Transition.ts',
     // htmlParser: './packages/@rosem/html-parser/index.ts',
-    // },
+    },
     // Set up all the aliases we use in our app.
     resolve: {
       alias: require('./aliases.config').webpack,
@@ -54,13 +53,21 @@ module.exports = {
     // optimization: {
     //   usedExports: true,
     // },
+    performance: {
+      // Only enable performance hints for production builds,
+      // outside of tests.
+      hints:
+        process.env.NODE_ENV === 'production' &&
+        !process.env.VUE_APP_TEST &&
+        'warning',
+    },
   },
   css: {
     // Enable CSS source maps.
     sourceMap: true,
   },
   // Configure Webpack's dev server.
-  // https://github.com/vuejs/vue-cli/blob/dev/docs/cli-service.md
+  // https://cli.vuejs.org/guide/cli-service.html
   devServer: {
     ...(process.env.API_BASE_URL
       ? // Proxy API endpoints to the production base URL.

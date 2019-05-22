@@ -1,0 +1,11 @@
+<h1>{{ msg }}</h1>
+
+<script lang="ts">
+export default class App {
+  msg: string
+
+  constructor() {
+    this.msg = 'Hello, world!'
+  }
+}
+</script>

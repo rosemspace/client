@@ -1,27 +1,35 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "esnext",
+    "module": "commonjs",
+//    "module": "es2015",
+//    "module": "esnext",
     "strict": true,
+    //    "composite": true,
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
+    "noImplicitThis": true, // for vue
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "baseUrl": ".",
+    "baseUrl": "./packages",
     "types": [
-      "webpack-env",
+      //      "babel__core",
+      //      "babel__generator",
+      //      "babel__template",
+      //      "babel__traverse",
       "jest",
-      "lodash-es"
+      "lodash-es",
+      "webpack-env"
     ],
-    "paths": {
-      "@rosem/*": [
-        "packages/@rosem/*"
-      ]
-    },
+    //    "paths": {
+    //      "@rosem/*": [
+    //        "packages/@rosem/*"
+    //      ]
+    //    },
     "lib": [
       "esnext",
       "dom",
@@ -29,10 +37,14 @@
       "scripthost"
     ]
   },
+  //  "references": [],
+  "typeRoots": ["node_modules/@types", "packages/@types" ],
   "include": [
+    //    "webpack.config.ts",
     "packages/**/*.ts",
+    //    "packages/**/*.d.ts",
     "packages/**/*.tsx",
-    "packages/**/*.vue",
+    //    "packages/**/*.sfc",
     "__mocks__/**/*.ts",
     "__mocks__/**/*.tsx",
     "__tests__/**/*.ts",
