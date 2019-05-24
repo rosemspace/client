@@ -1,35 +1,31 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "commonjs",
+    "target": "esnext", // esnext - with babel, es5 - otherwise
+    "module": "commonjs", // commonjs - for custom loaders
 //    "module": "es2015",
 //    "module": "esnext",
     "strict": true,
-    //    "composite": true,
+//    "composite": true,
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
-    "noImplicitThis": true, // for vue
+//    "noImplicitThis": true, // for vue
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": "./packages",
-    "types": [
-      //      "babel__core",
-      //      "babel__generator",
-      //      "babel__template",
-      //      "babel__traverse",
-      "jest",
-      "lodash-es",
-      "webpack-env"
-    ],
-    //    "paths": {
-    //      "@rosem/*": [
-    //        "packages/@rosem/*"
-    //      ]
-    //    },
+//    "types": [
+//      "jest",
+//      "lodash-es",
+//      "webpack-env"
+//    ],
+//    "paths": {
+//      "@rosem/*": [
+//        "packages/@rosem/*"
+//      ]
+//    },
     "lib": [
       "esnext",
       "dom",
@@ -37,14 +33,13 @@
       "scripthost"
     ]
   },
-  //  "references": [],
-  "typeRoots": ["node_modules/@types", "packages/@types" ],
+//  "references": [],
+//  "typeRoots": ["node_modules/@types", "packages/@rosem" ],
   "include": [
-    //    "webpack.config.ts",
+//    "webpack.config.ts",
     "packages/**/*.ts",
-    //    "packages/**/*.d.ts",
     "packages/**/*.tsx",
-    //    "packages/**/*.sfc",
+    "packages/**/*.sfc",
     "__mocks__/**/*.ts",
     "__mocks__/**/*.tsx",
     "__tests__/**/*.ts",

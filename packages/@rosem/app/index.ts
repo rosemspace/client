@@ -1,6 +1,6 @@
 import App from './App.sfc' //mtc - multi-type container
 
-console.log(App())
+console.log(App)
 
 // require('@rosem/dom-metric/test')
 // require('@rosem/ui')

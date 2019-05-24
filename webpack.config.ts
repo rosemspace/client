@@ -2,57 +2,47 @@
 //cross-env TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack
 //cross-env TS_NODE_FILES=true webpack
 
-const path = require('path')
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const moduleAlias = require('module-alias')
-// import { resolve } from 'path'
-// import { Configuration } from 'webpack'
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import { resolve } from 'path'
+import { Configuration } from 'webpack'
 
 // declare global {
 //   interface ImportMeta {
 //     url: string
 //   }
 // }
+// const __dirname = import.meta.url
 declare var __dirname: string
 
-// const __dirname = import.meta.url
+const packages: string = resolve(__dirname, 'packages/@rosem')
+const tsconfigPathsPlugin = new TsconfigPathsPlugin()
 
-moduleAlias.addAlias('@rosem', path.resolve(__dirname, 'packages/@rosem'))
-// const sfcLoader = require('./packages/@rosem/sfc-loader')
+moduleAlias.addAlias('@rosem', packages)
 
 module.exports = {
-  // presets: ['@rosem/webpack-preset-io'], //concept
   mode: 'development',
   devtool: 'cheap-module-eval-source-map',
   // node: {
   //   console: true,
   // },
-  // context: path.resolve(__dirname),
+  context: resolve(__dirname),
   entry: './packages/@rosem/app/index.ts',
   // entry: './packages/@rosem/vue-app/main.ts',
   output: {
     filename: 'main.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: resolve(__dirname, 'dist'),
   },
   resolve: {
-    mainFiles: ['index'],
-    // alias: {
-    //   '@rosem': path.resolve(__dirname, 'packages/@rosem'),
-    // },
-    // extensions: [
-    //   '.ts',
-    //   '.sfc',
-    // ],
-    // modules: ['node_modules', path.resolve(__dirname, 'packages')],
-    plugins: [new TsconfigPathsPlugin()],
+    // mainFiles: ['index'],
+    modules: ['node_modules', packages],
     extensions: ['.es', '.es6', '.js', '.json', '.jsx', '.mjs', '.sfc', '.ts', '.tsx'],
+    plugins: [tsconfigPathsPlugin],
   },
   resolveLoader: {
-    alias: {
-      '@rosem': path.resolve(__dirname, 'packages/@rosem')
-    },
-    modules: ['node_modules', path.resolve(__dirname, 'packages')],
+    modules: ['node_modules', packages],
     extensions: ['.es', '.es6', '.js', '.mjs', '.ts'],
+    plugins: [tsconfigPathsPlugin],
   },
   module: {
     rules: [
@@ -100,14 +90,14 @@ module.exports = {
           // },
           {
             loader: 'babel-loader',
-            options: {
-              cacheDirectory: true,
-            }
+          //   options: {
+          //     cacheDirectory: true,
+          //   }
           },
           {
             loader: 'ts-loader',
             options: {
-              transpileOnly: true, // false by default
+              // transpileOnly: true, // false by default
               appendTsSuffixTo: [
                 '\\.sfc$',
               ],
@@ -118,4 +108,4 @@ module.exports = {
       },
     ],
   },
-}// as Configuration
+} as Configuration
