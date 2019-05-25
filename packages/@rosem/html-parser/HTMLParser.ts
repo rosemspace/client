@@ -189,10 +189,18 @@ export default class HTMLParser<T extends HTMLParserOptions>
       // Parse end tag
       // this.instructionIndex = 6
 
-      // Ensure we don't have an empty string
-      if (parsedRawText && (parsedRawText as ParsedContent).content) {
-        return parsedRawText
+      // Ensure we don't have an empty string,
+      // otherwise treat all content as raw text if end tag wasn't found
+      if (!parsedRawText || !(parsedRawText as ParsedContent).content) {
+        parsedRawText = {
+          content: this.source,
+          matchStart: this.cursor,
+          matchEnd: this.cursor + this.source.length,
+        }
+        this.moveCursor(this.source.length)
       }
+
+      return parsedRawText
     }
   }
 
