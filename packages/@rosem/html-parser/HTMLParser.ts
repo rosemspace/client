@@ -6,8 +6,9 @@ import {
   optionalClosingElementRegExp,
   reservedAttrRegExp,
   voidElementRegExp,
-  isAnyRawTextElement,
   shouldIgnoreFirstNewline,
+  rawTextElementRegExp,
+  escapableRawTextElementRegExp,
 } from '@rosem/html-syntax'
 import {
   APPLICATION_MATHML_XML_MIME_TYPE,
@@ -27,6 +28,7 @@ import {
   ParsedContent,
 } from '@rosem/xml-parser/node'
 import SVGParser from '@rosem/svg-parser/SVGParser'
+import HTMLProcessor from './HTMLProcessor'
 import getStackedTagRegExp from './getStackedTagRegExp'
 
 export type SourceSupportedType =
@@ -36,9 +38,10 @@ export type SourceSupportedType =
   | 'application/xhtml+xml'
   | 'image/svg+xml'
 
-export default class HTMLParser extends SVGParser {
+export default class HTMLParser extends SVGParser implements HTMLProcessor {
   protected readonly defaultNamespaceURI: string = HTML_NAMESPACE
   protected namespaceURI: string = HTML_NAMESPACE
+  protected activeProcessor: HTMLProcessor = this
 
   constructor(options?: XMLParserOptions, extensionsMap?: ProcessorMap) {
     super(options, extensionsMap)
@@ -67,9 +70,17 @@ export default class HTMLParser extends SVGParser {
     return foreignElementRegExp.test(tagName)
   }
 
-  isVoidElement(parsedTag: ParsedStartTag): boolean {
+  isVoidElement(parsedStartTag: ParsedStartTag): boolean {
     return (
-      super.isVoidElement(parsedTag) || voidElementRegExp.test(parsedTag.name)
+      super.isVoidElement(parsedStartTag) ||
+      voidElementRegExp.test(parsedStartTag.name)
+    )
+  }
+
+  isAnyRawTextElement(tagName: string): boolean {
+    return (
+      rawTextElementRegExp.test(tagName) ||
+      escapableRawTextElementRegExp.test(tagName)
     )
   }
 
@@ -86,7 +97,7 @@ export default class HTMLParser extends SVGParser {
       : ''
   }
 
-  protected parseConditionalComment(): ParsedContent | void {
+  parseConditionalComment(): ParsedContent | void {
     const matchArray: RegExpMatchArray | null = this.source.match(
       conditionalCommentRegExp
     )
@@ -104,10 +115,10 @@ export default class HTMLParser extends SVGParser {
     }
   }
 
-  protected parseRawText(): ParsedContent | void {
+  parseRawText(): ParsedContent | void {
     const lastTagNameLowerCased = this.lastTagNameLowerCased
 
-    if (isAnyRawTextElement(lastTagNameLowerCased)) {
+    if (this.isAnyRawTextElement(lastTagNameLowerCased)) {
       let parsedRawText: ParsedContent | undefined = undefined
       const stackedTagRE = getStackedTagRegExp(lastTagNameLowerCased)
 

@@ -26,7 +26,7 @@ import {
   XMLNS_NAMESPACE,
 } from '@rosem/w3-util'
 import HookList from './HookList'
-import Processor, { ProcessorMap } from '@rosem/xml-parser/Processor'
+import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
 import MatchRange from './node/MatchRange'
 import ParsedAttr from './node/ParsedAttr'
 import ParsedContent from './node/ParsedContent'
@@ -56,12 +56,12 @@ export type XMLParserOptions = {
 type ParsingInstruction<T extends MatchRange> = () => T | void
 type ParsingHook<T extends MatchRange> = <U extends T>(parsedNode: U) => void
 
-export default class XMLParser implements Processor {
+export default class XMLParser implements XMLProcessor, HookList {
   protected readonly defaultNamespaceURI: string = XML_NAMESPACE
   protected namespaceURI: string = XML_NAMESPACE
   protected readonly options: XMLParserOptions
-  protected readonly processorMap: ProcessorMap
-  protected activeProcessor: Processor = this
+  protected readonly processorMap: XMLProcessorMap
+  protected activeProcessor: XMLProcessor = this
   protected readonly moduleList: HookList[] = []
   protected readonly instructionList: [
     ParsingInstruction<ParsedStartTag | ParsedEndTag | ParsedContent>,
@@ -90,7 +90,7 @@ export default class XMLParser implements Processor {
   protected readonly rootTagStack: ParsedStartTag[] = []
   protected readonly tagStack: ParsedStartTag[] = []
 
-  constructor(options?: XMLParserOptions, processorMap?: ProcessorMap) {
+  constructor(options?: XMLParserOptions, processorMap?: XMLProcessorMap) {
     this.options = {
       ...defaultOptions,
       ...(options || {}),
@@ -163,7 +163,7 @@ export default class XMLParser implements Processor {
   addProcessor(
     associatedType: string,
     namespaceURI: string,
-    processor: Processor
+    processor: XMLProcessor
   ) {
     this.processorMap[(this.typeMap[associatedType] = namespaceURI)] = processor
   }
@@ -202,12 +202,8 @@ export default class XMLParser implements Processor {
     this.instructionIndex = -1
   }
 
-  isForeignElement(tagName: string): boolean {
-    return false
-  }
-
-  isVoidElement(parsedTag: ParsedStartTag): boolean {
-    return Boolean(parsedTag.unarySlash)
+  isVoidElement(parsedStartTag: ParsedStartTag): boolean {
+    return Boolean(parsedStartTag.unarySlash)
   }
 
   startsWithInstruction(source: string): boolean {
@@ -267,15 +263,15 @@ export default class XMLParser implements Processor {
     }
   }
 
-  protected parseProcessingInstruction(): ParsedContent | void {
+  parseProcessingInstruction(): ParsedContent | void {
     return this.parseSection(processingInstructionRegExp)
   }
 
-  protected parseDeclaration(): ParsedContent | void {
+  parseDeclaration(): ParsedContent | void {
     return this.parseSection(declarationRegExp)
   }
 
-  protected parseStartTag(): ParsedStartTag | void {
+  parseStartTag(): ParsedStartTag | void {
     const startTagOpenMatch: RegExpMatchArray | null = this.source.match(
       startTagOpenRegExp
     )
@@ -421,7 +417,7 @@ export default class XMLParser implements Processor {
     }
   }
 
-  protected parseEndTag(): ParsedEndTag | void {
+  parseEndTag(): ParsedEndTag | void {
     const endTagMatch: RegExpMatchArray | null = this.source.match(endTagRegExp)
 
     if (!endTagMatch) {
@@ -501,15 +497,15 @@ export default class XMLParser implements Processor {
     }
   }
 
-  protected parseComment(): ParsedContent | void {
+  parseComment(): ParsedContent | void {
     return this.parseSection(commentRegExp)
   }
 
-  protected parseCDataSection(): ParsedContent | void {
+  parseCDataSection(): ParsedContent | void {
     return this.parseSection(cDataSectionRegExp)
   }
 
-  protected parseText(): ParsedContent | void {
+  parseText(): ParsedContent | void {
     let textEndTokenIndex: number = this.source.indexOf('<')
     let textContent: string | undefined
 
@@ -555,6 +551,10 @@ export default class XMLParser implements Processor {
     }
   }
 
+  protected pushTagToStack(parsedStartTag: ParsedStartTag): void {
+    this.tagStack.push(parsedStartTag)
+  }
+
   start(type: string) {
     for (const module of this.moduleList) {
       module.start(type)
@@ -588,8 +588,6 @@ export default class XMLParser implements Processor {
   }
 
   startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
-    const tagNameLowerCased = parsedStartTag.nameLowerCased
-
     // We don't have namespace from closest foreign element
     if (
       null == this.namespaceURI &&
@@ -618,23 +616,7 @@ export default class XMLParser implements Processor {
         parsedStartTag
       ))
     ) {
-      this.tagStack.push(parsedStartTag)
-
-      // Switch parser for foreign tag
-      if (this.activeProcessor.isForeignElement.call(this, tagNameLowerCased)) {
-        if (!parsedStartTag.void) {
-          this.rootTagStack.push(parsedStartTag)
-
-          if (
-            null !=
-            (this.namespaceURI = parsedStartTag.namespaceURI = this.namespaceMap[
-              tagNameLowerCased
-            ])
-          ) {
-            this.useProcessor(this.namespaceURI)
-          }
-        }
-      }
+      this.pushTagToStack(parsedStartTag)
     }
 
     for (const module of this.moduleList) {

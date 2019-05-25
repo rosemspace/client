@@ -39,13 +39,6 @@ export const foreignElementRegExp = /^math|svg$/i
 // https://www.w3.org/TR/html5/infrastructure.html#conformance-requirements-extensibility
 export const reservedAttrRegExp = /^(x-)|^([^_]*_[^_]*)$/i
 
-export function isAnyRawTextElement(tagName: string): boolean {
-  return (
-    rawTextElementRegExp.test(tagName) ||
-    escapableRawTextElementRegExp.test(tagName)
-  )
-}
-
 // https://www.w3.org/TR/html5/syntax.html#restrictions-on-content-models
 export function shouldIgnoreFirstNewline(tag: string, html: string) {
   return '\n' === html[0] && /^(pre|textarea)$/i.test(tag)

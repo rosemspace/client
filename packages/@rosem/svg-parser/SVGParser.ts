@@ -5,10 +5,13 @@ import {
   XLINK_NAMESPACE,
 } from '@rosem/w3-util'
 import XMLParser, { XMLParserOptions, ProcessorMap } from '@rosem/xml-parser'
+import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
+import SVGProcessor from './SVGProcessor'
 
-export default class SVGParser extends XMLParser {
+export default class SVGParser extends XMLParser implements SVGProcessor {
   protected readonly defaultNamespaceURI: string = SVG_NAMESPACE
   protected namespaceURI: string = SVG_NAMESPACE
+  protected activeProcessor: SVGProcessor = this
 
   constructor(options?: XMLParserOptions, extensionsMap?: ProcessorMap) {
     super(options, extensionsMap)
@@ -31,6 +34,31 @@ export default class SVGParser extends XMLParser {
 
   protected useProcessor(namespaceURI: string = SVG_NAMESPACE): void {
     super.useProcessor(namespaceURI)
+  }
+
+  protected pushTagToStack(parsedStartTag: ParsedStartTag): void {
+    super.pushTagToStack(parsedStartTag)
+
+    // Switch parser for foreign tag
+    if (
+      this.activeProcessor.isForeignElement.call(
+        this,
+        parsedStartTag.nameLowerCased
+      )
+    ) {
+      if (!parsedStartTag.void) {
+        this.rootTagStack.push(parsedStartTag)
+
+        if (
+          null !=
+          (this.namespaceURI = parsedStartTag.namespaceURI = this.namespaceMap[
+            parsedStartTag.nameLowerCased
+          ])
+        ) {
+          this.useProcessor(this.namespaceURI)
+        }
+      }
+    }
   }
 
   isForeignElement(tagName: string): boolean {
