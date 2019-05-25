@@ -18,8 +18,8 @@ import {
 } from '@rosem/w3-util'
 import {
   default as XMLParser,
-  XMLParserOptions,
-  ProcessorMap,
+  NamespaceMap,
+  XMLProcessorMap
 } from '@rosem/xml-parser'
 import {
   ParsedAttr,
@@ -27,7 +27,10 @@ import {
   ParsedEndTag,
   ParsedContent,
 } from '@rosem/xml-parser/node'
-import SVGParser from '@rosem/svg-parser/SVGParser'
+import SVGParser, {
+  convertElementArrayToRegExp,
+  SVGParserOptions,
+} from '@rosem/svg-parser/SVGParser'
 import HTMLProcessor from './HTMLProcessor'
 import getStackedTagRegExp from './getStackedTagRegExp'
 
@@ -38,16 +41,61 @@ export type SourceSupportedType =
   | 'application/xhtml+xml'
   | 'image/svg+xml'
 
-export default class HTMLParser extends SVGParser implements HTMLProcessor {
+export type HTMLParserElementConfig = {
+  htmlForeignElement: RegExp | string[]
+  voidElement: RegExp | string[]
+  rawTextElement: RegExp | string[]
+  escapableRawTextElement: RegExp | string[]
+}
+
+export type HTMLParserOptions = HTMLParserElementConfig & SVGParserOptions
+
+export const defaultNamespaceMap: NamespaceMap = {
+  html: HTML_NAMESPACE,
+  math: MATHML_NAMESPACE,
+}
+
+const defaultOptions: HTMLParserElementConfig = {
+  htmlForeignElement: foreignElementRegExp,
+  voidElement: voidElementRegExp,
+  rawTextElement: rawTextElementRegExp,
+  escapableRawTextElement: escapableRawTextElementRegExp,
+}
+
+export default class HTMLParser<T extends HTMLParserOptions>
+  extends SVGParser<T>
+  implements HTMLProcessor {
   protected readonly defaultNamespaceURI: string = HTML_NAMESPACE
   protected namespaceURI: string = HTML_NAMESPACE
   protected activeProcessor: HTMLProcessor = this
 
-  constructor(options?: XMLParserOptions, extensionsMap?: ProcessorMap) {
-    super(options, extensionsMap)
+  constructor(options?: Partial<T>, extensionsMap?: XMLProcessorMap) {
+    super(
+      {
+        ...options,
+        ...{
+          htmlForeignElement: convertElementArrayToRegExp(
+            (options || defaultOptions).htmlForeignElement ||
+              defaultOptions.htmlForeignElement
+          ),
+          voidElement: convertElementArrayToRegExp(
+            (options || defaultOptions).voidElement ||
+              defaultOptions.voidElement
+          ),
+          rawTextElement: convertElementArrayToRegExp(
+            (options || defaultOptions).rawTextElement ||
+              defaultOptions.rawTextElement
+          ),
+          escapableRawTextElement: convertElementArrayToRegExp(
+            (options || defaultOptions).escapableRawTextElement ||
+              defaultOptions.escapableRawTextElement
+          ),
+        },
+      } as T,
+      extensionsMap
+    )
 
-    this.addNamespace('html', HTML_NAMESPACE)
-    this.addNamespace('math', MATHML_NAMESPACE)
+    Object.assign(this.defaultNamespaceMap, defaultNamespaceMap)
     this.addProcessor(TEXT_HTML_MIME_TYPE, HTML_NAMESPACE, HTMLParser.prototype)
     this.addProcessor(
       APPLICATION_MATHML_XML_MIME_TYPE,
@@ -67,20 +115,20 @@ export default class HTMLParser extends SVGParser implements HTMLProcessor {
   }
 
   isForeignElement(tagName: string): boolean {
-    return foreignElementRegExp.test(tagName)
+    return (this.options.htmlForeignElement as RegExp).test(tagName)
   }
 
   isVoidElement(parsedStartTag: ParsedStartTag): boolean {
     return (
       super.isVoidElement(parsedStartTag) ||
-      voidElementRegExp.test(parsedStartTag.name)
+      (this.options.voidElement as RegExp).test(parsedStartTag.name)
     )
   }
 
   isAnyRawTextElement(tagName: string): boolean {
     return (
-      rawTextElementRegExp.test(tagName) ||
-      escapableRawTextElementRegExp.test(tagName)
+      (this.options.rawTextElement as RegExp).test(tagName) ||
+      (this.options.escapableRawTextElement as RegExp).test(tagName)
     )
   }
 

@@ -1,23 +1,59 @@
+import { isArray } from 'lodash-es'
+import { getExactDisjunctionRegExpFromArray } from '@rosem/regexp-util'
 import { foreignElementRegExp } from '@rosem/svg-syntax'
 import {
   IMAGE_SVG_XML_MIME_TYPE,
   SVG_NAMESPACE,
   XLINK_NAMESPACE,
 } from '@rosem/w3-util'
-import XMLParser, { XMLParserOptions, ProcessorMap } from '@rosem/xml-parser'
+import XMLParser, { XMLParserOptions, XMLProcessorMap } from '@rosem/xml-parser'
 import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
 import SVGProcessor from './SVGProcessor'
 
-export default class SVGParser extends XMLParser implements SVGProcessor {
+export function convertElementArrayToRegExp(list: RegExp | string[]): RegExp {
+  if (isArray(list)) {
+    return getExactDisjunctionRegExpFromArray(list, 'i')
+  }
+
+  return list
+}
+
+type SVGParserElementConfig = {
+  svgForeignElement: RegExp | string[]
+}
+
+export type SVGParserOptions = SVGParserElementConfig & XMLParserOptions
+
+export const defaultNamespaceMap = {
+  svg: SVG_NAMESPACE,
+  xlink: XLINK_NAMESPACE,
+}
+
+const defaultOptions: SVGParserElementConfig = {
+  svgForeignElement: foreignElementRegExp,
+}
+
+export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
+  implements SVGProcessor {
   protected readonly defaultNamespaceURI: string = SVG_NAMESPACE
   protected namespaceURI: string = SVG_NAMESPACE
   protected activeProcessor: SVGProcessor = this
 
-  constructor(options?: XMLParserOptions, extensionsMap?: ProcessorMap) {
-    super(options, extensionsMap)
+  constructor(options?: Partial<T>, extensionsMap?: XMLProcessorMap) {
+    super(
+      {
+        ...options,
+        ...{
+          svgForeignElement: convertElementArrayToRegExp(
+            (options || defaultOptions).svgForeignElement ||
+              defaultOptions.svgForeignElement
+          ),
+        },
+      } as T,
+      extensionsMap
+    )
 
-    this.addNamespace('svg', SVG_NAMESPACE)
-    this.addNamespace('xlink', XLINK_NAMESPACE)
+    Object.assign(this.defaultNamespaceMap, defaultNamespaceMap)
     this.addProcessor(
       IMAGE_SVG_XML_MIME_TYPE,
       SVG_NAMESPACE,
@@ -36,8 +72,12 @@ export default class SVGParser extends XMLParser implements SVGProcessor {
     super.useProcessor(namespaceURI)
   }
 
-  protected pushTagToStack(parsedStartTag: ParsedStartTag): void {
-    super.pushTagToStack(parsedStartTag)
+  isForeignElement(tagName: string): boolean {
+    return (this.options.svgForeignElement as RegExp).test(tagName)
+  }
+
+  tagOpened(parsedStartTag: ParsedStartTag): void {
+    super.tagOpened(parsedStartTag)
 
     // Switch parser for foreign tag
     if (
@@ -59,9 +99,5 @@ export default class SVGParser extends XMLParser implements SVGProcessor {
         }
       }
     }
-  }
-
-  isForeignElement(tagName: string): boolean {
-    return foreignElementRegExp.test(tagName)
   }
 }

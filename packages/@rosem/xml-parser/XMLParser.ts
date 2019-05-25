@@ -33,17 +33,11 @@ import ParsedContent from './node/ParsedContent'
 import ParsedEndTag from './node/ParsedEndTag'
 import ParsedStartTag from './node/ParsedStartTag'
 import decodeAttrEntities from './decodeAttrEntities'
+import { NamespaceMap, TypeMap } from './index'
 
-const defaultNamespaceMap = {
+export const defaultNamespaceMap: NamespaceMap = {
   xml: XML_NAMESPACE,
   xmlns: XMLNS_NAMESPACE,
-}
-
-const defaultOptions: XMLParserOptions = {
-  decodeNewlines: false,
-  decodeNewlinesForHref: false,
-  suppressComments: false,
-  suppressWarnings: false,
 }
 
 export type XMLParserOptions = {
@@ -56,10 +50,19 @@ export type XMLParserOptions = {
 type ParsingInstruction<T extends MatchRange> = () => T | void
 type ParsingHook<T extends MatchRange> = <U extends T>(parsedNode: U) => void
 
-export default class XMLParser implements XMLProcessor, HookList {
+const defaultOptions: XMLParserOptions = {
+  decodeNewlines: false,
+  decodeNewlinesForHref: false,
+  suppressComments: false,
+  suppressWarnings: false,
+}
+
+export default class XMLParser<T extends XMLParserOptions>
+  implements XMLProcessor, HookList {
   protected readonly defaultNamespaceURI: string = XML_NAMESPACE
+  protected readonly defaultNamespaceMap: NamespaceMap = defaultNamespaceMap
   protected namespaceURI: string = XML_NAMESPACE
-  protected readonly options: XMLParserOptions
+  protected options: T
   protected readonly processorMap: XMLProcessorMap
   protected activeProcessor: XMLProcessor = this
   protected readonly moduleList: HookList[] = []
@@ -79,22 +82,20 @@ export default class XMLParser implements XMLProcessor, HookList {
     [this.parseText, this.text as ParsingHook<ParsedContent>],
   ]
   protected instructionIndex: number = 0
-  protected typeMap: { [type: string]: string } = {
+  protected typeMap: TypeMap = {
     [APPLICATION_XML_MIME_TYPE]: XML_NAMESPACE,
   }
-  protected namespaceMap: { [namespacePrefix: string]: string } = {
-    ...defaultNamespaceMap,
-  }
+  protected namespaceMap: NamespaceMap = this.defaultNamespaceMap
   protected source: string = ''
   protected cursor: number = 0
   protected readonly rootTagStack: ParsedStartTag[] = []
   protected readonly tagStack: ParsedStartTag[] = []
 
-  constructor(options?: XMLParserOptions, processorMap?: XMLProcessorMap) {
+  constructor(options?: Partial<T>, processorMap?: XMLProcessorMap) {
     this.options = {
       ...defaultOptions,
       ...(options || {}),
-    }
+    } as T
     this.processorMap = processorMap || {
       [XML_NAMESPACE]: XMLParser.prototype,
     }
@@ -121,7 +122,7 @@ export default class XMLParser implements XMLProcessor, HookList {
     this.source = source
     // Clear previous data
     this.namespaceURI = this.defaultNamespaceURI
-    this.namespaceMap = { ...defaultNamespaceMap }
+    this.namespaceMap = { ...this.defaultNamespaceMap }
     this.cursor = this.rootTagStack.length = this.tagStack.length = 0
     this.useProcessor(this.typeMap[type])
     this.start(type)
@@ -551,7 +552,7 @@ export default class XMLParser implements XMLProcessor, HookList {
     }
   }
 
-  protected pushTagToStack(parsedStartTag: ParsedStartTag): void {
+  tagOpened(parsedStartTag: ParsedStartTag): void {
     this.tagStack.push(parsedStartTag)
   }
 
@@ -616,7 +617,7 @@ export default class XMLParser implements XMLProcessor, HookList {
         parsedStartTag
       ))
     ) {
-      this.pushTagToStack(parsedStartTag)
+      this.activeProcessor.tagOpened.call(this, parsedStartTag)
     }
 
     for (const module of this.moduleList) {

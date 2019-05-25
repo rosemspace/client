@@ -19,9 +19,11 @@ export default interface XMLProcessor {
 
   parseText(): ParsedContent | void
 
-  isVoidElement(parsedStartTag: ParsedStartTag): boolean
-
   startsWithInstruction(source: string): boolean
+
+  isVoidElement(startTag: ParsedStartTag): boolean
+
+  tagOpened(startTag: ParsedStartTag): void
 
   matchingStartTagMissed(endTag: ParsedEndTag): ParsedEndTag | void
 
