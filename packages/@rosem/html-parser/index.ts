@@ -1,3 +1,1 @@
-import HTMLParser from './HTMLParser'
-
-export default HTMLParser
+export { default, SourceSupportedType } from './HTMLParser'

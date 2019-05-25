@@ -1,0 +1,22 @@
+{
+  "name": "@rosem/virtual-dom",
+  "version": "0.0.1",
+  "description": "Rosem virtual dom library",
+  "keywords": [
+    "virtual",
+    "dom"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "@rosem/dom-api": "0.0.1"
+  }
+}

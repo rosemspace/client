@@ -53,7 +53,7 @@ const defaultOptions: XMLParserOptions = {
   suppressWarnings: false,
 }
 
-export default class XMLParser<T extends XMLParserOptions>
+export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
   implements XMLProcessor, HookList {
   protected readonly defaultNamespaceURI: string = XML_NAMESPACE
   protected readonly defaultNamespaceMap: NamespaceMap = defaultNamespaceMap

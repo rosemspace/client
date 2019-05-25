@@ -1,0 +1,23 @@
+import Renderer from './Renderer'
+
+export default interface Hydrator<InputNode, OutputNode> {
+  hydrate<
+    ParentNode extends OutputNode,
+    DocumentFragment extends ParentNode,
+    Element extends ParentNode,
+    Text extends OutputNode,
+    Comment extends OutputNode = OutputNode,
+    CDATASection extends OutputNode = OutputNode
+  >(
+    inputNode: InputNode,
+    renderer: Renderer<
+      OutputNode,
+      ParentNode,
+      DocumentFragment,
+      Element,
+      Text,
+      Comment,
+      CDATASection
+    >
+  ): OutputNode
+}

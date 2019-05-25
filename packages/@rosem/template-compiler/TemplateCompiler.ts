@@ -1,13 +1,12 @@
-import { SourceSupportedType } from '@rosem/html-parser/HTMLParser'
 import { HookList } from '@rosem/xml-parser'
 import {
   MatchRange,
-  ParsedAttr,
-  ParsedEndTag,
-  ParsedStartTag,
-  ParsedContent,
+  Attr,
+  EndTag,
+  StartTag,
+  Content,
 } from '@rosem/xml-parser/node'
-import Renderer from '@rosem/virtual-dom/Renderer'
+import { RendererAPI } from '@rosem/dom-api'
 
 export default class TemplateCompiler<
   Node,
@@ -18,7 +17,7 @@ export default class TemplateCompiler<
   Comment extends Node = Node,
   CDATASection extends Node = Node
 > implements HookList {
-  protected renderer: Renderer<
+  protected renderer: RendererAPI<
     Node,
     ParentNode,
     DocumentFragment,
@@ -27,13 +26,13 @@ export default class TemplateCompiler<
     Comment,
     CDATASection
   >
-  private type!: SourceSupportedType
+  private type!: string
   protected rootNode: DocumentFragment
   protected cursorNode!: ParentNode
   protected element!: Element
 
   constructor(
-    renderer: Renderer<
+    renderer: RendererAPI<
       Node,
       ParentNode,
       DocumentFragment,
@@ -51,22 +50,22 @@ export default class TemplateCompiler<
     return this.rootNode
   }
 
-  start(type: SourceSupportedType) {
+  start(type: string) {
     this.type = type
     this.cursorNode = this.rootNode = this.renderer.createDocumentFragment()
   }
 
   end(): void {}
 
-  processingInstruction(parsedProcessingInstruction: ParsedContent): void {
+  processingInstruction(parsedProcessingInstruction: Content): void {
     // Ignore
   }
 
-  declaration(declaration: ParsedContent): void {
+  declaration(declaration: Content): void {
     this.comment(declaration)
   }
 
-  startTag(parsedTag: ParsedStartTag): void {
+  startTag(parsedTag: StartTag): void {
     this.element = null != parsedTag.namespaceURI
       ? this.renderer.createElementNS(parsedTag.namespaceURI, parsedTag.name)
       : this.renderer.createElement(parsedTag.name)
@@ -78,7 +77,7 @@ export default class TemplateCompiler<
     }
   }
 
-  attribute<T extends ParsedAttr>(attr: T): void {
+  attribute<T extends Attr>(attr: T): void {
     null != attr.namespaceURI
       ? this.renderer.setAttributeNS(
           this.element,
@@ -89,25 +88,25 @@ export default class TemplateCompiler<
       : this.renderer.setAttribute(this.element, attr.name, attr.value)
   }
 
-  endTag(parsedEndTag: ParsedEndTag): void {
+  endTag(parsedEndTag: EndTag): void {
     this.cursorNode = this.renderer.parent(this.cursorNode) || this.cursorNode
   }
 
-  text(parsedText: ParsedContent): void {
+  text(parsedText: Content): void {
     this.renderer.appendChild(
       this.cursorNode,
       this.renderer.createText(parsedText.content)
     )
   }
 
-  comment(parsedComment: ParsedContent): void {
+  comment(parsedComment: Content): void {
     this.renderer.appendChild(
       this.cursorNode,
       this.renderer.createComment(parsedComment.content)
     )
   }
 
-  cDataSection(parsedCDATASection: ParsedContent): void {
+  cDataSection(parsedCDATASection: Content): void {
     this.renderer.appendChild(
       this.cursorNode,
       this.renderer.createCDATASection(parsedCDATASection.content)

@@ -1,6 +1,6 @@
-import isPrimitive from '@rosem/common-util/isPrimitive'
 import { forEach, isArray, isPlainObject, isString } from 'lodash-es'
-import VirtualRenderer from '@rosem/virtual-dom/VirtualRenderer'
+import isPrimitive from '@rosem/common-util/isPrimitive'
+import Renderer from './Renderer'
 import VirtualInstance, {
   Primitive,
   VirtualChildNodeList,
@@ -28,7 +28,7 @@ export type HyperRendererProps<
 export default class HyperRenderer<
   VirtualElementProps extends object,
   VirtualCustomElementProps extends object
-> extends VirtualRenderer<VirtualElementProps> {
+> extends Renderer<VirtualElementProps> {
   constructor() {
     super()
     this.createInstance = this.createInstance.bind(this)

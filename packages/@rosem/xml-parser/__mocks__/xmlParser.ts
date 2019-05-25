@@ -1,5 +1,5 @@
 import TemplateCompiler from '@rosem/template-compiler/TemplateCompiler'
-import VirtualRenderer from '@rosem/virtual-dom/VirtualRenderer'
+import VirtualDOMRenderer from '@rosem/virtual-dom/Renderer'
 import {
   VirtualCDATASection,
   VirtualComment,
@@ -25,7 +25,7 @@ export default new class {
 
   constructor() {
     this.parser = new XMLParser()
-    this.compiler = new TemplateCompiler(new VirtualRenderer())
+    this.compiler = new TemplateCompiler(new VirtualDOMRenderer())
     this.parser.addModule(this.compiler)
   }
 

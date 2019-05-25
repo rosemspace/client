@@ -1,19 +1,19 @@
 import vnode from './hTest'
 console.log(vnode)
 import HTMLParser from '@rosem/html-parser/HTMLParser'
-import VirtualHydrator from '@rosem/virtual-dom/VirtualHydrator'
-import VirtualRenderer from '@rosem/virtual-dom/VirtualRenderer'
-import TemplateRenderer from '@rosem/template-renderer/TemplateRenderer'
+import VirtualDOMHydrator from '@rosem/virtual-dom/Hydrator'
+import VirtualDOMRenderer from '@rosem/virtual-dom/Renderer'
+import TemplateCompiler from '@rosem/template-compiler/TemplateCompiler'
 import WebRenderer from '@rosem/ui-patform-web/WebRenderer'
 import testHTML from './testHTML'
 
 document.querySelector('#app')!.innerHTML = testHTML
 
-const hydrator = new VirtualHydrator<Node>()
+const hydrator = new VirtualDOMHydrator<Node>()
 
 export default function() {
   const htmlParser = new HTMLParser()
-  const virtualTemplateCompiler = new TemplateRenderer(new VirtualRenderer())
+  const virtualTemplateCompiler = new TemplateCompiler(new VirtualDOMRenderer())
   // const webTemplateCompiler = new TemplateCompiler(new WebRenderer())
 
   htmlParser.addModule(virtualTemplateCompiler)
