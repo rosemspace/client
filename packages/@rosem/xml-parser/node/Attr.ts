@@ -1,6 +1,6 @@
 import MatchRange from './MatchRange'
 
-export default interface ParsedAttr extends MatchRange {
+export default interface Attr extends MatchRange {
   name: string
   localName: string
   nameLowerCased: string

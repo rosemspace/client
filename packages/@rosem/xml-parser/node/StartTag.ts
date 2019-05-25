@@ -1,13 +1,13 @@
 import MatchRange from './MatchRange'
-import ParsedAttr from './ParsedAttr'
+import Attr from './Attr'
 
-export default interface ParsedStartTag extends MatchRange {
+export default interface StartTag extends MatchRange {
   name: string
   localName: string
   nameLowerCased: string
   prefix?: string
   namespaceURI?: string
-  attrs: ParsedAttr[]
+  attrs: Attr[]
   void: boolean
   unarySlash: string
 }

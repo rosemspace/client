@@ -7,7 +7,7 @@ import {
   XLINK_NAMESPACE,
 } from '@rosem/w3-util'
 import XMLParser, { XMLParserOptions, XMLProcessorMap } from '@rosem/xml-parser'
-import ParsedStartTag from '@rosem/xml-parser/node/ParsedStartTag'
+import { StartTag } from '@rosem/xml-parser/node'
 import SVGProcessor from './SVGProcessor'
 
 export function convertElementArrayToRegExp(list: RegExp | string[]): RegExp {
@@ -76,23 +76,23 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
     return (this.options.svgForeignElement as RegExp).test(tagName)
   }
 
-  tagOpened(parsedStartTag: ParsedStartTag): void {
-    super.tagOpened(parsedStartTag)
+  tagOpened(startTag: StartTag): void {
+    super.tagOpened(startTag)
 
     // Switch parser for foreign tag
     if (
       this.activeProcessor.isForeignElement.call(
         this,
-        parsedStartTag.nameLowerCased
+        startTag.nameLowerCased
       )
     ) {
-      if (!parsedStartTag.void) {
-        this.rootTagStack.push(parsedStartTag)
+      if (!startTag.void) {
+        this.rootTagStack.push(startTag)
 
         if (
           null !=
-          (this.namespaceURI = parsedStartTag.namespaceURI = this.namespaceMap[
-            parsedStartTag.nameLowerCased
+          (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
+            startTag.nameLowerCased
           ])
         ) {
           this.useProcessor(this.namespaceURI)

@@ -1,31 +1,29 @@
-import ParsedContent from './node/ParsedContent'
-import ParsedEndTag from './node/ParsedEndTag'
-import ParsedStartTag from './node/ParsedStartTag'
+import { Content, EndTag, StartTag } from './node'
 
 export type XMLProcessorMap = { [mimeType: string]: XMLProcessor }
 
 export default interface XMLProcessor {
-  parseProcessingInstruction(): ParsedContent | void
+  parseProcessingInstruction(): Content | void
 
-  parseDeclaration(): ParsedContent | void
+  parseDeclaration(): Content | void
 
-  parseStartTag(): ParsedStartTag | void
+  parseStartTag(): StartTag | void
 
-  parseEndTag(): ParsedEndTag | void
+  parseEndTag(): EndTag | void
 
-  parseComment(): ParsedContent | void
+  parseComment(): Content | void
 
-  parseCDataSection(): ParsedContent | void
+  parseCDataSection(): Content | void
 
-  parseText(): ParsedContent | void
+  parseText(): Content | void
 
   startsWithInstruction(source: string): boolean
 
-  isVoidElement(startTag: ParsedStartTag): boolean
+  isVoidElement(startTag: StartTag): boolean
 
-  tagOpened(startTag: ParsedStartTag): void
+  tagOpened(startTag: StartTag): void
 
-  matchingStartTagMissed(endTag: ParsedEndTag): ParsedEndTag | void
+  matchingStartTagMissed(endTag: EndTag): EndTag | void
 
-  matchingEndTagMissed(startTag: ParsedStartTag): ParsedEndTag | void
+  matchingEndTagMissed(startTag: StartTag): EndTag | void
 }

@@ -27,11 +27,7 @@ import {
 } from '@rosem/w3-util'
 import HookList from './HookList'
 import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
-import MatchRange from './node/MatchRange'
-import ParsedAttr from './node/ParsedAttr'
-import ParsedContent from './node/ParsedContent'
-import ParsedEndTag from './node/ParsedEndTag'
-import ParsedStartTag from './node/ParsedStartTag'
+import { MatchRange, Attr, Content, EndTag, StartTag } from './node'
 import decodeAttrEntities from './decodeAttrEntities'
 import { NamespaceMap, TypeMap } from './index'
 
@@ -48,7 +44,7 @@ export type XMLParserOptions = {
 }
 
 type ParsingInstruction<T extends MatchRange> = () => T | void
-type ParsingHook<T extends MatchRange> = <U extends T>(parsedNode: U) => void
+type ParsingHook<T extends MatchRange> = <U extends T>(node: U) => void
 
 const defaultOptions: XMLParserOptions = {
   decodeNewlines: false,
@@ -67,19 +63,19 @@ export default class XMLParser<T extends XMLParserOptions>
   protected activeProcessor: XMLProcessor = this
   protected readonly moduleList: HookList[] = []
   protected readonly instructionList: [
-    ParsingInstruction<ParsedStartTag | ParsedEndTag | ParsedContent>,
-    ParsingHook<ParsedStartTag | ParsedEndTag | ParsedContent>
+    ParsingInstruction<StartTag | EndTag | Content>,
+    ParsingHook<StartTag | EndTag | Content>
   ][] = [
     [
       this.parseProcessingInstruction,
-      this.processingInstruction as ParsingHook<ParsedContent>,
+      this.processingInstruction as ParsingHook<Content>,
     ],
-    [this.parseCDataSection, this.cDataSection as ParsingHook<ParsedContent>],
-    [this.parseComment, this.comment as ParsingHook<ParsedContent>],
-    [this.parseDeclaration, this.declaration as ParsingHook<ParsedContent>],
-    [this.parseEndTag, this.endTag as ParsingHook<ParsedEndTag>],
-    [this.parseStartTag, this.startTag as ParsingHook<ParsedStartTag>],
-    [this.parseText, this.text as ParsingHook<ParsedContent>],
+    [this.parseCDataSection, this.cDataSection as ParsingHook<Content>],
+    [this.parseComment, this.comment as ParsingHook<Content>],
+    [this.parseDeclaration, this.declaration as ParsingHook<Content>],
+    [this.parseEndTag, this.endTag as ParsingHook<EndTag>],
+    [this.parseStartTag, this.startTag as ParsingHook<StartTag>],
+    [this.parseText, this.text as ParsingHook<Content>],
   ]
   protected instructionIndex: number = 0
   protected typeMap: TypeMap = {
@@ -88,8 +84,8 @@ export default class XMLParser<T extends XMLParserOptions>
   protected namespaceMap: NamespaceMap = this.defaultNamespaceMap
   protected source: string = ''
   protected cursor: number = 0
-  protected readonly rootTagStack: ParsedStartTag[] = []
-  protected readonly tagStack: ParsedStartTag[] = []
+  protected readonly rootTagStack: StartTag[] = []
+  protected readonly tagStack: StartTag[] = []
 
   constructor(options?: Partial<T>, processorMap?: XMLProcessorMap) {
     this.options = {
@@ -127,7 +123,7 @@ export default class XMLParser<T extends XMLParserOptions>
     this.useProcessor(this.typeMap[type])
     this.start(type)
 
-    let parsedNode: ParsedContent | ParsedStartTag | ParsedEndTag | void
+    let node: Content | StartTag | EndTag | void
 
     while (this.source) {
       for (
@@ -139,8 +135,8 @@ export default class XMLParser<T extends XMLParserOptions>
           this.instructionIndex
         ]
 
-        if ((parsedNode = parsingInstruction.call(this))) {
-          hook.call(this, parsedNode)
+        if ((node = parsingInstruction.call(this))) {
+          hook.call(this, node)
 
           // break
         }
@@ -173,9 +169,7 @@ export default class XMLParser<T extends XMLParserOptions>
     this.moduleList.push(module)
   }
 
-  protected addInstruction<
-    T extends ParsedStartTag | ParsedEndTag | ParsedContent
-  >(
+  protected addInstruction<T extends StartTag | EndTag | Content>(
     parse: ParsingInstruction<T>,
     handle: ParsingHook<T>,
     order: number = this.instructionList.length - 1
@@ -203,8 +197,8 @@ export default class XMLParser<T extends XMLParserOptions>
     this.instructionIndex = -1
   }
 
-  isVoidElement(parsedStartTag: ParsedStartTag): boolean {
-    return Boolean(parsedStartTag.unarySlash)
+  isVoidElement(startTag: StartTag): boolean {
+    return Boolean(startTag.unarySlash)
   }
 
   startsWithInstruction(source: string): boolean {
@@ -218,7 +212,7 @@ export default class XMLParser<T extends XMLParserOptions>
     )
   }
 
-  matchingStartTagMissed(endTag: ParsedEndTag): ParsedEndTag | void {
+  matchingStartTagMissed(endTag: EndTag): EndTag | void {
     if (!this.options.suppressWarnings) {
       this.warn(`<${endTag.name}> element has no matching start tag`, {
         matchStart: endTag.matchStart,
@@ -230,7 +224,7 @@ export default class XMLParser<T extends XMLParserOptions>
     this.nextToken()
   }
 
-  matchingEndTagMissed(stackTag: ParsedStartTag): ParsedEndTag | void {
+  matchingEndTagMissed(stackTag: StartTag): EndTag | void {
     if (!this.options.suppressWarnings) {
       this.warn(`<${stackTag.name}> element has no matching end tag`, {
         matchStart: stackTag.matchStart,
@@ -248,11 +242,11 @@ export default class XMLParser<T extends XMLParserOptions>
     })
   }
 
-  protected parseSection(regExp: RegExp): ParsedContent | void {
+  protected parseSection(regExp: RegExp): Content | void {
     const contentMatch: RegExpMatchArray | null = this.source.match(regExp)
 
     if (contentMatch) {
-      const parsedContent: ParsedContent = {
+      const content: Content = {
         content: contentMatch[1],
         matchStart: this.cursor,
         matchEnd: this.cursor + contentMatch[0].length,
@@ -260,19 +254,19 @@ export default class XMLParser<T extends XMLParserOptions>
 
       this.moveCursor(contentMatch[0].length)
 
-      return parsedContent
+      return content
     }
   }
 
-  parseProcessingInstruction(): ParsedContent | void {
+  parseProcessingInstruction(): Content | void {
     return this.parseSection(processingInstructionRegExp)
   }
 
-  parseDeclaration(): ParsedContent | void {
+  parseDeclaration(): Content | void {
     return this.parseSection(declarationRegExp)
   }
 
-  parseStartTag(): ParsedStartTag | void {
+  parseStartTag(): StartTag | void {
     const startTagOpenMatch: RegExpMatchArray | null = this.source.match(
       startTagOpenRegExp
     )
@@ -295,8 +289,8 @@ export default class XMLParser<T extends XMLParserOptions>
       tagPrefix = undefined!
     }
 
-    const attrs: ParsedAttr[] = []
-    const parsedTag: ParsedStartTag = {
+    const attrs: Attr[] = []
+    const startTag: StartTag = {
       name: tagName,
       prefix: tagPrefix,
       localName: tagLocalName,
@@ -323,7 +317,7 @@ export default class XMLParser<T extends XMLParserOptions>
       const attrNameLowerCased = attrMatch[1].toLowerCase()
       // Local name of an attribute, i. e. "xlink" (before ":")
       const [attrPrefix, attrLocalName] = attrNameLowerCased.split(':', 2)
-      const attr: ParsedAttr = {
+      const attr: Attr = {
         name: attrMatch[1],
         nameLowerCased: attrNameLowerCased,
         namespaceURI: undefined,
@@ -345,16 +339,16 @@ export default class XMLParser<T extends XMLParserOptions>
         // if (attr.value) {
         if (null != attrLocalName) {
           this.addNamespace(attrLocalName, attr.value)
-          // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
+          // this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
         } else {
           this.addNamespace(
             tagNameLowerCased,
-            (this.namespaceURI = parsedTag.namespaceURI = attr.value)
+            (this.namespaceURI = startTag.namespaceURI = attr.value)
           )
           attr.localName = attrPrefix
           attr.prefix = undefined
         } // else {
-        //   this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
+        //   this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
         // }
         // }
       } else if (null != attrLocalName) {
@@ -368,12 +362,12 @@ export default class XMLParser<T extends XMLParserOptions>
             matchEnd: attr.matchStart + attrPrefix.length,
           })
         } else {
-          // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
+          // this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
         }
       } else {
         attr.localName = attrPrefix
         attr.prefix = undefined
-        // this.namespaceURI = parsedTag.namespaceURI = this.rootNamespaceURI
+        // this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
       }
 
       attrs.push(attr)
@@ -381,8 +375,8 @@ export default class XMLParser<T extends XMLParserOptions>
 
     // If tag is closed
     if (startTagCloseTagMatch) {
-      parsedTag.unarySlash = startTagCloseTagMatch[1]
-      parsedTag.matchEnd = this.moveCursor(startTagCloseTagMatch[0].length)
+      startTag.unarySlash = startTagCloseTagMatch[1]
+      startTag.matchEnd = this.moveCursor(startTagCloseTagMatch[0].length)
 
       const tagPrefix: string = startTagOpenMatch[2]
 
@@ -390,7 +384,7 @@ export default class XMLParser<T extends XMLParserOptions>
         const namespaceURI: string = this.namespaceMap[tagPrefix]
 
         if (null != namespaceURI) {
-          this.namespaceURI = parsedTag.namespaceURI = namespaceURI
+          this.namespaceURI = startTag.namespaceURI = namespaceURI
         } else if (!this.options.suppressWarnings) {
           this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
             matchStart: this.cursor,
@@ -399,16 +393,16 @@ export default class XMLParser<T extends XMLParserOptions>
         }
       }
 
-      return parsedTag
+      return startTag
     } else {
       if (!this.options.suppressWarnings) {
         // When a tag starts with "<abc<" (just the example)
         this.warn(
           `Mal-formatted tag${
             this.tagStack.length ? '' : ' at end of template'
-          }: <${parsedTag.name}`,
+          }: <${startTag.name}`,
           {
-            matchStart: parsedTag.matchStart,
+            matchStart: startTag.matchStart,
             matchEnd: this.cursor,
           }
         )
@@ -418,7 +412,7 @@ export default class XMLParser<T extends XMLParserOptions>
     }
   }
 
-  parseEndTag(): ParsedEndTag | void {
+  parseEndTag(): EndTag | void {
     const endTagMatch: RegExpMatchArray | null = this.source.match(endTagRegExp)
 
     if (!endTagMatch) {
@@ -472,7 +466,7 @@ export default class XMLParser<T extends XMLParserOptions>
         )
       }
 
-      const parsedEndTag: ParsedEndTag = {
+      const endTag: EndTag = {
         name: tagName,
         prefix: tagPrefix,
         localName: tagLocalName,
@@ -485,7 +479,7 @@ export default class XMLParser<T extends XMLParserOptions>
       this.tagStack.length = lastIndex
       this.moveCursor(endTagMatch[0].length)
 
-      return parsedEndTag
+      return endTag
     } else {
       return this.activeProcessor.matchingStartTagMissed.call(this, {
         name: tagName,
@@ -498,15 +492,15 @@ export default class XMLParser<T extends XMLParserOptions>
     }
   }
 
-  parseComment(): ParsedContent | void {
+  parseComment(): Content | void {
     return this.parseSection(commentRegExp)
   }
 
-  parseCDataSection(): ParsedContent | void {
+  parseCDataSection(): Content | void {
     return this.parseSection(cDataSectionRegExp)
   }
 
-  parseText(): ParsedContent | void {
+  parseText(): Content | void {
     let textEndTokenIndex: number = this.source.indexOf('<')
     let textContent: string | undefined
 
@@ -530,7 +524,7 @@ export default class XMLParser<T extends XMLParserOptions>
 
     // Ensure we don't have an empty string
     if (textContent) {
-      const parsedText: ParsedContent = {
+      const text: Content = {
         content: textContent,
         matchStart: this.cursor,
         matchEnd: this.cursor + textContent.length,
@@ -538,9 +532,9 @@ export default class XMLParser<T extends XMLParserOptions>
 
       this.moveCursor(textContent.length)
 
-      return parsedText
+      return text
     } else if (!textEndTokenIndex) {
-      const parsedText: ParsedContent = {
+      const text: Content = {
         content: this.source,
         matchStart: this.cursor,
         matchEnd: this.cursor + this.source.length,
@@ -548,12 +542,12 @@ export default class XMLParser<T extends XMLParserOptions>
 
       this.moveCursor(this.source.length)
 
-      return parsedText
+      return text
     }
   }
 
-  tagOpened(parsedStartTag: ParsedStartTag): void {
-    this.tagStack.push(parsedStartTag)
+  tagOpened(startTag: StartTag): void {
+    this.tagStack.push(startTag)
   }
 
   start(type: string) {
@@ -574,21 +568,19 @@ export default class XMLParser<T extends XMLParserOptions>
     }
   }
 
-  processingInstruction<T extends ParsedContent>(
-    parsedProcessingInstruction: T
-  ): void {
+  processingInstruction<T extends Content>(processingInstruction: T): void {
     for (const module of this.moduleList) {
-      module.processingInstruction(parsedProcessingInstruction)
+      module.processingInstruction(processingInstruction)
     }
   }
 
-  declaration<T extends ParsedContent>(declaration: T): void {
+  declaration<T extends Content>(declaration: T): void {
     for (const module of this.moduleList) {
       module.declaration(declaration)
     }
   }
 
-  startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
+  startTag<T extends StartTag>(startTag: T): void {
     // We don't have namespace from closest foreign element
     if (
       null == this.namespaceURI &&
@@ -597,12 +589,12 @@ export default class XMLParser<T extends XMLParserOptions>
     ) {
       if (!this.options.suppressWarnings) {
         this.warn(
-          `<${parsedStartTag.name}> element is not allowed in context of <${
+          `<${startTag.name}> element is not allowed in context of <${
             this.rootTagStack[this.rootTagStack.length - 1].name
           }> element without namespace.`,
           {
-            matchStart: parsedStartTag.matchStart,
-            matchEnd: parsedStartTag.matchEnd,
+            matchStart: startTag.matchStart,
+            matchEnd: startTag.matchEnd,
           }
         )
 
@@ -612,55 +604,52 @@ export default class XMLParser<T extends XMLParserOptions>
 
     // Add start tag to the stack of opened tags
     if (
-      !(parsedStartTag.void = this.activeProcessor.isVoidElement.call(
-        this,
-        parsedStartTag
-      ))
+      !(startTag.void = this.activeProcessor.isVoidElement.call(this, startTag))
     ) {
-      this.activeProcessor.tagOpened.call(this, parsedStartTag)
+      this.activeProcessor.tagOpened.call(this, startTag)
     }
 
     for (const module of this.moduleList) {
-      module.startTag(parsedStartTag)
+      module.startTag(startTag)
     }
 
-    parsedStartTag.attrs.forEach((attr: ParsedAttr) => {
+    startTag.attrs.forEach((attr: Attr) => {
       this.attribute(attr)
     })
     this.nextToken()
   }
 
-  attribute<T extends ParsedAttr>(attr: T): void {
+  attribute<T extends Attr>(attr: T): void {
     for (const module of this.moduleList) {
       module.attribute(attr)
     }
   }
 
-  endTag<T extends ParsedEndTag>(parsedEndTag: T): void {
+  endTag<T extends EndTag>(endTag: T): void {
     for (const module of this.moduleList) {
-      module.endTag(parsedEndTag)
+      module.endTag(endTag)
     }
 
     this.nextToken()
   }
 
-  text<T extends ParsedContent>(parsedText: T) {
+  text<T extends Content>(text: T) {
     for (const module of this.moduleList) {
-      module.text(parsedText)
+      module.text(text)
     }
   }
 
-  comment<T extends ParsedContent>(parsedComment: T) {
+  comment<T extends Content>(comment: T) {
     if (!this.options.suppressComments) {
       for (const module of this.moduleList) {
-        module.comment(parsedComment)
+        module.comment(comment)
       }
     }
   }
 
-  cDataSection<T extends ParsedContent>(parsedCDATASection: T): void {
+  cDataSection<T extends Content>(cDATASection: T): void {
     for (const module of this.moduleList) {
-      module.cDataSection(parsedCDATASection)
+      module.cDataSection(cDATASection)
     }
   }
 }

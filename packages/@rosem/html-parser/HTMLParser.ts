@@ -22,10 +22,10 @@ import {
   XMLProcessorMap
 } from '@rosem/xml-parser'
 import {
-  ParsedAttr,
-  ParsedStartTag,
-  ParsedEndTag,
-  ParsedContent,
+  Attr,
+  StartTag,
+  EndTag,
+  Content,
 } from '@rosem/xml-parser/node'
 import SVGParser, {
   convertElementArrayToRegExp,
@@ -118,10 +118,10 @@ export default class HTMLParser<T extends HTMLParserOptions>
     return (this.options.htmlForeignElement as RegExp).test(tagName)
   }
 
-  isVoidElement(parsedStartTag: ParsedStartTag): boolean {
+  isVoidElement(startTag: StartTag): boolean {
     return (
-      super.isVoidElement(parsedStartTag) ||
-      (this.options.voidElement as RegExp).test(parsedStartTag.name)
+      super.isVoidElement(startTag) ||
+      (this.options.voidElement as RegExp).test(startTag.name)
     )
   }
 
@@ -145,13 +145,13 @@ export default class HTMLParser<T extends HTMLParserOptions>
       : ''
   }
 
-  parseConditionalComment(): ParsedContent | void {
+  parseConditionalComment(): Content | void {
     const matchArray: RegExpMatchArray | null = this.source.match(
       conditionalCommentRegExp
     )
 
     if (matchArray) {
-      const parsedContent: ParsedContent = {
+      const content: Content = {
         content: matchArray[1],
         matchStart: this.cursor,
         matchEnd: this.cursor + matchArray[0].length,
@@ -159,21 +159,21 @@ export default class HTMLParser<T extends HTMLParserOptions>
 
       this.moveCursor(matchArray[0].length)
 
-      return parsedContent
+      return content
     }
   }
 
-  parseRawText(): ParsedContent | void {
+  parseRawText(): Content | void {
     const lastTagNameLowerCased = this.lastTagNameLowerCased
 
     if (this.isAnyRawTextElement(lastTagNameLowerCased)) {
-      let parsedRawText: ParsedContent | undefined = undefined
+      let rawText: Content | undefined = undefined
       const stackedTagRE = getStackedTagRegExp(lastTagNameLowerCased)
 
       this.source.replace(
         stackedTagRE,
         (all: string, text: string): string => {
-          parsedRawText = {
+          rawText = {
             content: text.slice(
               Number(shouldIgnoreFirstNewline(lastTagNameLowerCased, text))
             ),
@@ -191,8 +191,8 @@ export default class HTMLParser<T extends HTMLParserOptions>
 
       // Ensure we don't have an empty string,
       // otherwise treat all content as raw text if end tag wasn't found
-      if (!parsedRawText || !(parsedRawText as ParsedContent).content) {
-        parsedRawText = {
+      if (!rawText || !(rawText as Content).content) {
+        rawText = {
           content: this.source,
           matchStart: this.cursor,
           matchEnd: this.cursor + this.source.length,
@@ -200,11 +200,11 @@ export default class HTMLParser<T extends HTMLParserOptions>
         this.moveCursor(this.source.length)
       }
 
-      return parsedRawText
+      return rawText
     }
   }
 
-  matchingStartTagMissed(endTag: ParsedEndTag): ParsedEndTag | void {
+  matchingStartTagMissed(endTag: EndTag): EndTag | void {
     if (/^(br|p)$/.test(endTag.name)) {
       const isVoid: boolean = endTag.name.length !== 1
 
@@ -240,7 +240,7 @@ export default class HTMLParser<T extends HTMLParserOptions>
     }
   }
 
-  matchingEndTagMissed(stackTag: ParsedStartTag): ParsedEndTag | void {
+  matchingEndTagMissed(stackTag: StartTag): EndTag | void {
     if (optionalClosingElementRegExp.test(stackTag.name)) {
       this.endTag({
         ...stackTag,
@@ -252,16 +252,16 @@ export default class HTMLParser<T extends HTMLParserOptions>
     }
   }
 
-  startTag<T extends ParsedStartTag>(parsedStartTag: T): void {
+  startTag<T extends StartTag>(startTag: T): void {
     const lastTagNameLowerCased: string = this.lastTagNameLowerCased
-    const tagNameLowerCased = parsedStartTag.nameLowerCased
+    const tagNameLowerCased = startTag.nameLowerCased
 
     if (
       lastTagNameLowerCased === 'p' &&
       nonPhrasingElementRegExp.test(tagNameLowerCased)
     ) {
       this.endTag({
-        ...parsedStartTag,
+        ...startTag,
         matchStart: this.cursor,
         matchEnd: this.cursor,
       })
@@ -271,7 +271,7 @@ export default class HTMLParser<T extends HTMLParserOptions>
       lastTagNameLowerCased === tagNameLowerCased
     ) {
       this.endTag({
-        ...parsedStartTag,
+        ...startTag,
         matchStart: this.cursor,
         matchEnd: this.cursor,
       })
@@ -288,7 +288,7 @@ export default class HTMLParser<T extends HTMLParserOptions>
           lastIndex >= 0;
           --lastIndex
         ) {
-          const stackTag: ParsedStartTag = this.tagStack[lastIndex]
+          const stackTag: StartTag = this.tagStack[lastIndex]
 
           if (optionalClosingElementRegExp.test(stackTag.name)) {
             this.endTag({
@@ -309,14 +309,14 @@ export default class HTMLParser<T extends HTMLParserOptions>
       }
     }
 
-    if (shouldIgnoreFirstNewline(parsedStartTag.name, this.source)) {
+    if (shouldIgnoreFirstNewline(startTag.name, this.source)) {
       this.moveCursor(1)
     }
 
-    super.startTag(parsedStartTag)
+    super.startTag(startTag)
   }
 
-  attribute<T extends ParsedAttr>(attr: T): void {
+  attribute<T extends Attr>(attr: T): void {
     if (!this.options.suppressWarnings && reservedAttrRegExp.test(attr.name)) {
       this.warn(`Attribute name reserved: ${attr.name}`, {
         matchStart: attr.matchStart,

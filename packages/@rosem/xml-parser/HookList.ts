@@ -1,29 +1,23 @@
-import MatchRange from '@rosem/xml-parser/node/MatchRange'
-import ParsedAttr from '@rosem/xml-parser/node/ParsedAttr'
-import ParsedEndTag from './node/ParsedEndTag'
-import ParsedStartTag from './node/ParsedStartTag'
-import ParsedContent from './node/ParsedContent'
+import { MatchRange, Attr, EndTag, StartTag, Content } from './node'
 
 export default interface HookList {
   start(type: string): void
 
-  processingInstruction<T extends ParsedContent>(
-    parsedProcessingInstruction: T
-  ): void
+  processingInstruction<T extends Content>(processingInstruction: T): void
 
-  declaration<T extends ParsedContent>(declaration: T): void
+  declaration<T extends Content>(declaration: T): void
 
-  startTag<T extends ParsedStartTag>(parsedStartTag: T): void
+  startTag<T extends StartTag>(startTag: T): void
 
-  attribute<T extends ParsedAttr>(attr: T): void
+  attribute<T extends Attr>(attr: T): void
 
-  endTag<T extends ParsedEndTag>(parsedEndTag: T): void
+  endTag<T extends EndTag>(endTag: T): void
 
-  text<T extends ParsedContent>(parsedText: T): void
+  text<T extends Content>(text: T): void
 
-  comment<T extends ParsedContent>(parsedComment: T): void
+  comment<T extends Content>(comment: T): void
 
-  cDataSection<T extends ParsedContent>(parsedCDATASection: T): void
+  cDataSection<T extends Content>(cDATASection: T): void
 
   warn(message: string, matchRange: MatchRange): void
 
