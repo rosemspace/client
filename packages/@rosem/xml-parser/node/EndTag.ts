@@ -1,8 +1,8 @@
 import MatchRange from './MatchRange'
 
 export default interface EndTag extends MatchRange {
-  name: string
-  prefix?: string
-  localName: string
-  nameLowerCased: string
+  readonly localName: string
+  readonly name: string
+  readonly nameLowerCased: string
+  readonly prefix?: string
 }

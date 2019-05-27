@@ -1,5 +1,6 @@
 import { isArray } from 'lodash-es'
 import { getExactDisjunctionRegExpFromArray } from '@rosem/regexp-util'
+import { Mutable } from '@rosem/xml-parser/XMLProcessor'
 import { foreignElementRegExp } from '@rosem/svg-syntax'
 import {
   IMAGE_SVG_XML_MIME_TYPE,
@@ -76,7 +77,7 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
     return (this.options.svgForeignElement as RegExp).test(tagName)
   }
 
-  tagOpened(startTag: StartTag): void {
+  tagOpened(startTag: Mutable<StartTag>): void {
     super.tagOpened(startTag)
 
     // Switch parser for foreign tag

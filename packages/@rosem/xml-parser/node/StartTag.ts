@@ -2,12 +2,13 @@ import MatchRange from './MatchRange'
 import Attr from './Attr'
 
 export default interface StartTag extends MatchRange {
-  name: string
-  localName: string
-  nameLowerCased: string
-  prefix?: string
-  namespaceURI?: string
-  attrs: Attr[]
-  void: boolean
-  unarySlash: string
+  readonly attrs: Attr[]
+  // attrMap: {[name: string]: Attr}
+  readonly localName: string
+  readonly name: string
+  readonly nameLowerCased: string
+  readonly namespaceURI?: string
+  readonly prefix?: string
+  readonly void: boolean
+  readonly unarySlash: string
 }

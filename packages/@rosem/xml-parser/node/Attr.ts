@@ -1,10 +1,11 @@
 import MatchRange from './MatchRange'
 
 export default interface Attr extends MatchRange {
-  name: string
-  localName: string
-  nameLowerCased: string
-  prefix?: string
-  namespaceURI?: string
+  readonly localName: string
+  readonly name: string
+  readonly nameLowerCased: string
+  readonly namespaceURI?: string
+  // readonly ownerElement?: Element
+  readonly prefix?: string
   value: string
 }

@@ -26,7 +26,7 @@ import {
   XMLNS_NAMESPACE,
 } from '@rosem/w3-util'
 import HookList from './HookList'
-import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
+import XMLProcessor, { Mutable, XMLProcessorMap } from './XMLProcessor'
 import { MatchRange, Attr, Content, EndTag, StartTag } from './node'
 import decodeAttrEntities from './decodeAttrEntities'
 import { NamespaceMap, TypeMap } from './index'
@@ -290,7 +290,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
 
     const attrs: Attr[] = []
-    const startTag: StartTag = {
+    const startTag: Mutable<StartTag> = {
       name: tagName,
       prefix: tagPrefix,
       localName: tagLocalName,
@@ -317,7 +317,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       const attrNameLowerCased = attrMatch[1].toLowerCase()
       // Local name of an attribute, i. e. "xlink" (before ":")
       const [attrPrefix, attrLocalName] = attrNameLowerCased.split(':', 2)
-      const attr: Attr = {
+      const attr: Mutable<Attr> = {
         name: attrMatch[1],
         nameLowerCased: attrNameLowerCased,
         namespaceURI: undefined,
@@ -376,6 +376,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     // If tag is closed
     if (startTagCloseTagMatch) {
       startTag.unarySlash = startTagCloseTagMatch[1]
+      startTag.void = this.activeProcessor.isVoidElement.call(this, startTag)
       startTag.matchEnd = this.moveCursor(startTagCloseTagMatch[0].length)
 
       const tagPrefix: string = startTagOpenMatch[2]
@@ -546,7 +547,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
   }
 
-  tagOpened(startTag: StartTag): void {
+  tagOpened(startTag: Mutable<StartTag>): void {
     this.tagStack.push(startTag)
   }
 
@@ -603,9 +604,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
 
     // Add start tag to the stack of opened tags
-    if (
-      !(startTag.void = this.activeProcessor.isVoidElement.call(this, startTag))
-    ) {
+    if (!startTag.void) {
       this.activeProcessor.tagOpened.call(this, startTag)
     }
 
