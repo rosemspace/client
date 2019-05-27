@@ -1,5 +1,6 @@
 export { default, XMLParserOptions } from './XMLParser'
 export { default as HookList } from './HookList'
+export { default as Module } from './Module'
 export { default as XMLProcessor, XMLProcessorMap } from './XMLProcessor'
 export {
   default as decodeAttrEntities,

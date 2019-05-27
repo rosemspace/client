@@ -1,5 +1,5 @@
 import concatChildren from './concatChildren'
-import RendererAPI from '@rosem/dom-api/Renderer'
+import { RendererAPI } from '@rosem/dom-api'
 import {
   VirtualCDATASection,
   VirtualComment,

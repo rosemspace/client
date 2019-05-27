@@ -1,6 +1,5 @@
 import { forEach } from 'lodash-es'
 import { RendererAPI, HydratorAPI } from '@rosem/dom-api'
-import Renderer from './Renderer'
 import VirtualInstance, {
   VirtualNode,
   VirtualNodeAttrDescriptor,

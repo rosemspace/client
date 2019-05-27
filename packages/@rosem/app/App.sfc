@@ -1,4 +1,12 @@
-<h1>{{ msg }}</h1>
+<template lang="html">
+  <template &src="../Home.sfc#logo" />
+  <template use="line" />
+  <h1>{{ msg }}</h1>
+</template>
+
+<template id="line" lang="html">
+  <hr>
+</template>
 
 <script lang="ts">
 export default class App {
@@ -9,3 +17,9 @@ export default class App {
   }
 }
 </script>
+
+<style lang="postcss" global>
+h1 {
+  color: mistyrose;
+}
+</style>

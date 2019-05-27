@@ -1,8 +1,5 @@
-import SFCBlock from './SFCBlock'
+import SFCSection from './SFCSection'
 
 export default interface SFCDescriptor {
-  template: SFCBlock,
-  scripts: SFCBlock[],
-  styles: SFCBlock[],
-  customBlocks: SFCBlock[],
+  [section: string]: SFCSection[],
 }
