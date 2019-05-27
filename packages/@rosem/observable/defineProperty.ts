@@ -1,4 +1,4 @@
-import { isNaN } from 'lodash-es'
+import isNaN from 'lodash/isNaN'
 import canRedefineProperty from '@rosem/common-util/canRedefineProperty'
 import { OBSERVER_KEY } from './index'
 import normalizeDescriptor from './normalizeDescriptor'

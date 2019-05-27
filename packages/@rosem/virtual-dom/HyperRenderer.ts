@@ -1,4 +1,7 @@
-import { forEach, isArray, isPlainObject, isString } from 'lodash-es'
+import forEach from 'lodash/forEach'
+import isArray from 'lodash/isArray'
+import isPlainObject from 'lodash/isPlainObject'
+import isString from 'lodash/isString'
 import isPrimitive from '@rosem/common-util/isPrimitive'
 import Renderer from './Renderer'
 import VirtualInstance, {

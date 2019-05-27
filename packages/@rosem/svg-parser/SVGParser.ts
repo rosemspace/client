@@ -1,4 +1,4 @@
-import { isArray } from 'lodash-es'
+import isArray from 'lodash/isArray'
 import { getExactDisjunctionRegExpFromArray } from '@rosem/regexp-util'
 import { Mutable } from '@rosem/xml-parser/XMLProcessor'
 import { foreignElementRegExp } from '@rosem/svg-syntax'

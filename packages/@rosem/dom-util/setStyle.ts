@@ -1,4 +1,4 @@
-import { isNumber } from 'lodash-es'
+import isNumber from 'lodash/isNumber'
 
 function normalizeValue(value: string | number | boolean): string {
   return isNumber(value) ? String(value) + 'px' : String(value)
