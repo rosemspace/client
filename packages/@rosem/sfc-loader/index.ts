@@ -1,27 +1,21 @@
-import HTMLParser from '@rosem/html-parser'
-import generateSectionsCode
-  from '@rosem/sfc-loader/codegen/generateSectionsCode'
-import processSection from '@rosem/sfc-loader/processSection'
-import { qualifiedNameRegExp } from '@rosem/xml-syntax'
+import { basename } from 'path'
 import qs, { ParsedUrlQuery } from 'querystring'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import loaderUtils, { OptionObject } from 'loader-utils'
-import SFCSection from './SFCSection'
+import { qualifiedNameRegExp } from '@rosem/xml-syntax'
 import SFCDescriptor from './SFCDescriptor'
-import Compiler from './Compiler'
+import SFCParser from './SFCParser'
+import processSection from './processSection'
+import generateSectionsCode from './codegen/generateSectionsCode'
 
-const htmlParser = new HTMLParser({
-  rawTextElement: new RegExp(qualifiedNameRegExp.source, 'i'),
-})
-const sfcCompiler = new Compiler()
-
-htmlParser.addModule(sfcCompiler)
+const sfcParser = new SFCParser()
 
 export default function(this: LoaderContext, source: string): string | void {
-  htmlParser.parseFromString(source)
-
-  const sfcDescriptor: SFCDescriptor = sfcCompiler.getSFCDescriptor()
+  const sfcDescriptor: SFCDescriptor = sfcParser.parseFromString(
+    source,
+    basename(this.resourcePath)
+  )
   const loaderContext: LoaderContext = this
   // const stringifyRequest = (resource: string) => loaderUtils.stringifyRequest(loaderContext, resource)
   // `.slice(1)` - remove "?" character
@@ -30,15 +24,8 @@ export default function(this: LoaderContext, source: string): string | void {
 
   // We have section in the query like template, script, style etc
   if (query.section) {
-    return processSection(
-      loaderContext,
-      sfcDescriptor,
-      query,
-      options
-    )
+    return processSection(loaderContext, sfcDescriptor, query, options)
   }
 
-  const code = generateSectionsCode(loaderContext, sfcDescriptor, )
-
-  return `export default ${JSON.stringify(sfcDescriptor)}`
+  return generateSectionsCode(loaderContext, sfcDescriptor)
 }

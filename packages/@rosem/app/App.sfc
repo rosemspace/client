@@ -1,12 +1,12 @@
-<template lang="html">
-  <template &src="../Home.sfc#logo" />
-  <template use="line" />
-  <h1>{{ msg }}</h1>
-</template>
+<!--<template lang="html">-->
+<!--  <template &src="../Home.sfc#logo" />-->
+<!--  <template use="line" />-->
+<!--  <h1>{{ msg }}</h1>-->
+<!--</template>-->
 
-<template id="line" lang="html">
-  <hr>
-</template>
+<!--<template id="line" lang="html">-->
+<!--  <hr>-->
+<!--</template>-->
 
 <script lang="ts">
 export default class App {
@@ -18,8 +18,18 @@ export default class App {
 }
 </script>
 
-<style lang="postcss" global>
-h1 {
-  color: mistyrose;
+<script>
+export default 'TEST'
+</script>
+
+<style global>
+body {
+  background-color: green;
 }
 </style>
+
+<i18n>
+  {
+    "message": "Hello world"
+  }
+</i18n>

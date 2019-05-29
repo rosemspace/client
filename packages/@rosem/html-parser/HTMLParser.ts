@@ -19,14 +19,9 @@ import {
 import {
   default as XMLParser,
   NamespaceMap,
-  XMLProcessorMap
+  XMLProcessorMap,
 } from '@rosem/xml-parser'
-import {
-  Attr,
-  StartTag,
-  EndTag,
-  Content,
-} from '@rosem/xml-parser/node'
+import { Attr, StartTag, EndTag, Content } from '@rosem/xml-parser/node'
 import SVGParser, {
   convertElementArrayToRegExp,
   SVGParserOptions,
@@ -62,7 +57,7 @@ const defaultOptions: HTMLParserElementConfig = {
   escapableRawTextElement: escapableRawTextElementRegExp,
 }
 
-export default class HTMLParser<T extends HTMLParserOptions>
+export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
   extends SVGParser<T>
   implements HTMLProcessor {
   protected readonly defaultNamespaceURI: string = HTML_NAMESPACE

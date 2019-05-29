@@ -1,4 +1,7 @@
 declare module '*.sfc' {
-  const value: string
-  export default value
+  import SFCDescriptor from '@rosem/sfc-loader/SFCDescriptor'
+
+  const descriptor: SFCDescriptor
+
+  export default descriptor
 }

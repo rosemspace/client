@@ -47,20 +47,80 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.sfc$/,
+        // test: /\.js$/,
+        resourceQuery: /\?sfc&section=script&lang=js/,
+        exclude: /node_modules/,
         use: [
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
           },
-          {
-            loader: '@rosem/sfc-loader',
-            // loader: path.resolve(__dirname, './packages/@rosem/sfc-loader/index.ts'),
-            options: {},
-          }
         ],
       },
       {
+        // test: /\.tsx?$/,
+        resourceQuery: /\?sfc&section=script&lang=ts/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+          },
+          {
+            loader: 'ts-loader',
+            options: {
+              // transpileOnly: true, // false by default
+              appendTsSuffixTo: [
+                '\\.sfc$',
+              ],
+            }
+          },
+        ],
+      },
+      {
+        // test: /\.css$/,
+        resourceQuery: /\?sfc&section=style&lang=css/,
+        use: [
+          {
+            loader: 'style-loader',
+            options: {
+              sourceMap: true,
+            }
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true,
+              // importLoaders: 2,
+            }
+          },
+          // '@rosem/sfc-loader'
+        ],
+      },
+      {
+        resourceQuery: /\?sfc&section=i18n/,
+        use: [
+          'json-loader'
+        ],
+      },
+      {
+        test: /\.sfc$/,
+        oneOf: [
+          {
+            use: [
+              // {
+              //   loader: 'babel-loader'
+              // },
+              {
+                loader: '@rosem/sfc-loader',
+                // loader: path.resolve(__dirname, './packages/@rosem/sfc-loader/index.ts'),
+                options: {},
+              }
+            ],
+          }
+        ]
+      },
+      {
         test: /\.m?jsx?$/,
+        exclude: /node_modules/,
         // exclude: [
         //   function () { /* omitted long function */ }
         // ],
@@ -79,6 +139,7 @@ module.exports = {
       },
       {
         test: /\.tsx?$/,
+        // resourceQuery: /\?sfc/,
         exclude: /node_modules/,
         use: [
           // {

@@ -15,9 +15,12 @@ export default function processSection(
   const index: number = query.index ? Number(query.index.toString()) : 0 || 0
   const sfcSection: SFCSection = descriptor[section][index]
 
-  if (Boolean(options.appendExtension)) {
-    loaderContext.resourcePath +=
-      '.' + sfcSection.attrs.find((attr) => 'lang' === attr.nameLowerCased)
+  if (sfcSection.attrMap.lang) {
+    if (!Boolean(options.ignoreExtension)) {
+      loaderContext.resourcePath = `${loaderContext.resourcePath}.${
+        sfcSection.attrMap.lang
+      }`
+    }
   }
 
   loaderContext.callback(
