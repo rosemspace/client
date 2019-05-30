@@ -2,30 +2,30 @@ import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import { OptionObject } from 'loader-utils'
 import { ParsedUrlQuery } from 'querystring'
-import SFCSection from './SFCSection'
+import SFCBlock from './SFCBlock'
 import SFCDescriptor from './SFCDescriptor'
 
-export default function processSection(
+export default function processBlock(
   loaderContext: LoaderContext,
   descriptor: SFCDescriptor,
   query: ParsedUrlQuery,
   options: OptionObject
 ): void {
-  const section: string = query.section.toString()
+  const blockName: string = query.block.toString()
   const index: number = query.index ? Number(query.index.toString()) : 0 || 0
-  const sfcSection: SFCSection = descriptor[section][index]
+  const block: SFCBlock = descriptor[blockName][index]
 
-  if (sfcSection.attrMap.lang) {
+  if (block.attrSet.lang) {
     if (!Boolean(options.ignoreExtension)) {
       loaderContext.resourcePath = `${loaderContext.resourcePath}.${
-        sfcSection.attrMap.lang
+        block.attrSet.lang
       }`
     }
   }
 
   loaderContext.callback(
     null,
-    sfcSection.text.content
+    block.text.content
     // descriptor[query.type][0].map
   )
 }

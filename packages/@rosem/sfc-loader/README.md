@@ -1,3 +1,13 @@
+# @rosem/sfc-loader
+
+#### List of attributes which will be ignored on sfc blocks:
+
+- sfc
+- block
+- lang
+- index
+- src?
+
 ### SFC loader stages
 
 #### `App.sfc` file
@@ -18,12 +28,20 @@ export default {
 Get `./App.sfc` resource, parse it and generate the following code:
 
 ```javascript
-import template1 from './App.sfc?sfc&section=template&index=0&lang=html'
-import script1 from './App.sfc?sfc&section=script&index=0&lang=ts'
+import template1 from './App.sfc?sfc&block=template&index=0&lang=html'
+import script1 from './App.sfc?sfc&block=script&index=0&lang=ts'
 
 export default {
   template: [
-    template1
+    {
+      attrSet: {
+        lang: 'html',
+      },
+      attrs: [],
+      text: {
+        content: template1,
+      },
+    }
   ],
   script: [
     script1
@@ -32,7 +50,7 @@ export default {
 ```
 - Stage 2
 
-Get `./App.sfc?sfc&section=template&index=0&lang=html` resource, get parsed result from cache and generate the following code:
+Get `./App.sfc?sfc&block=template&index=0&lang=html` resource, get parsed result from cache and generate the following code:
 
 ```javascript
 export default '<p>Hello, world!</p>'
@@ -40,7 +58,7 @@ export default '<p>Hello, world!</p>'
 
 - Stage 3
 
-Get `./App.sfc?sfc&section=script&index=0&lang=ts` resource, get parsed result from cache and generate the following code:
+Get `./App.sfc?sfc&block=script&index=0&lang=ts` resource, get parsed result from cache and generate the following code:
 
 ```javascript
 export default {

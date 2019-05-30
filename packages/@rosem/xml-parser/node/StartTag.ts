@@ -9,6 +9,6 @@ export default interface StartTag extends MatchRange {
   readonly nameLowerCased: string
   readonly namespaceURI?: string
   readonly prefix?: string
-  readonly void: boolean
   readonly unarySlash: string
+  readonly void: boolean
 }

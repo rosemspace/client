@@ -48,7 +48,7 @@ module.exports = {
     rules: [
       {
         // test: /\.js$/,
-        resourceQuery: /\?sfc&section=script&lang=js/,
+        resourceQuery: /\?sfc&block=script&lang=js/,
         exclude: /node_modules/,
         use: [
           {
@@ -58,7 +58,7 @@ module.exports = {
       },
       {
         // test: /\.tsx?$/,
-        resourceQuery: /\?sfc&section=script&lang=ts/,
+        resourceQuery: /\?sfc&block=script&lang=ts/,
         exclude: /node_modules/,
         use: [
           {
@@ -77,7 +77,7 @@ module.exports = {
       },
       {
         // test: /\.css$/,
-        resourceQuery: /\?sfc&section=style&lang=css/,
+        resourceQuery: /\?sfc&block=style&lang=css/,
         use: [
           {
             loader: 'style-loader',
@@ -96,7 +96,7 @@ module.exports = {
         ],
       },
       {
-        resourceQuery: /\?sfc&section=i18n/,
+        resourceQuery: /\?sfc&block=i18n/,
         use: [
           'json-loader'
         ],

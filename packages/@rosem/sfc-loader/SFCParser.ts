@@ -19,7 +19,7 @@ export default class SFCParser extends Module {
   protected htmlParser: HTMLParser
   protected sfcDescriptor: SFCDescriptor = {}
   protected cursorTag?: StartTag
-  protected cursorTagAttrMap: {[name: string]: string} = {}
+  protected cursorTagAttrSet: {[name: string]: string} = {}
 
   constructor() {
     super()
@@ -49,12 +49,12 @@ export default class SFCParser extends Module {
   }
 
   attribute<T extends Attr>(attr: T): void {
-    this.cursorTagAttrMap[camelCase(attr.name)] = attr.value
+    this.cursorTagAttrSet[camelCase(attr.name)] = attr.value
   }
 
   endTag<T extends EndTag>(endTag: T): void {
     this.cursorTag = undefined
-    this.cursorTagAttrMap = {}
+    this.cursorTagAttrSet = {}
   }
 
   startTag<T extends StartTag>(startTag: T): void {
@@ -71,7 +71,7 @@ export default class SFCParser extends Module {
 
       this.sfcDescriptor[nameLowerCased].push(
         Object.assign(this.cursorTag, {
-          attrMap: this.cursorTagAttrMap,
+          attrSet: this.cursorTagAttrSet,
           text,
         })
       )

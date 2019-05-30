@@ -1,5 +1,5 @@
-import SFCSection from './SFCSection'
+import SFCBlock from './SFCBlock'
 
 export default interface SFCDescriptor {
-  [section: string]: SFCSection[],
+  [block: string]: SFCBlock[],
 }

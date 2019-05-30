@@ -6,8 +6,8 @@ import loaderUtils, { OptionObject } from 'loader-utils'
 import { qualifiedNameRegExp } from '@rosem/xml-syntax'
 import SFCDescriptor from './SFCDescriptor'
 import SFCParser from './SFCParser'
-import processSection from './processSection'
-import generateSectionsCode from './codegen/generateSectionsCode'
+import processBlock from './processBlock'
+import generateBlocksCode from './codegen/generateBlocksCode'
 
 const sfcParser = new SFCParser()
 
@@ -22,10 +22,10 @@ export default function(this: LoaderContext, source: string): string | void {
   const query: ParsedUrlQuery = qs.parse(loaderContext.resourceQuery.slice(1))
   const options: OptionObject = loaderUtils.getOptions(loaderContext) || {}
 
-  // We have section in the query like template, script, style etc
-  if (query.section) {
-    return processSection(loaderContext, sfcDescriptor, query, options)
+  // We have block in the query like template, script, style etc
+  if (query.block) {
+    return processBlock(loaderContext, sfcDescriptor, query, options)
   }
 
-  return generateSectionsCode(loaderContext, sfcDescriptor)
+  return generateBlocksCode(loaderContext, sfcDescriptor)
 }

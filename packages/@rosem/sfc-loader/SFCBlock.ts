@@ -1,7 +1,8 @@
 import { StartTag, Content } from '@rosem/xml-parser/node'
 
-export default interface SFCSection extends StartTag {
-  attrMap: {[name: string]: string}
+// name, lang, index, src, meta, content
+export default interface SFCBlock extends StartTag {
+  attrSet: {[name: string]: string}
   text: Content
   // type?: string // instead of lang
   // src?: string
