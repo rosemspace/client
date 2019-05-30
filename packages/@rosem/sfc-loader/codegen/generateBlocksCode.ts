@@ -6,6 +6,7 @@ import qs from 'querystring'
 import SFCBlock from '../SFCBlock'
 import SFCDescriptor from '../SFCDescriptor'
 import attrsToQuery from './attrsToQuery'
+import { SFC_KEYWORD } from '..'
 
 const stringify = JSON.stringify
 
@@ -14,6 +15,10 @@ const defaultLangMap: { [block: string]: string } = {
   script: 'js',
   style: 'css',
 }
+
+// these are built-in query parameters so should be ignored
+// if the user happen to add them as attrs
+const ignoredAttrs = [SFC_KEYWORD, 'block', 'index', 'src', 'issuerPath']
 
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
@@ -25,13 +30,13 @@ export default function generateBlocksCode(
   forEach(
     descriptor,
     (blocks: SFCBlock[], name: string): void => {
+      // blocks.forEach(block => console.log(block.name))
       exportCode += `\n  "${name}": [`
       importCode +=
         `\n/* ${name} blocks */\n` +
         blocks
           .map((block, index) => {
-            const attrSet = block.attrSet
-            // User attributes such as sfc, block, index will be ignored
+            const attrSet = {...block.attrSet!}
             const internalAttrSet: { [name: string]: string } = {
               block: qs.escape(name),
             }
@@ -48,22 +53,29 @@ export default function generateBlocksCode(
 
             if (attrSet.src) {
               src = attrSet.src
-              attrSet.src = qs.escape(loaderContext.resourcePath)
+              internalAttrSet.issuerPath = qs.escape(loaderContext.resourcePath)
             }
+
+            // Ignore user attributes which are built-in
+            ignoredAttrs.forEach(
+              (attrName: string): void => {
+                delete attrSet[attrName]
+              }
+            )
 
             const internalAttrsQuery: string = attrsToQuery(internalAttrSet)
             const attrsQuery: string = attrsToQuery(attrSet)
             const inheritQuery: string = loaderContext.resourceQuery
               ? `&${loaderContext.resourceQuery.slice(1)}`
               : ''
-            const query: string = `?sfc${internalAttrsQuery}${attrsQuery}${inheritQuery}`
+            const query: string = `?${SFC_KEYWORD}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
             const blockName: string = `${name}${index}`
 
-            // exportCode += `\n    ${blockName},`
             exportCode += `
     {
-      attrSet: ${stringify(attrSet)},
+      attrSet: ${stringify(block.attrSet)},
       attrs: ${stringify(block.attrs)},
+      content: ${blockName},
       localName: "${block.localName}",
       matchEnd: ${block.matchEnd},
       matchStart: ${block.matchStart},
@@ -71,11 +83,6 @@ export default function generateBlocksCode(
       nameLowerCased: "${block.nameLowerCased}",
       namespaceURI: ${stringify(block.namespaceURI)},
       prefix: ${stringify(block.prefix)},
-      text: {
-        content: ${blockName},
-        matchEnd: ${block.text.matchEnd},
-        matchStart: ${block.text.matchStart},
-      },
       unarySlash: "${block.unarySlash}",
       void: ${block.void},
     },`

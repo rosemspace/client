@@ -26,10 +26,10 @@ import {
   XMLNS_NAMESPACE,
 } from '@rosem/w3-util'
 import HookList from './HookList'
-import XMLProcessor, { Mutable, XMLProcessorMap } from './XMLProcessor'
+import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
 import { MatchRange, Attr, Content, EndTag, StartTag } from './nodes'
 import decodeAttrEntities from './decodeAttrEntities'
-import { NamespaceMap, TypeMap } from './index'
+import { Mutable, NamespaceMap, TypeMap } from '.'
 
 export const defaultNamespaceMap: NamespaceMap = {
   xml: XML_NAMESPACE,
@@ -544,7 +544,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
   }
 
-  tagOpened(startTag: Mutable<StartTag>): void {
+  tagOpened(startTag: StartTag): void {
     this.tagStack.push(startTag)
   }
 
@@ -610,14 +610,14 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
 
     startTag.attrs.forEach((attr: Attr) => {
-      this.attribute(attr)
+      this.attribute(attr, startTag)
     })
     this.nextToken()
   }
 
-  attribute<T extends Attr>(attr: T): void {
+  attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {
     for (const module of this.moduleList) {
-      module.attribute(attr)
+      module.attribute(attr, startTag)
     }
   }
 

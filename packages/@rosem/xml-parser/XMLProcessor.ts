@@ -1,7 +1,5 @@
 import { Content, EndTag, StartTag } from './nodes'
 
-export type Mutable<T> = { -readonly [P in keyof T]: T[P] }
-
 export type XMLProcessorMap = { [mimeType: string]: XMLProcessor }
 
 export default interface XMLProcessor {
@@ -23,7 +21,7 @@ export default interface XMLProcessor {
 
   isVoidElement(startTag: StartTag): boolean
 
-  tagOpened(startTag: Mutable<StartTag>): void
+  tagOpened(startTag: StartTag): void
 
   matchingStartTagMissed(endTag: EndTag): EndTag | void
 

@@ -3,11 +3,12 @@ import qs, { ParsedUrlQuery } from 'querystring'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import loaderUtils, { OptionObject } from 'loader-utils'
-import { qualifiedNameRegExp } from '@rosem/xml-syntax'
 import SFCDescriptor from './SFCDescriptor'
 import SFCParser from './SFCParser'
 import processBlock from './processBlock'
 import generateBlocksCode from './codegen/generateBlocksCode'
+
+export const SFC_KEYWORD = 'sfc'
 
 const sfcParser = new SFCParser()
 

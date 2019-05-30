@@ -16,11 +16,7 @@ import {
   HTML_NAMESPACE,
   MATHML_NAMESPACE,
 } from '@rosem/w3-util'
-import {
-  default as XMLParser,
-  NamespaceMap,
-  XMLProcessorMap,
-} from '@rosem/xml-parser'
+import XMLParser, { NamespaceMap, XMLProcessorMap } from '@rosem/xml-parser'
 import { Attr, StartTag, EndTag, Content } from '@rosem/xml-parser/nodes'
 import SVGParser, {
   convertElementArrayToRegExp,
@@ -314,7 +310,10 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     super.startTag(startTag)
   }
 
-  attribute<T extends Attr>(attr: T): void {
+  attribute<T extends Attr, U extends StartTag>(
+    attr: T,
+    startTag: StartTag
+  ): void {
     if (!this.options.suppressWarnings && reservedAttrRegExp.test(attr.name)) {
       this.warn(`Attribute name reserved: ${attr.name}`, {
         matchStart: attr.matchStart,
@@ -322,6 +321,6 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
       })
     }
 
-    super.attribute(attr)
+    super.attribute(attr, startTag)
   }
 }

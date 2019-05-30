@@ -1,33 +1,23 @@
 import HTMLParser from '@rosem/html-parser'
 import { qualifiedNameRegExp } from '@rosem/xml-syntax'
-import camelCase from 'lodash/camelCase'
-import { Module } from '@rosem/xml-parser'
-import {
-  MatchRange,
-  StartTag,
-  Attr,
-  Content,
-  EndTag,
-} from '@rosem/xml-parser/nodes'
+import { MatchRange, StartTag, Content } from '@rosem/xml-parser/nodes'
+import AttrSet from '@rosem/xml-parser/modules/AttrSet'
 import LRUCache from 'lru-cache'
 import hashSum from 'hash-sum'
 import SFCDescriptor from './SFCDescriptor'
+import SFCBlock from './SFCBlock'
 
-const cache = new LRUCache(100);
+const cache = new LRUCache(100)
 
-export default class SFCParser extends Module {
-  protected htmlParser: HTMLParser
-  protected sfcDescriptor: SFCDescriptor = {}
-  protected cursorTag?: StartTag
-  protected cursorTagAttrSet: {[name: string]: string} = {}
+export default class SFCParser extends HTMLParser {
+  protected descriptor: SFCDescriptor = {}
 
   constructor() {
-    super()
-
-    this.htmlParser = new HTMLParser({
+    super({
       rawTextElement: new RegExp(qualifiedNameRegExp.source, 'i'),
     })
-    this.htmlParser.addModule(this)
+
+    this.addModule(new AttrSet())
   }
 
   parseFromString(source: string, filename: string = ''): SFCDescriptor {
@@ -38,8 +28,9 @@ export default class SFCParser extends Module {
       return output as SFCDescriptor
     }
 
-    this.htmlParser.parseFromString(source)
-    output = this.sfcDescriptor
+    super.parseFromString(source)
+
+    output = this.descriptor
 
     // if (needMap) {//todo}
 
@@ -48,33 +39,33 @@ export default class SFCParser extends Module {
     return output
   }
 
-  attribute<T extends Attr>(attr: T): void {
-    this.cursorTagAttrSet[camelCase(attr.name)] = attr.value
-  }
-
-  endTag<T extends EndTag>(endTag: T): void {
-    this.cursorTag = undefined
-    this.cursorTagAttrSet = {}
-  }
-
   startTag<T extends StartTag>(startTag: T): void {
-    this.cursorTag = startTag
+    super.startTag(startTag)
+
+    const nameLowerCased: string = startTag.nameLowerCased
+
+    if (!this.descriptor[nameLowerCased]) {
+      this.descriptor[nameLowerCased] = []
+    }
+
+    this.descriptor[nameLowerCased].push(
+      Object.assign(startTag, {
+        content: '',
+        matchEnd: startTag.matchEnd,
+        matchStart: startTag.matchEnd,
+      })
+    )
   }
 
   text<T extends Content>(text: T): void {
-    if (this.cursorTag) {
-      const nameLowerCased: string = this.cursorTag.nameLowerCased
+    super.text(text)
 
-      if (!this.sfcDescriptor[nameLowerCased]) {
-        this.sfcDescriptor[nameLowerCased] = []
-      }
+    if (this.tagStack.length) {
+      const blockList: SFCBlock[] = this.descriptor[
+        this.tagStack[this.tagStack.length - 1].nameLowerCased
+      ]
 
-      this.sfcDescriptor[nameLowerCased].push(
-        Object.assign(this.cursorTag, {
-          attrSet: this.cursorTagAttrSet,
-          text,
-        })
-      )
+      Object.assign(blockList[blockList.length - 1], text)
     }
   }
 
