@@ -1,4 +1,4 @@
-import { MatchRange, Attr, EndTag, StartTag, Content } from './node'
+import { MatchRange, Attr, EndTag, StartTag, Content } from './nodes'
 
 export default interface HookList {
   start(type: string): void

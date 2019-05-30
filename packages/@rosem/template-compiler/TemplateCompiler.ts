@@ -5,7 +5,7 @@ import {
   EndTag,
   StartTag,
   Content,
-} from '@rosem/xml-parser/node'
+} from '@rosem/xml-parser/nodes'
 import { RendererAPI } from '@rosem/dom-api'
 
 export default class TemplateCompiler<

@@ -11,4 +11,5 @@ export default interface StartTag extends MatchRange {
   readonly prefix?: string
   readonly unarySlash: string
   readonly void: boolean
+  readonly [name: string]: any
 }

@@ -1,4 +1,4 @@
-import { Content, EndTag, StartTag } from './node'
+import { Content, EndTag, StartTag } from './nodes'
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] }
 

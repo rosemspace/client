@@ -27,7 +27,7 @@ import {
 } from '@rosem/w3-util'
 import HookList from './HookList'
 import XMLProcessor, { Mutable, XMLProcessorMap } from './XMLProcessor'
-import { MatchRange, Attr, Content, EndTag, StartTag } from './node'
+import { MatchRange, Attr, Content, EndTag, StartTag } from './nodes'
 import decodeAttrEntities from './decodeAttrEntities'
 import { NamespaceMap, TypeMap } from './index'
 

@@ -21,7 +21,7 @@ import {
   NamespaceMap,
   XMLProcessorMap,
 } from '@rosem/xml-parser'
-import { Attr, StartTag, EndTag, Content } from '@rosem/xml-parser/node'
+import { Attr, StartTag, EndTag, Content } from '@rosem/xml-parser/nodes'
 import SVGParser, {
   convertElementArrayToRegExp,
   SVGParserOptions,

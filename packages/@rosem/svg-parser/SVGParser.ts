@@ -8,7 +8,7 @@ import {
   XLINK_NAMESPACE,
 } from '@rosem/w3-util'
 import XMLParser, { XMLParserOptions, XMLProcessorMap } from '@rosem/xml-parser'
-import { StartTag } from '@rosem/xml-parser/node'
+import { StartTag } from '@rosem/xml-parser/nodes'
 import SVGProcessor from './SVGProcessor'
 
 export function convertElementArrayToRegExp(list: RegExp | string[]): RegExp {

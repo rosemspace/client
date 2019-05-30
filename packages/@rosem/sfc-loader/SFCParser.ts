@@ -8,7 +8,7 @@ import {
   Attr,
   Content,
   EndTag,
-} from '@rosem/xml-parser/node'
+} from '@rosem/xml-parser/nodes'
 import LRUCache from 'lru-cache'
 import hashSum from 'hash-sum'
 import SFCDescriptor from './SFCDescriptor'

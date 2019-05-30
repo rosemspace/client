@@ -1,4 +1,4 @@
-import { StartTag, Content } from '@rosem/xml-parser/node'
+import { StartTag, Content } from '@rosem/xml-parser/nodes'
 
 // name, lang, index, src, meta, content
 export default interface SFCBlock extends StartTag {

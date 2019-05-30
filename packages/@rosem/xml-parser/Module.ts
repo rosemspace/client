@@ -5,7 +5,7 @@ import {
   Attr,
   Content,
   EndTag,
-} from './node'
+} from './nodes'
 
 export default abstract class Module implements HookList {
   attribute<T extends Attr>(attr: T): void {}
