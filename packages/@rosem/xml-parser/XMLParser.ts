@@ -233,10 +233,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
 
     this.endTag({
-      name: stackTag.name,
-      prefix: stackTag.prefix,
-      localName: stackTag.localName,
-      nameLowerCased: stackTag.nameLowerCased,
+      ...stackTag,
       matchStart: this.cursor,
       matchEnd: this.cursor,
     })
@@ -284,7 +281,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     const tagNameLowerCased = tagName.toLowerCase()
     let [tagPrefix, tagLocalName] = tagNameLowerCased.split(':', 2)
 
-    if (null != tagLocalName) {
+    if (!tagLocalName) {
       tagLocalName = tagPrefix
       tagPrefix = undefined!
     }
@@ -337,7 +334,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       // Add namespace
       if ('xmlns' === attrPrefix) {
         // if (attr.value) {
-        if (null != attrLocalName) {
+        if (attrLocalName) {
           this.addNamespace(attrLocalName, attr.value)
           // this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
         } else {
@@ -351,7 +348,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         //   this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
         // }
         // }
-      } else if (null != attrLocalName) {
+      } else if (attrLocalName) {
         // Add namespace of attribute
         if (
           null == (attr.namespaceURI = this.namespaceMap[attrPrefix]) &&
@@ -433,7 +430,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     let [tagPrefix, tagLocalName] = tagNameLowerCased.split(':', 2)
     let lastIndex
 
-    if (null != tagLocalName) {
+    if (!tagLocalName) {
       tagLocalName = tagPrefix
       tagPrefix = undefined!
     }
