@@ -6,7 +6,7 @@ import App from './App.sfc' //mtc - multi-type container
 console.log(App)
 
 // @ts-ignore
-const app = new App.script[0]
+const app = new App.script[0].content
 console.log(app.msg);
 
 // require('@rosem/dom-metric/test')

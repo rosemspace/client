@@ -1,12 +1,12 @@
-<!--<template lang="html">-->
-<!--  <template &src="../Home.sfc#logo" />-->
-<!--  <template use="line" />-->
-<!--  <h1>{{ msg }}</h1>-->
-<!--</template>-->
+<template lang="html">
+  <template &src="../Home.sfc#logo" />
+  <template use="line" />
+  <h1>{{ msg }}</h1>
+</template>
 
-<!--<template id="line" lang="html">-->
-<!--  <hr>-->
-<!--</template>-->
+<template id="line">
+  <hr>
+</template>
 
 <script lang="ts">
 export default class App {

@@ -9,6 +9,7 @@ import processBlock from './processBlock'
 import generateBlocksCode from './codegen/generateBlocksCode'
 
 export const SFC_KEYWORD = 'sfc'
+export const SFC_LOADER_IDENT = `${SFC_KEYWORD}-loader`
 
 const sfcParser = new SFCParser()
 

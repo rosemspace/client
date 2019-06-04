@@ -14,11 +14,20 @@ const defaultLangMap: { [block: string]: string } = {
   template: 'html',
   script: 'js',
   style: 'css',
+  // i18n: 'json',
 }
 
-// these are built-in query parameters so should be ignored
-// if the user happen to add them as attrs
-const ignoredAttrs = [SFC_KEYWORD, 'block', 'index', 'src', 'issuerPath']
+// these are built-in query parameters so should be ignored if the user happen
+// to add them as attrs
+// `src` and `lang` will be added as internal attributes
+const ignoredAttrs = [
+  SFC_KEYWORD,
+  'block',
+  'index',
+  'lang',
+  'src',
+  'issuerPath',
+]
 
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
@@ -30,30 +39,29 @@ export default function generateBlocksCode(
   forEach(
     descriptor,
     (blocks: SFCBlock[], name: string): void => {
-      // blocks.forEach(block => console.log(block.name))
       exportCode += `\n  "${name}": [`
       importCode +=
         `\n/* ${name} blocks */\n` +
         blocks
           .map((block, index) => {
-            const attrSet = {...block.attrSet!}
+            const attrSet = { ...block.attrSet! }
             const internalAttrSet: { [name: string]: string } = {
               block: qs.escape(name),
             }
-
-            if (attrSet.lang) {
-              internalAttrSet.lang = attrSet.lang
-            } else if (defaultLangMap[name]) {
-              internalAttrSet.lang = defaultLangMap[name]
-            }
+            let src: string = loaderContext.resourcePath
 
             internalAttrSet.index = String(index)
 
-            let src: string = loaderContext.resourcePath
-
+            // No need `lang` attribute if we have external resource
             if (attrSet.src) {
               src = attrSet.src
               internalAttrSet.issuerPath = qs.escape(loaderContext.resourcePath)
+            } else {
+              const lang: string = attrSet.lang || defaultLangMap[name]
+
+              if (lang) {
+                internalAttrSet.lang = lang
+              }
             }
 
             // Ignore user attributes which are built-in
@@ -100,7 +108,7 @@ export default function generateBlocksCode(
   importCode += '\n'
   exportCode += '\n}\n'
 
-  console.log(importCode + exportCode)
+  // console.log(importCode + exportCode)
 
   return importCode + exportCode
 }

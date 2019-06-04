@@ -2,9 +2,14 @@
 //cross-env TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack
 //cross-env TS_NODE_FILES=true webpack
 
-const moduleAlias = require('module-alias')
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import { resolve } from 'path'
+import moduleAlias from 'module-alias'
+
+const packages: string = resolve(__dirname, 'packages/@rosem')
+moduleAlias.addAlias('@rosem', packages)
+
+import SFCLoaderPlugin from '@rosem/sfc-loader/SFCLoaderPlugin'
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import { Configuration } from 'webpack'
 
 // declare global {
@@ -15,12 +20,10 @@ import { Configuration } from 'webpack'
 // const __dirname = import.meta.url
 declare var __dirname: string
 
-const packages: string = resolve(__dirname, 'packages/@rosem')
 const tsconfigPathsPlugin = new TsconfigPathsPlugin()
 
-moduleAlias.addAlias('@rosem', packages)
 
-module.exports = {
+export default {
   mode: 'development',
   devtool: 'cheap-module-eval-source-map',
   // node: {
@@ -47,79 +50,8 @@ module.exports = {
   module: {
     rules: [
       {
-        // test: /\.js$/,
-        resourceQuery: /\?sfc&block=script&lang=js/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-          },
-        ],
-      },
-      {
-        // test: /\.tsx?$/,
-        resourceQuery: /\?sfc&block=script&lang=ts/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-          },
-          {
-            loader: 'ts-loader',
-            options: {
-              // transpileOnly: true, // false by default
-              appendTsSuffixTo: [
-                '\\.sfc$',
-              ],
-            }
-          },
-        ],
-      },
-      {
-        // test: /\.css$/,
-        resourceQuery: /\?sfc&block=style&lang=css/,
-        use: [
-          {
-            loader: 'style-loader',
-            options: {
-              sourceMap: true,
-            }
-          },
-          {
-            loader: 'css-loader',
-            options: {
-              sourceMap: true,
-              // importLoaders: 2,
-            }
-          },
-          // '@rosem/sfc-loader'
-        ],
-      },
-      {
-        resourceQuery: /\?sfc&block=i18n/,
-        use: [
-          'json-loader'
-        ],
-      },
-      {
-        test: /\.sfc$/,
-        oneOf: [
-          {
-            use: [
-              // {
-              //   loader: 'babel-loader'
-              // },
-              {
-                loader: '@rosem/sfc-loader',
-                // loader: path.resolve(__dirname, './packages/@rosem/sfc-loader/index.ts'),
-                options: {},
-              }
-            ],
-          }
-        ]
-      },
-      {
         test: /\.m?jsx?$/,
+        // resourceQuery: /^\?sfc&block=script&lang=js/,
         exclude: /node_modules/,
         // exclude: [
         //   function () { /* omitted long function */ }
@@ -139,7 +71,7 @@ module.exports = {
       },
       {
         test: /\.tsx?$/,
-        // resourceQuery: /\?sfc/,
+        // resourceQuery: /^\?sfc&block=script&lang=ts/,
         exclude: /node_modules/,
         use: [
           // {
@@ -151,9 +83,9 @@ module.exports = {
           // },
           {
             loader: 'babel-loader',
-          //   options: {
-          //     cacheDirectory: true,
-          //   }
+            //   options: {
+            //     cacheDirectory: true,
+            //   }
           },
           {
             loader: 'ts-loader',
@@ -167,6 +99,60 @@ module.exports = {
           }
         ]
       },
+      {
+        test: /\.html$/,
+        // resourceQuery: /^\?sfc&block=template&lang=html/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'html-loader',
+          },
+        ],
+      },
+      {
+        test: /\.css$/,
+        // resourceQuery: /^\?sfc&block=style&lang=css/,
+        use: [
+          {
+            loader: 'style-loader',
+            options: {
+              sourceMap: true,
+            }
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true,
+              // importLoaders: 2,
+            }
+          },
+        ],
+      },
+      {
+        // test: /\.json$/,
+        resourceQuery: /^\?sfc&block=i18n/,
+        // type: 'javascript/auto',
+        use: 'json-loader',
+      },
+      {
+        test: /\.sfc$/,
+        use: [
+          // {
+          //   loader: 'babel-loader'
+          // },
+          {
+            loader: '@rosem/sfc-loader',
+            // loader: path.resolve(__dirname, './packages/@rosem/sfc-loader/index.ts'),
+            options: {},
+          }
+        ],
+        // oneOf: [
+        //   {}
+        // ]
+      },
     ],
   },
+  plugins: [
+    new SFCLoaderPlugin()
+  ],
 } as Configuration
