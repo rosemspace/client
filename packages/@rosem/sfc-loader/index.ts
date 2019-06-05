@@ -1,4 +1,4 @@
-import { basename } from 'path'
+import { relative } from 'path'
 import qs, { ParsedUrlQuery } from 'querystring'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
@@ -14,20 +14,22 @@ export const SFC_LOADER_IDENT = `${SFC_KEYWORD}-loader`
 const sfcParser = new SFCParser()
 
 export default function(this: LoaderContext, source: string): string | void {
+  const options: OptionObject = loaderUtils.getOptions(this) || {}
+  // `.slice(1)` - remove "?" character
+  const query: ParsedUrlQuery = qs.parse(this.resourceQuery.slice(1))
   const sfcDescriptor: SFCDescriptor = sfcParser.parseFromString(
     source,
-    basename(this.resourcePath)
+    relative(this.rootContext || process.cwd(), this.resourcePath),
+    {
+      sourceMap: options.sourceMap,
+      noPad: options.noPad,
+    }
   )
-  const loaderContext: LoaderContext = this
-  // const stringifyRequest = (resource: string) => loaderUtils.stringifyRequest(loaderContext, resource)
-  // `.slice(1)` - remove "?" character
-  const query: ParsedUrlQuery = qs.parse(loaderContext.resourceQuery.slice(1))
-  const options: OptionObject = loaderUtils.getOptions(loaderContext) || {}
 
   // We have block in the query like template, script, style etc
   if (query.block) {
-    return processBlock(loaderContext, sfcDescriptor, query, options)
+    return processBlock(this, sfcDescriptor, query, options)
   }
 
-  return generateBlocksCode(loaderContext, sfcDescriptor)
+  return generateBlocksCode(this, sfcDescriptor)
 }

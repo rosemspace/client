@@ -82,6 +82,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     [APPLICATION_XML_MIME_TYPE]: XML_NAMESPACE,
   }
   protected namespaceMap: NamespaceMap = this.defaultNamespaceMap
+  protected originalSource: string = ''
   protected source: string = ''
   protected cursor: number = 0
   protected readonly rootTagStack: StartTag[] = []
@@ -115,7 +116,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     source: string,
     type: string = APPLICATION_XML_MIME_TYPE
   ): void {
-    this.source = source
+    this.originalSource = this.source = source
     // Clear previous data
     this.namespaceURI = this.defaultNamespaceURI
     this.namespaceMap = { ...this.defaultNamespaceMap }

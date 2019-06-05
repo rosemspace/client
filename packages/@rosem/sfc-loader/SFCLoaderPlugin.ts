@@ -4,28 +4,18 @@ import LoaderContext = loader.LoaderContext
 import Compilation = compilation.Compilation
 import Compiler = compiler.Compiler
 const RuleSet = require('webpack/lib/RuleSet')
+import {
+  NormalizedRuleSetRule,
+  NormalizedRuleSetUseItem,
+} from './normalizedRule'
 import { SFC_KEYWORD, SFC_LOADER_IDENT } from './index'
 
 export const SFC_LOADER_PLUGIN_ID = `${SFC_LOADER_IDENT}-plugin`
 
-type NormalizedRuleSetCondition = (path: string) => boolean
-type NormalizedRuleSetUseItem = {
-  loader: string
-  options?: { [key: string]: any }
-  ident?: string
-  query?: string
-}
-type NormalizedRuleSetUse = NormalizedRuleSetUseItem[]
-type NormalizedRuleSetRule = {
-  resource: NormalizedRuleSetCondition
-  resourceQuery: NormalizedRuleSetCondition
-  use: NormalizedRuleSetUse
-  rules?: NormalizedRuleSetRule[]
-  oneOf?: NormalizedRuleSetRule[]
-}
-
 export default class SFCLoaderPlugin {
   static IDENT = SFC_LOADER_IDENT
+
+  readonly SFC_KEYWORD = SFC_KEYWORD
 
   apply(compiler: Compiler) {
     // add NAMESPACE marker so that the loader can detect and report missing
@@ -71,18 +61,26 @@ export default class SFCLoaderPlugin {
       rules: NormalizedRuleSetRule[]
     }
     // find the rule that applies to SFC files
-    let sfcRuleIndex = rawRules.findIndex(createMatcher(`a.${SFC_KEYWORD}`))
+    let sfcRuleIndex = rawRules.findIndex(
+      createMatcher(`a.${this.SFC_KEYWORD}`)
+    )
 
     if (sfcRuleIndex < 0) {
-      sfcRuleIndex = rawRules.findIndex(createMatcher(`a.${SFC_KEYWORD}.html`))
+      sfcRuleIndex = rawRules.findIndex(
+        createMatcher(`a.${this.SFC_KEYWORD}.html`)
+      )
     }
 
     const sfcRule: NormalizedRuleSetRule = rules[sfcRuleIndex]
 
     if (!sfcRule) {
       throw new Error(
-        `[SFCLoaderPlugin Error] No matching rule for .${SFC_KEYWORD} files found.\n` +
-          `Make sure there is at least one root-level rule that matches .${SFC_KEYWORD} or .${SFC_KEYWORD}.html files.`
+        `[SFCLoaderPlugin Error] No matching rule for .${
+          this.SFC_KEYWORD
+        } files found.\n` +
+          `Make sure there is at least one root-level rule that matches .${
+            this.SFC_KEYWORD
+          } or .${this.SFC_KEYWORD}.html files.`
       )
     }
 
@@ -102,13 +100,15 @@ export default class SFCLoaderPlugin {
     if (sfcLoaderUseIndex < 0) {
       throw new Error(
         `[SFCLoaderPlugin Error] No matching use for sfc-loader is found.\n` +
-          `Make sure the rule matching .${SFC_KEYWORD} files include sfc-loader in its use.`
+          `Make sure the rule matching .${
+            this.SFC_KEYWORD
+          } files include sfc-loader in its use.`
       )
     }
 
     // make sure sfc-loader options has a known ident so that we can share
     // options by reference in the template-loader by using a ref query like
-    // template-loader??sfc-loader-options
+    // template-loader??sfc-loader
     const sfcLoaderUse: NormalizedRuleSetUseItem = sfcUse[sfcLoaderUseIndex]
 
     sfcLoaderUse.ident = SFC_LOADER_IDENT
@@ -132,7 +132,7 @@ export default class SFCLoaderPlugin {
     //   resourceQuery: (query: string) => {
     //     const parsed: ParsedUrlQuery = querystring.parse(query.slice(1))
     //
-    //     return parsed[SFC_KEYWORD] != null
+    //     return parsed[this.SFC_KEYWORD] != null
     //   },
     //   options: {
     //     cacheDirectory: sfcLoaderUse.options.cacheDirectory,
@@ -153,6 +153,7 @@ function createMatcher(fakeFile: string): (rawRule: RuleSetRule) => boolean {
     const clonedRawRule = { ...rawRule }
 
     delete clonedRawRule.include
+    delete clonedRawRule.exclude
 
     const rule: NormalizedRuleSetRule = RuleSet.normalizeRule(
       clonedRawRule,
@@ -164,7 +165,10 @@ function createMatcher(fakeFile: string): (rawRule: RuleSetRule) => boolean {
   }
 }
 
-function cloneRule(rule: NormalizedRuleSetRule): RuleSetRule {
+function cloneRule(
+  rule: NormalizedRuleSetRule,
+  sfcKey = SFC_KEYWORD
+): RuleSetRule {
   const { resource, resourceQuery } = rule
   // Assuming `test` and `resourceQuery` tests are executed in series and
   // synchronously (which is true based on RuleSet's implementation), we can
@@ -186,7 +190,7 @@ function cloneRule(rule: NormalizedRuleSetRule): RuleSetRule {
       const parsed: ParsedUrlQuery = querystring.parse(query.slice(1))
 
       // todo optimize
-      if (null == parsed[SFC_KEYWORD] || (resource && null == parsed.lang)) {
+      if (null == parsed[sfcKey] || (resource && null == parsed.lang)) {
         return false
       }
 
@@ -201,7 +205,7 @@ function cloneRule(rule: NormalizedRuleSetRule): RuleSetRule {
   }
 
   if (rule.oneOf) {
-    newRule.oneOf = rule.oneOf.map(cloneRule)
+    newRule.oneOf = rule.oneOf.map(() => cloneRule(rule, sfcKey))
   }
 
   return newRule

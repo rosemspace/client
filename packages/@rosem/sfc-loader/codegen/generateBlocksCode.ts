@@ -8,7 +8,15 @@ import SFCDescriptor from '../SFCDescriptor'
 import attrsToQuery from './attrsToQuery'
 import { SFC_KEYWORD } from '..'
 
-const stringify = JSON.stringify
+const stringify = (value: any): string => {
+  const string: string | undefined = JSON.stringify(value, null, 2)
+
+  if (string) {
+    return string.replace(/\n/g, '\n      ')
+  }
+
+  return string
+}
 
 const defaultLangMap: { [block: string]: string } = {
   template: 'html',

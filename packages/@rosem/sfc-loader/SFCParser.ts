@@ -1,13 +1,26 @@
+import { basename, dirname } from 'path'
+import forEach from 'lodash/forEach'
+import LRUCache from 'lru-cache'
+import hashSum from 'hash-sum'
 import HTMLParser from '@rosem/html-parser'
 import { qualifiedNameRegExp } from '@rosem/xml-syntax'
 import { MatchRange, StartTag, Content } from '@rosem/xml-parser/nodes'
 import AttrSet from '@rosem/xml-parser/modules/AttrSet'
-import LRUCache from 'lru-cache'
-import hashSum from 'hash-sum'
 import SFCDescriptor from './SFCDescriptor'
 import SFCBlock from './SFCBlock'
+import generateSourceMap from './codegen/generateSourceMap'
 
-const cache = new LRUCache(100)
+const cache = new LRUCache<string, SFCDescriptor>(100)
+
+export type SFCParserOptions = {
+  sourceMap?: boolean
+  noPad?: boolean
+}
+
+const defaultOptions: SFCParserOptions = {
+  sourceMap: false,
+  noPad: false,
+}
 
 export default class SFCParser extends HTMLParser {
   protected descriptor: SFCDescriptor = {}
@@ -20,19 +33,59 @@ export default class SFCParser extends HTMLParser {
     this.addModule(new AttrSet())
   }
 
-  parseFromString(source: string, filename: string = ''): SFCDescriptor {
-    const cacheKey = hashSum(filename + source)
-    let output: {} | void = cache.get(cacheKey)
+  parseFromString(
+    source: string,
+    file: string = '',
+    options: SFCParserOptions = {}
+  ): SFCDescriptor {
+    options = { ...defaultOptions, ...options }
+
+    const filename: string = basename(file)
+    const sourceRoot: string = dirname(file)
+    const cacheKey: string = hashSum(filename + source)
+    let output: SFCDescriptor | undefined = cache.get(cacheKey)
 
     if (output) {
-      return output as SFCDescriptor
+      return output
     }
 
     super.parseFromString(source)
 
     output = this.descriptor
 
-    // if (needMap) {//todo}
+    if (options.sourceMap) {
+      forEach(
+        output,
+        (blocks: SFCBlock[]): void => {
+          blocks.forEach(
+            (block: SFCBlock): void => {
+              // Pad content so that linters and pre-processors can output correct
+              // line numbers in errors and warnings
+              if (!options.noPad) {
+                const contentBefore: string = this.originalSource.substr(
+                  0,
+                  block.matchStart
+                )
+                const offset: number = (contentBefore.match(/\r?\n/g) || [])
+                  .length
+
+                block.content = ''.padStart(offset, '\n') + block.content
+              }
+
+              if (!block.attrSet!.src) {
+                block.map = generateSourceMap(
+                  filename,
+                  source,
+                  block.content,
+                  sourceRoot,
+                  !options.noPad
+                )
+              }
+            }
+          )
+        }
+      )
+    }
 
     cache.set(cacheKey, output)
 
@@ -66,6 +119,7 @@ export default class SFCParser extends HTMLParser {
       ]
 
       Object.assign(blockList[blockList.length - 1], text)
+      // blockList[blockList.length - 1].content = text.content
     }
   }
 

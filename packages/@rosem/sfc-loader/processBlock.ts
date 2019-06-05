@@ -15,17 +15,17 @@ export default function processBlock(
   const index: number = query.index ? Number(query.index.toString()) : 0 || 0
   const block: SFCBlock = descriptor[blockName][index]
 
-  // if (block.attrSet!.lang) {
+  // if (query.lang) {
   //   if (!Boolean(options.ignoreExtension)) {
   //     loaderContext.resourcePath = `${loaderContext.resourcePath}.${
-  //       block.attrSet!.lang
+  //       query.lang
   //     }`
   //   }
   // }
 
   loaderContext.callback(
     null,
-    block.content
-    // descriptor[query.type][0].map
+    block.content,
+    block.map
   )
 }

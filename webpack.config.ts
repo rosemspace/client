@@ -26,6 +26,7 @@ const tsconfigPathsPlugin = new TsconfigPathsPlugin()
 export default {
   mode: 'development',
   devtool: 'cheap-module-eval-source-map',
+  // devtool: 'eval-source-map',
   // node: {
   //   console: true,
   // },
@@ -131,7 +132,7 @@ export default {
       {
         // test: /\.json$/,
         resourceQuery: /^\?sfc&block=i18n/,
-        // type: 'javascript/auto',
+        // type: 'javascript/auto', // need for custom json loader
         use: 'json-loader',
       },
       {
@@ -143,7 +144,10 @@ export default {
           {
             loader: '@rosem/sfc-loader',
             // loader: path.resolve(__dirname, './packages/@rosem/sfc-loader/index.ts'),
-            options: {},
+            options: {
+              sourceMap: true,
+              // noPad: true,
+            },
           }
         ],
         // oneOf: [
