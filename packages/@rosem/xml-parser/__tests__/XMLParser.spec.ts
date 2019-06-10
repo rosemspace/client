@@ -1,6 +1,6 @@
+import { NodeType } from '@rosem/dom-api'
 import {
   VirtualCDATASection, VirtualElement,
-  VirtualNodeType,
   VirtualText,
 } from '@rosem/virtual-dom/VirtualInstance'
 import xmlParser from '../__mocks__/xmlParser'
@@ -12,7 +12,7 @@ describe('parseFromString', () => {
       // const children = xmlParser.parseFromString(source).children
       // const cDataNode: VirtualCDATASection = children[0] as VirtualCDATASection
       //
-      // expect(cDataNode.type).toEqual(VirtualNodeType.CDATA_SECTION_NODE)
+      // expect(cDataNode.type).toEqual(NodeType.CDATA_SECTION_NODE)
       // expect(cDataNode.text).toEqual('d&nbsp;a<br>ta]]')
     })
   })
@@ -23,7 +23,7 @@ describe('parseFromString', () => {
       const children = xmlParser.parseFromString(source).children
       const cDataNode: VirtualCDATASection = children[0] as VirtualCDATASection
 
-      expect(cDataNode.type).toEqual(VirtualNodeType.CDATA_SECTION_NODE)
+      expect(cDataNode.type).toEqual(NodeType.CDATA_SECTION_NODE)
       expect(cDataNode.text).toEqual('d&nbsp;a<br>ta]]')
     })
 
@@ -33,7 +33,7 @@ describe('parseFromString', () => {
       const scriptElement: VirtualElement = children[0] as VirtualElement
       const cDataNode: VirtualCDATASection = scriptElement.children[0] as VirtualCDATASection
 
-      expect(cDataNode.type).toEqual(VirtualNodeType.CDATA_SECTION_NODE)
+      expect(cDataNode.type).toEqual(NodeType.CDATA_SECTION_NODE)
       expect(cDataNode.text).toEqual("if (test < 0 && test > 0) print('<tag>')")
     })
 
@@ -46,9 +46,9 @@ describe('parseFromString', () => {
       const cDataNode: VirtualCDATASection = children[children.length - 2] as VirtualCDATASection
       const textNode: VirtualText = children[children.length - 1] as VirtualText
 
-      expect(cDataNode.type).toEqual(VirtualNodeType.CDATA_SECTION_NODE)
+      expect(cDataNode.type).toEqual(NodeType.CDATA_SECTION_NODE)
       expect(cDataNode.text).toEqual('</tag>]>')
-      expect(textNode.type).toEqual(VirtualNodeType.TEXT_NODE)
+      expect(textNode.type).toEqual(NodeType.TEXT_NODE)
       expect(textNode.text).toEqual(' section')
     })
   })

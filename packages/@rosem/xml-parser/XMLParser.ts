@@ -613,6 +613,11 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     startTag.attrs.forEach((attr: Attr) => {
       this.attribute(attr, startTag)
     })
+
+    if (startTag.void) {
+      this.endTag(startTag)
+    }
+
     this.nextToken()
   }
 

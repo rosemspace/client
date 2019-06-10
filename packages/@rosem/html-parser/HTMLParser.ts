@@ -211,14 +211,13 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
         matchEnd: endTag.matchStart,
       })
       this.moveCursor(endTag.matchEnd - endTag.matchStart)
+      this.endTag(endTag)
 
-      if (!isVoid) {
-        this.endTag(endTag)
-
-        return endTag
+      if (isVoid) {
+        this.nextToken()
       }
 
-      this.nextToken()
+      return endTag
     } else if (
       !this.options.suppressWarnings &&
       voidElementRegExp.test(endTag.name)

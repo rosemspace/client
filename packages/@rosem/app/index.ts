@@ -1,13 +1,15 @@
 // @ts-ignore
 // import Style from './style.css' //mtc - multi-type container
 import App from './App.sfc' //mtc - multi-type container
+import VirtualDOMHyperRenderer from '@rosem/virtual-dom/HyperRenderer'
 
+const virtualDOMRenderer = new VirtualDOMHyperRenderer()
 // console.log(Style)
 console.log(App)
 
 // @ts-ignore
-const app = new App.script[0].content
-console.log(app.msg);
+const app = new App.template[0].content(virtualDOMRenderer)
+console.log(app);
 
 // require('@rosem/dom-metric/test')
 // require('@rosem/ui')

@@ -1,9 +1,8 @@
 import forEach from 'lodash/forEach'
-import { RendererAPI, HydratorAPI } from '@rosem/dom-api'
+import { RendererAPI, HydratorAPI, NodeType } from '@rosem/dom-api'
 import VirtualInstance, {
   VirtualNode,
   VirtualNodeAttrDescriptor,
-  VirtualNodeType,
 } from './VirtualInstance'
 
 export default class Hydrator<OutputNode>
@@ -29,7 +28,7 @@ export default class Hydrator<OutputNode>
     >
   ): OutputNode {
     switch (inputNode.type) {
-      case VirtualNodeType.DOCUMENT_FRAGMENT_NODE: {
+      case NodeType.DOCUMENT_FRAGMENT_NODE: {
         const documentFragment: DocumentFragment = renderer.createDocumentFragment()
 
         this.appendVirtualNodeList(
@@ -40,7 +39,7 @@ export default class Hydrator<OutputNode>
 
         return documentFragment
       }
-      case VirtualNodeType.ELEMENT_NODE: {
+      case NodeType.ELEMENT_NODE: {
         const element: Element = inputNode.namespaceURI
           ? renderer.createElementNS(
               inputNode.namespaceURI,
@@ -72,11 +71,11 @@ export default class Hydrator<OutputNode>
 
         return element
       }
-      case VirtualNodeType.TEXT_NODE:
+      case NodeType.TEXT_NODE:
         return renderer.createText(String(inputNode.text))
-      case VirtualNodeType.COMMENT_NODE:
+      case NodeType.COMMENT_NODE:
         return renderer.createComment(String(inputNode.text))
-      case VirtualNodeType.CDATA_SECTION_NODE:
+      case NodeType.CDATA_SECTION_NODE:
         return renderer.createCDATASection(String(inputNode.text))
     }
   }

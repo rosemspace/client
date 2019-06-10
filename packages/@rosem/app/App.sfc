@@ -1,7 +1,7 @@
 <template lang="html">
   <template &src="../Home.sfc#logo" />
   <template use="line" />
-  <h1>{{ msg }}</h1>
+  <h1 class="greeting">Text: <span>{{ msg }}</span></h1>
 </template>
 
 <template id="line">
@@ -13,6 +13,7 @@ export default class App {
   msg: string
 
   constructor() {
+    debugger
     this.msg = 'Hello, world!'
   }
 }
@@ -23,8 +24,13 @@ export default 'TEST'
 </script>
 
 <style src="./style.css"></style>
+<!--<style src="@rosem/web-design/index.pcss"></style>-->
 
-<style global>
+<style>
+:host {
+  --color: red;
+}
+
 h1 {
   background-color: green;
 }

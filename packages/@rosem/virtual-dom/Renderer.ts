@@ -1,11 +1,10 @@
 import concatChildren from './concatChildren'
-import { RendererAPI } from '@rosem/dom-api'
+import { RendererAPI, NodeType } from '@rosem/dom-api'
 import {
   VirtualCDATASection,
   VirtualComment,
   VirtualDocumentFragment,
   VirtualElement,
-  VirtualNodeType,
   VirtualParentNode,
   VirtualText,
   VirtualNode,
@@ -26,15 +25,15 @@ export default class Renderer<VirtualElementProps extends object>
       VirtualCDATASection
     > {
   static readonly DOCUMENT_FRAGMENT_NODE =
-    VirtualNodeType.DOCUMENT_FRAGMENT_NODE
-  static readonly ELEMENT_NODE = VirtualNodeType.ELEMENT_NODE
-  static readonly TEXT_NODE = VirtualNodeType.TEXT_NODE
-  static readonly COMMENT_NODE = VirtualNodeType.COMMENT_NODE
-  static readonly CDATA_SECTION_NODE = VirtualNodeType.CDATA_SECTION_NODE
+    NodeType.DOCUMENT_FRAGMENT_NODE
+  static readonly ELEMENT_NODE = NodeType.ELEMENT_NODE
+  static readonly TEXT_NODE = NodeType.TEXT_NODE
+  static readonly COMMENT_NODE = NodeType.COMMENT_NODE
+  static readonly CDATA_SECTION_NODE = NodeType.CDATA_SECTION_NODE
 
   createDocumentFragment(): VirtualDocumentFragment {
     return {
-      type: VirtualNodeType.DOCUMENT_FRAGMENT_NODE,
+      type: NodeType.DOCUMENT_FRAGMENT_NODE,
       children: [],
     }
   }
@@ -48,7 +47,7 @@ export default class Renderer<VirtualElementProps extends object>
     }
 
     return {
-      type: VirtualNodeType.ELEMENT_NODE,
+      type: NodeType.ELEMENT_NODE,
       prefix,
       localName,
       tagName: qualifiedName,
@@ -73,21 +72,21 @@ export default class Renderer<VirtualElementProps extends object>
 
   createText(text: string | number | boolean): VirtualText {
     return {
-      type: VirtualNodeType.TEXT_NODE,
+      type: NodeType.TEXT_NODE,
       text,
     }
   }
 
   createComment(comment: string | number | boolean): VirtualComment {
     return {
-      type: VirtualNodeType.COMMENT_NODE,
+      type: NodeType.COMMENT_NODE,
       text: comment,
     }
   }
 
   createCDATASection(cdata: string | number | boolean): VirtualCDATASection {
     return {
-      type: VirtualNodeType.CDATA_SECTION_NODE,
+      type: NodeType.CDATA_SECTION_NODE,
       text: cdata,
     }
   }
@@ -126,12 +125,12 @@ export default class Renderer<VirtualElementProps extends object>
     text: string
   ): void {
     if (
-      VirtualNodeType.ELEMENT_NODE === node.type ||
-      VirtualNodeType.DOCUMENT_FRAGMENT_NODE === node.type
+      NodeType.ELEMENT_NODE === node.type ||
+      NodeType.DOCUMENT_FRAGMENT_NODE === node.type
     ) {
       ;(node as VirtualParentNode).children = [
         {
-          type: VirtualNodeType.TEXT_NODE,
+          type: NodeType.TEXT_NODE,
           text,
         } as VirtualText,
       ]
@@ -151,7 +150,7 @@ export default class Renderer<VirtualElementProps extends object>
       throw new Error('Virtual reference instance is not a child of a parent')
     }
 
-    if (VirtualNodeType.DOCUMENT_FRAGMENT_NODE === childNode.type) {
+    if (NodeType.DOCUMENT_FRAGMENT_NODE === childNode.type) {
       const restChildren = children.splice(
         referenceNodeIndex,
         children.length - 1
@@ -186,7 +185,7 @@ export default class Renderer<VirtualElementProps extends object>
   >(parentNode: T, childNode: U): U {
     const children = parentNode.children
 
-    if (VirtualNodeType.DOCUMENT_FRAGMENT_NODE === childNode.type) {
+    if (NodeType.DOCUMENT_FRAGMENT_NODE === childNode.type) {
       concatChildren(
         parentNode,
         children,

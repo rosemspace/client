@@ -1,8 +1,8 @@
-import Renderer from '@rosem/virtual-dom/Renderer'
+import { RendererAPI } from '@rosem/dom-api'
 
 export default class WebRenderer
   implements
-    Renderer<
+    RendererAPI<
       Node,
       Node & ParentNode,
       DocumentFragment,

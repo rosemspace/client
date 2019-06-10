@@ -1,6 +1,6 @@
 import camelCase from 'lodash/camelCase'
 import { Mutable } from '..'
-import Module from '../Module'
+import BlankModule from '../BlankModule'
 import { Attr, StartTag } from '../nodes'
 
 declare module '@rosem/xml-parser/nodes' {
@@ -9,7 +9,7 @@ declare module '@rosem/xml-parser/nodes' {
   }
 }
 
-export default class AttrSet extends Module {
+export default class AttrSet extends BlankModule {
   attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {
     startTag.attrSet![camelCase(attr.name)] = attr.value
   }

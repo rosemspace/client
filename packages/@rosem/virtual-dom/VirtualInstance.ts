@@ -1,13 +1,7 @@
-export const enum VirtualNodeType {
-  DOCUMENT_FRAGMENT_NODE,
-  ELEMENT_NODE,
-  TEXT_NODE,
-  COMMENT_NODE,
-  CDATA_SECTION_NODE,
-}
+import { NodeType } from '@rosem/dom-api'
 
 export interface VirtualNode {
-  type: VirtualNodeType
+  type: NodeType
   parent?: VirtualParentNode
   nextSibling?: VirtualNode
 }
@@ -45,12 +39,12 @@ export interface VirtualContentNode extends VirtualNode {
 }
 
 export interface VirtualDocumentFragment extends VirtualParentNode {
-  type: VirtualNodeType.DOCUMENT_FRAGMENT_NODE
+  type: NodeType.DOCUMENT_FRAGMENT_NODE
 }
 
 export interface VirtualElement<VirtualElementProps extends object = {}>
   extends VirtualParentNode {
-  type: VirtualNodeType.ELEMENT_NODE
+  type: NodeType.ELEMENT_NODE
   tagName: string
   prefix?: string
   localName: string
@@ -68,15 +62,15 @@ export interface VirtualCustomElement<
 }
 
 export interface VirtualText extends VirtualContentNode {
-  type: VirtualNodeType.TEXT_NODE
+  type: NodeType.TEXT_NODE
 }
 
 export interface VirtualComment extends VirtualContentNode {
-  type: VirtualNodeType.COMMENT_NODE
+  type: NodeType.COMMENT_NODE
 }
 
 export interface VirtualCDATASection extends VirtualContentNode {
-  type: VirtualNodeType.CDATA_SECTION_NODE
+  type: NodeType.CDATA_SECTION_NODE
 }
 
 export default VirtualInstance

@@ -59,8 +59,8 @@ export default class SFCParser extends HTMLParser {
         (blocks: SFCBlock[]): void => {
           blocks.forEach(
             (block: SFCBlock): void => {
-              // Pad content so that linters and pre-processors can output correct
-              // line numbers in errors and warnings
+              // Pad content so that linters and pre-processors can output
+              // correct line numbers in errors and warnings
               if (!options.noPad) {
                 const contentBefore: string = this.originalSource.substr(
                   0,

@@ -7,7 +7,7 @@ import {
   EndTag,
 } from './nodes'
 
-export default abstract class Module implements HookList {
+export default abstract class BlankModule implements HookList {
   attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {}
 
   cDataSection<T extends Content>(cDATASection: T): void {}

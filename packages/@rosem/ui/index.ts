@@ -1,12 +1,12 @@
 import ObservableObject from '@rosem/observable/ObservableObject'
-import HyperRenderer from '@rosem/virtual-dom/HyperRenderer'
+import VirtualDOMHyperRenderer from '@rosem/virtual-dom/HyperRenderer'
 import VirtualInstance from '@rosem/virtual-dom/VirtualInstance'
-import WebRenderer from '@rosem/ui-patform-web/WebRenderer'
-import VirtualHydrator from '@rosem/virtual-dom/VirtualHydrator'
+import WebDOMRenderer from '@rosem/ui-patform-web/WebRenderer'
+import VirtualDOMHydrator from '@rosem/virtual-dom/Hydrator'
 
-const hyperRenderer = new HyperRenderer()
-const webRenderer = new WebRenderer()
-const virtualHydrator = new VirtualHydrator<Node>()
+const hyperRenderer = new VirtualDOMHyperRenderer()
+const webRenderer = new WebDOMRenderer()
+const virtualDOMHydrator = new VirtualDOMHydrator<Node>()
 
 const vm = {
   template: '<div class="title">Hello, {{ this.name }}!</div>',
@@ -15,7 +15,7 @@ const vm = {
     const vnode = h('div', { attrs: { class: 'title' } }, `Hello, ${this.name}!`)
     console.log(vnode)
     // @ts-ignore
-    document.body.firstElementChild.replaceWith(virtualHydrator.hydrate(vnode, webRenderer))
+    document.body.firstElementChild.replaceWith(virtualDOMHydrator.hydrate(vnode, webRenderer))
     return vnode
   },
   data() {

@@ -3,14 +3,14 @@ import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import isString from 'lodash/isString'
 import isPrimitive from '@rosem/common-util/isPrimitive'
+import { NodeType } from '@rosem/dom-api'
 import Renderer from './Renderer'
 import VirtualInstance, {
   Primitive,
-  VirtualChildNodeList,
+  VirtualChildNodeList, VirtualElement,
   VirtualNode,
   VirtualNodeAttrDescriptor,
   VirtualNodeKey,
-  VirtualNodeType,
   VirtualParentNode,
 } from './VirtualInstance'
 
@@ -37,31 +37,31 @@ export default class HyperRenderer<
     this.createInstance = this.createInstance.bind(this)
   }
 
-  createInstance(type: VirtualNodeType): VirtualInstance<VirtualElementProps>
+  createInstance(type: NodeType): VirtualInstance<VirtualElementProps>
 
   createInstance(
-    type: VirtualNodeType,
+    type: NodeType,
     childList: VirtualChildNodeList
   ): VirtualInstance<VirtualElementProps>
 
   createInstance(
-    type: VirtualNodeType,
+    type: NodeType,
     text: Primitive
   ): VirtualInstance<VirtualElementProps>
 
   createInstance(
-    type: VirtualNodeType,
+    type: NodeType,
     props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
   ): VirtualInstance<VirtualElementProps>
 
   createInstance(
-    type: VirtualNodeType,
+    type: NodeType,
     props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
     childList: VirtualChildNodeList
   ): VirtualInstance<VirtualElementProps>
 
   createInstance(
-    type: VirtualNodeType,
+    type: NodeType,
     props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
     text: Primitive
   ): VirtualInstance<VirtualElementProps>
@@ -100,7 +100,7 @@ export default class HyperRenderer<
   ): VirtualInstance<VirtualElementProps>
 
   createInstance(
-    typeOrChildListOrName: VirtualNodeType | VirtualChildNodeList | string,
+    typeOrChildListOrName: NodeType | VirtualChildNodeList | string,
     propsOrChildListOrText?:
       | HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
       | VirtualChildNodeList
@@ -137,29 +137,29 @@ export default class HyperRenderer<
       childListOrText = []
     }
 
-    let type: VirtualNodeType
+    let type: NodeType
 
     if (isString(typeOrChildListOrName)) {
       type =
         '' === typeOrChildListOrName
-          ? VirtualNodeType.TEXT_NODE
-          : VirtualNodeType.ELEMENT_NODE
+          ? NodeType.TEXT_NODE
+          : NodeType.ELEMENT_NODE
     } else if (isArray(typeOrChildListOrName)) {
-      type = VirtualNodeType.DOCUMENT_FRAGMENT_NODE
+      type = NodeType.DOCUMENT_FRAGMENT_NODE
       childListOrText = typeOrChildListOrName as VirtualChildNodeList
     } else {
-      type = typeOrChildListOrName as VirtualNodeType
+      type = typeOrChildListOrName as NodeType
     }
 
     switch (type) {
-      case VirtualNodeType.DOCUMENT_FRAGMENT_NODE: {
+      case NodeType.DOCUMENT_FRAGMENT_NODE: {
         const documentFragment = this.createDocumentFragment()
 
         this.appendChildNodeList(documentFragment, childListOrText)
 
         return documentFragment
       }
-      case VirtualNodeType.ELEMENT_NODE: {
+      case NodeType.ELEMENT_NODE: {
         typeOrChildListOrName = props.tagName || typeOrChildListOrName
 
         if (
@@ -172,7 +172,7 @@ export default class HyperRenderer<
               ? `Missed name of a virtual element`
               : isString(typeOrChildListOrName)
               ? `Invalid name "${(typeOrChildListOrName as string).toString()}" of a virtual element`
-              : `"tagName" property is required for a virtual element`
+              : `"name" property is required for a virtual element`
           )
         }
 
@@ -207,11 +207,11 @@ export default class HyperRenderer<
 
         return virtualElement
       }
-      case VirtualNodeType.TEXT_NODE:
+      case NodeType.TEXT_NODE:
         return this.createText((childListOrText[0] as Primitive) || '')
-      case VirtualNodeType.COMMENT_NODE:
+      case NodeType.COMMENT_NODE:
         return this.createComment((childListOrText[0] as Primitive) || '')
-      case VirtualNodeType.CDATA_SECTION_NODE:
+      case NodeType.CDATA_SECTION_NODE:
         return this.createCDATASection((childListOrText[0] as Primitive) || '')
     }
 

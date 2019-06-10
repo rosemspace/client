@@ -40,6 +40,9 @@ export default {
   resolve: {
     // mainFiles: ['index'],
     modules: ['node_modules', packages],
+    // alias: {
+    //   '@rosem': packages,
+    // },
     extensions: ['.es', '.es6', '.js', '.json', '.jsx', '.mjs', '.sfc', '.ts', '.tsx'],
     plugins: [tsconfigPathsPlugin],
   },
@@ -106,12 +109,18 @@ export default {
         exclude: /node_modules/,
         use: [
           {
-            loader: 'html-loader',
+            loader: '@rosem/ui-template-loader',
           },
+          // {
+          //   loader: 'html-loader',
+          //   options: {
+          //     // minimize: true,
+          //   },
+          // },
         ],
       },
       {
-        test: /\.css$/,
+        test: /\.(p(ost)?)?css$/,
         // resourceQuery: /^\?sfc&block=style&lang=css/,
         use: [
           {
@@ -124,7 +133,13 @@ export default {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              // importLoaders: 2,
+              importLoaders: 2,
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: true
             }
           },
         ],

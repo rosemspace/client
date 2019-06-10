@@ -1,4 +1,4 @@
-import { VirtualNodeType } from '../VirtualInstance'
+import { NodeType } from '@rosem/dom-api'
 import hyperRendererFactory from '@rosem/virtual-dom/__mocks__/hyperRendererFactory'
 
 const globalHyperRenderer = hyperRendererFactory()
@@ -6,11 +6,11 @@ const globalHyperRenderer = hyperRendererFactory()
 describe('createInstance', () => {
   it('create empty document fragment', () => {
     const instance = globalHyperRenderer.createInstance(
-      VirtualNodeType.DOCUMENT_FRAGMENT_NODE
+      NodeType.DOCUMENT_FRAGMENT_NODE
     )
 
     expect(instance).toEqual({
-      type: VirtualNodeType.DOCUMENT_FRAGMENT_NODE,
+      type: NodeType.DOCUMENT_FRAGMENT_NODE,
       children: [],
     })
   })
@@ -19,7 +19,7 @@ describe('createInstance', () => {
     const instance = hyperRendererFactory().createInstance('div')
 
     expect(instance).toEqual({
-      type: VirtualNodeType.ELEMENT_NODE,
+      type: NodeType.ELEMENT_NODE,
       props: {
         tag: 'div',
         key: 1,
