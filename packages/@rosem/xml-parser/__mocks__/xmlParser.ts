@@ -11,7 +11,7 @@ import {
 } from '@rosem/virtual-dom/VirtualInstance'
 import XMLParser from '../XMLParser'
 
-export default new class {
+export default new (class {
   private readonly parser: XMLParser
   private readonly compiler: TemplateCompiler<
     VirtualNode,
@@ -34,4 +34,4 @@ export default new class {
 
     return this.compiler.getCompiledResult()
   }
-}()
+})()

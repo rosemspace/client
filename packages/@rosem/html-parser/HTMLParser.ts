@@ -158,7 +158,7 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     const lastTagNameLowerCased = this.lastTagNameLowerCased
 
     if (this.isAnyRawTextElement(lastTagNameLowerCased)) {
-      let rawText: Content | undefined = undefined
+      let rawText: Content | undefined
       const stackedTagRE = getStackedTagRegExp(lastTagNameLowerCased)
 
       this.source.replace(
@@ -171,7 +171,6 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
             matchStart: this.cursor,
             matchEnd: this.cursor + text.length,
           }
-
           this.moveCursor(text.length)
 
           return ''
@@ -182,19 +181,24 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
 
       // Treat all content as raw text if end tag wasn't found
       if (!rawText) {
-        rawText = {
-          content: this.source,
-          matchStart: this.cursor,
-          matchEnd: this.cursor + this.source.length,
+        // Ensure we don't have an empty string
+        if (this.source) {
+          rawText = {
+            content: this.source,
+            matchStart: this.cursor,
+            matchEnd: this.cursor + this.source.length,
+          }
+          this.moveCursor(this.source.length)
+
+          return rawText
         }
-        this.moveCursor(this.source.length)
       }
-      // Continue parsing to next token if we have an empty string
-      else if (!(rawText as Content).content) {
-        return
+      // Ensure we don't have an empty string
+      else if ((rawText as Content).content) {
+        return rawText
       }
 
-      return rawText
+      // Continue parsing to next token if we have an empty string
     }
   }
 

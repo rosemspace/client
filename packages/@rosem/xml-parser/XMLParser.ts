@@ -521,6 +521,11 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       textContent = this.source
     }
 
+    // todo: do we need this?
+    if (!textContent && !textEndTokenIndex) {
+      textContent = this.source
+    }
+
     // Ensure we don't have an empty string
     if (textContent) {
       const text: Content = {
@@ -530,16 +535,6 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       }
 
       this.moveCursor(textContent.length)
-
-      return text
-    } else if (!textEndTokenIndex) {
-      const text: Content = {
-        content: this.source,
-        matchStart: this.cursor,
-        matchEnd: this.cursor + this.source.length,
-      }
-
-      this.moveCursor(this.source.length)
 
       return text
     }
