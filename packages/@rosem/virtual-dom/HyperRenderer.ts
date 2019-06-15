@@ -7,7 +7,7 @@ import { NodeType } from '@rosem/dom-api'
 import Renderer from './Renderer'
 import VirtualInstance, {
   Primitive,
-  VirtualChildNodeList, VirtualElement,
+  VirtualChildNodeList,
   VirtualNode,
   VirtualNodeAttrDescriptor,
   VirtualNodeKey,

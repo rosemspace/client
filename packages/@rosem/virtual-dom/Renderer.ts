@@ -33,6 +33,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createDocumentFragment(): VirtualDocumentFragment {
     return {
+      nodeName: '#document-fragment',
       type: NodeType.DOCUMENT_FRAGMENT_NODE,
       children: [],
     }
@@ -47,6 +48,7 @@ export default class Renderer<VirtualElementProps extends object>
     }
 
     return {
+      nodeName: qualifiedName,
       type: NodeType.ELEMENT_NODE,
       prefix,
       localName,
@@ -72,6 +74,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createText(text: string | number | boolean): VirtualText {
     return {
+      nodeName: '#text',
       type: NodeType.TEXT_NODE,
       text,
     }
@@ -79,6 +82,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createComment(comment: string | number | boolean): VirtualComment {
     return {
+      nodeName: '#comment',
       type: NodeType.COMMENT_NODE,
       text: comment,
     }
@@ -86,6 +90,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createCDATASection(cdata: string | number | boolean): VirtualCDATASection {
     return {
+      nodeName: '#cdata-section',
       type: NodeType.CDATA_SECTION_NODE,
       text: cdata,
     }

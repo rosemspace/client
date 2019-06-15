@@ -1,6 +1,7 @@
 import { NodeType } from '@rosem/dom-api'
 
 export interface VirtualNode {
+  nodeName: string,
   type: NodeType
   parent?: VirtualParentNode
   nextSibling?: VirtualNode
@@ -39,7 +40,23 @@ export interface VirtualContentNode extends VirtualNode {
 }
 
 export interface VirtualDocumentFragment extends VirtualParentNode {
+  nodeName: '#document-fragment'
   type: NodeType.DOCUMENT_FRAGMENT_NODE
+}
+
+export interface VirtualText extends VirtualContentNode {
+  nodeName: '#text'
+  type: NodeType.TEXT_NODE
+}
+
+export interface VirtualComment extends VirtualContentNode {
+  nodeName: '#comment'
+  type: NodeType.COMMENT_NODE
+}
+
+export interface VirtualCDATASection extends VirtualContentNode {
+  nodeName: '#cdata-section'
+  type: NodeType.CDATA_SECTION_NODE
 }
 
 export interface VirtualElement<VirtualElementProps extends object = {}>
@@ -59,18 +76,6 @@ export interface VirtualCustomElement<
   VirtualCustomElementProps extends object
 > extends VirtualElement<VirtualElementProps> {
   customProps: VirtualCustomElementProps
-}
-
-export interface VirtualText extends VirtualContentNode {
-  type: NodeType.TEXT_NODE
-}
-
-export interface VirtualComment extends VirtualContentNode {
-  type: NodeType.COMMENT_NODE
-}
-
-export interface VirtualCDATASection extends VirtualContentNode {
-  type: NodeType.CDATA_SECTION_NODE
 }
 
 export default VirtualInstance
