@@ -6,7 +6,8 @@ import qs from 'querystring'
 import SFCBlock from '../SFCBlock'
 import SFCDescriptor from '../SFCDescriptor'
 import attrsToQuery from './attrsToQuery'
-import { SFC_KEYWORD } from '..'
+import { SFCLoaderPluginOptions } from '../SFCLoaderPlugin'
+import { SFC_LOADER_IDENT } from '..'
 
 const stringify = (value: any): string => {
   const string: string | undefined = JSON.stringify(value, null, 2)
@@ -18,29 +19,23 @@ const stringify = (value: any): string => {
   return string
 }
 
-const defaultLangMap: { [block: string]: string } = {
-  template: 'html',
-  script: 'js',
-  style: 'css',
-  // i18n: 'json',
-}
-
 // these are built-in query parameters so should be ignored if the user happen
 // to add them as attrs
 // `src` and `lang` will be added as internal attributes
-const ignoredAttrs = [
-  SFC_KEYWORD,
-  'block',
-  'index',
-  'lang',
-  'src',
-  'issuerPath',
-]
+const ignoredAttrs = ['block', 'index', 'lang', 'src', 'issuerPath']
 
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
   descriptor: SFCDescriptor
 ): string {
+  const pluginOptions: SFCLoaderPluginOptions = (loaderContext as any)[
+    SFC_LOADER_IDENT
+  ]
+
+  if (!pluginOptions) {
+    throw new Error('[sfc-loader Error] SFCLoaderPlugin is required')
+  }
+
   let importCode = ''
   let exportCode = '\nexport default {'
 
@@ -65,7 +60,8 @@ export default function generateBlocksCode(
               src = attrSet.src
               internalAttrSet.issuerPath = qs.escape(loaderContext.resourcePath)
             } else {
-              const lang: string = attrSet.lang || defaultLangMap[name]
+              const lang: string =
+                attrSet.lang || pluginOptions.blockLangMap[name]
 
               if (lang) {
                 internalAttrSet.lang = lang
@@ -73,6 +69,7 @@ export default function generateBlocksCode(
             }
 
             // Ignore user attributes which are built-in
+            delete attrSet[pluginOptions.fileExtension]
             ignoredAttrs.forEach(
               (attrName: string): void => {
                 delete attrSet[attrName]
@@ -84,7 +81,9 @@ export default function generateBlocksCode(
             const inheritQuery: string = loaderContext.resourceQuery
               ? `&${loaderContext.resourceQuery.slice(1)}`
               : ''
-            const query: string = `?${SFC_KEYWORD}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
+            const query: string = `?${
+              pluginOptions.fileExtension
+            }${internalAttrsQuery}${attrsQuery}${inheritQuery}`
             const blockName: string = `${name}${index}`
 
             exportCode += `
@@ -115,8 +114,6 @@ export default function generateBlocksCode(
   )
   importCode += '\n'
   exportCode += '\n}\n'
-
-  // console.log(importCode + exportCode)
 
   return importCode + exportCode
 }

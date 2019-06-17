@@ -104,7 +104,7 @@ export default {
         ]
       },
       {
-        test: /\.html$/,
+        test: /\.sfc\.html$/,
         // resourceQuery: /^\?sfc&block=template&lang=html/,
         exclude: /node_modules/,
         use: [
@@ -119,6 +119,18 @@ export default {
           // },
         ],
       },
+      // {
+      //   test: /\.html$/,
+      //   exclude: /node_modules/,
+      //   use: [
+      //     {
+      //       loader: 'html-loader',
+      //       options: {
+      //         // minimize: true,
+      //       },
+      //     },
+      //   ],
+      // },
       {
         test: /\.(p(ost)?)?css$/,
         // resourceQuery: /^\?sfc&block=style&lang=css/,
@@ -145,12 +157,6 @@ export default {
         ],
       },
       {
-        // test: /\.json$/,
-        resourceQuery: /^\?sfc&block=i18n/,
-        // type: 'javascript/auto', // need for custom json loader
-        use: 'json-loader',
-      },
-      {
         test: /\.sfc$/,
         use: [
           // {
@@ -169,9 +175,22 @@ export default {
         //   {}
         // ]
       },
+      {
+        // test: /\.json$/,
+        resourceQuery: /^\?sfc&block=i18n/,
+        // Need for custom json loader,
+        // because webpack have built-in loader for json
+        type: 'javascript/auto',
+        use: 'json-loader',
+      },
     ],
   },
   plugins: [
-    new SFCLoaderPlugin()
+    new SFCLoaderPlugin({
+      fileExtension: 'sfc',
+      // blockLangMap: {
+      //   i18n: 'json',
+      // }
+    })
   ],
 } as Configuration

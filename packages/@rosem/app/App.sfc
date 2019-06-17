@@ -1,7 +1,9 @@
 <template lang="html">
-  <template &src="../Home.sfc#logo" />
-  <template use="line" />
-  <h1 class="greeting">Text: <span>{{ msg }}</span></h1>
+<!--  <template &src="../Home.sfc#logo" />-->
+<!--  <template use="line" />-->
+  <h1 class="greeting">Text: <span>{{ this.msg }}</span></h1>
+  <img src="@rosem/vue-app/assets/logo" alt="Logo">
+  <h2>My name is <span>{{ this.name }}</span></h2>
 </template>
 
 <template id="line">
@@ -9,17 +11,24 @@
 </template>
 
 <script lang="ts">
-export default class App {
-  msg: string
+// import { value } from '@rosem/observable'
 
-  constructor() {
-    debugger
-    this.msg = 'Hello, world!'
+const msg = 'Hello, Universe!'
+
+export default {
+  setup() {
+    // debugger
+    return {
+      msg: 'Hello, world!!!',
+      name: 'Rosem',
+    }
   }
 }
 </script>
 
 <script>
+// import firstTemplate from './App.sfc#template0'
+
 export default 'TEST'
 </script>
 
