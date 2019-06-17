@@ -19,7 +19,11 @@ export default interface Renderer<
 
   createCDATASection(cdata: string | number | boolean): CDATASection
 
-  setAttribute<T extends Element>(element: T, qualifiedName: string, value: any): void
+  setAttribute<T extends Element>(
+    element: T,
+    qualifiedName: string,
+    value: any
+  ): void
 
   setAttributeNS<T extends Element>(
     element: T,

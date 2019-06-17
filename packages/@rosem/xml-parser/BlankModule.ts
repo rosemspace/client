@@ -1,11 +1,5 @@
 import HookList from './HookList'
-import {
-  MatchRange,
-  StartTag,
-  Attr,
-  Content,
-  EndTag,
-} from './nodes'
+import { MatchRange, StartTag, Attr, Content, EndTag } from './nodes'
 
 export default abstract class BlankModule implements HookList {
   attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {}

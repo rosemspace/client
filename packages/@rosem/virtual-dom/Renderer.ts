@@ -24,8 +24,7 @@ export default class Renderer<VirtualElementProps extends object>
       VirtualComment,
       VirtualCDATASection
     > {
-  static readonly DOCUMENT_FRAGMENT_NODE =
-    NodeType.DOCUMENT_FRAGMENT_NODE
+  static readonly DOCUMENT_FRAGMENT_NODE = NodeType.DOCUMENT_FRAGMENT_NODE
   static readonly ELEMENT_NODE = NodeType.ELEMENT_NODE
   static readonly TEXT_NODE = NodeType.TEXT_NODE
   static readonly COMMENT_NODE = NodeType.COMMENT_NODE

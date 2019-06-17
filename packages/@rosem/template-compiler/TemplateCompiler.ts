@@ -66,9 +66,10 @@ export default class TemplateCompiler<
   }
 
   startTag(parsedTag: StartTag): void {
-    this.element = null != parsedTag.namespaceURI
-      ? this.renderer.createElementNS(parsedTag.namespaceURI, parsedTag.name)
-      : this.renderer.createElement(parsedTag.name)
+    this.element =
+      null != parsedTag.namespaceURI
+        ? this.renderer.createElementNS(parsedTag.namespaceURI, parsedTag.name)
+        : this.renderer.createElement(parsedTag.name)
 
     this.renderer.appendChild(this.cursorNode, this.element)
 

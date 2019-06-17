@@ -6,7 +6,11 @@ import {
   SVG_NAMESPACE,
   XLINK_NAMESPACE,
 } from '@rosem/w3-util'
-import XMLParser, { Mutable, XMLParserOptions, XMLProcessorMap } from '@rosem/xml-parser'
+import XMLParser, {
+  Mutable,
+  XMLParserOptions,
+  XMLProcessorMap,
+} from '@rosem/xml-parser'
 import { StartTag } from '@rosem/xml-parser/nodes'
 import SVGProcessor from './SVGProcessor'
 
@@ -81,19 +85,16 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
 
     // Switch parser for foreign tag
     if (
-      this.activeProcessor.isForeignElement.call(
-        this,
-        startTag.nameLowerCased
-      )
+      this.activeProcessor.isForeignElement.call(this, startTag.nameLowerCased)
     ) {
       if (!startTag.void) {
         this.rootTagStack.push(startTag)
 
         if (
           null !=
-          (this.namespaceURI = (startTag as Mutable<StartTag>).namespaceURI = this.namespaceMap[
-            startTag.nameLowerCased
-          ])
+          (this.namespaceURI = (startTag as Mutable<
+            StartTag
+          >).namespaceURI = this.namespaceMap[startTag.nameLowerCased])
         ) {
           this.useProcessor(this.namespaceURI)
         }
