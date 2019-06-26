@@ -1,3 +1,4 @@
+import isString from 'lodash/isString'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import loaderUtils from 'loader-utils'
@@ -13,76 +14,23 @@ function isCacheLoader(loader: any): boolean {
   return /[/\\@]cache-loader/.test(loader.path)
 }
 
-// const selfPath = require.resolve('../index')
+const sfcLoaderPath = require.resolve('.')
+
+function isSFCLoader(loader: any) {
+  return loader.path === sfcLoaderPath
+}
 
 const shouldIgnoreCustomBlock = (loaders: any[]) => {
-  const actualLoaders = loaders.filter((loader) => {
-    if (isDedupLoader(loader)) {
-      return false
-    }
-    // sfc-loader
-    // if (loader.path === selfPath) {
-    //   return false
-    // }
-
-    // cache-loader
-    if (isCacheLoader(loader)) {
-      return false
-    }
-
-    return true
+  const actualLoaders: any[] = loaders.filter((loader) => {
+    return (
+      !isDedupLoader(loader) && !isSFCLoader(loader) && !isCacheLoader(loader)
+    )
   })
 
   return 0 === actualLoaders.length
 }
 
 const stringifyRequest = loaderUtils.stringifyRequest
-
-export function generateRequest(loaderContext: LoaderContext): string | void {
-  // Important: dedupe since both the original rule
-  // and the cloned rule would match a source import request.
-  // also make sure to dedupe based on loader path.
-  // assumes you'd probably never want to apply the same loader on the same
-  // file twice.
-  // Exception: in Vue CLI we do need two instances of postcss-loader
-  // for user config and inline minification. So we need to dedupe baesd on
-  // path AND query to be safe.
-  const seen: any = {}
-  const loaderStrings: string[] = []
-  let hasDuplications: boolean = false
-
-  loaderContext.loaders.forEach((loader: any) => {
-    // if (isDedupLoader(loader)) {
-    // return
-    // }
-
-    const identifier =
-      typeof loader === 'string' ? loader : loader.path + loader.query
-    const request = typeof loader === 'string' ? loader : loader.request
-
-    if (!seen[identifier]) {
-      seen[identifier] = true
-      // loader.request contains both the resolved loader path and its options
-      // query (e.g. ??ref-0)
-      loaderStrings.push(request)
-    } else {
-      hasDuplications = true
-      // loaderStrings.push(request)
-      // resource += `-!${request}`
-    }
-  })
-
-  return hasDuplications
-    ? stringifyRequest(
-        loaderContext,
-        '-!' +
-          [
-            ...loaderStrings,
-            loaderContext.resourcePath + loaderContext.resourceQuery,
-          ].join('!')
-      )
-    : undefined
-}
 
 export default function(source: string): string {
   return source
@@ -99,33 +47,45 @@ export function pitch(
   const query: ParsedUrlQuery = querystring.parse(this.resourceQuery.slice(1))
   const block: string = query.block as string
 
-  // console.log('\n', remainingRequest, '\n', precedingRequest, '\n', this.loaders.map((loader: any, index: number): void => {
-  //   console.log(index, '-', loader.request, '\n');
-  //   return loader
-  // }), '\n');
-  if (null == pluginOptions.blockLangMap[block]) {
-  }
-
   // if a custom block has no other matching loader other than vue-loader itself
   // or cache-loader, we should ignore it
-  // if (
-  //   null == pluginOptions.blockLangMap[block] &&
-  //   shouldIgnoreCustomBlock(this.loaders)
-  // ) {
-  //   return ''
-  // }
+  if (
+    null == pluginOptions.blockLangMap[block] &&
+    shouldIgnoreCustomBlock(this.loaders)
+  ) {
+    return ''
+  }
 
-  // console.log('\nREQUEST: ', remainingRequest, '\n', precedingRequest, '\n');
   // When the user defines a rule that has only resourceQuery but no test,
   // both that rule and the cloned rule will match, resulting in duplicated
   // loaders. Therefore it is necessary to perform a dedupe here.
-  const request = generateRequest(this)
+  // Also make sure to dedupe based on loader path and query to be safe.
+  // Assumes you'd probably never want to apply the same loader on the same
+  // file twice.
+  const seen: { [identifier: string]: boolean } = {}
+  const loaderStrings: string[] = []
+  let hasDuplications: boolean = false
 
-  if (request) {
-    console.log(this.loaders)
-    console.log('\n', request, '\n')
+  this.loaders.forEach((loader: any) => {
+    const identifier = isString(loader) ? loader : loader.path + loader.query
+    const request = isString(loader) ? loader : loader.request
 
-    // remainingRequest = 'D:\\Code\\rosem\\client\\node_modules\\json-loader\\index.js!D:\\Code\\rosem\\client\\packages\\@rosem\\client\\packages\\@rosem\\sfc-loader\\index.ts!D:\\Code\\rosem\\client\\packages\\@rosem\\app\\App.sfc?sfc&block=i18n&index=0'
+    if (!seen[identifier]) {
+      seen[identifier] = true
+      // loader.request contains both the resolved loader path and its options
+      // query (e.g. ??ref-0)
+      loaderStrings.push(request)
+    } else {
+      hasDuplications = true
+    }
+  })
+
+  if (hasDuplications) {
+    const request: string = stringifyRequest(
+      this,
+      '-!' +
+        [...loaderStrings, this.resourcePath + this.resourceQuery].join('!')
+    )
 
     return `import m from ${request};\nexport default m;\nexport * from ${request};\n`
   }
