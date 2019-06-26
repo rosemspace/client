@@ -3,8 +3,7 @@ import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import loaderUtils from 'loader-utils'
 import querystring, { ParsedUrlQuery } from 'querystring'
-import { SFCLoaderPluginOptions } from './SFCLoaderPlugin'
-import { SFC_LOADER_IDENT } from '.'
+import { getOptions, SFCLoaderPluginOptions } from './SFCLoaderPlugin'
 
 function isDedupLoader(loader: any): boolean {
   return loader.path !== __filename
@@ -42,7 +41,7 @@ export function pitch(
   precedingRequest: any,
   data: any
 ) {
-  const pluginOptions: SFCLoaderPluginOptions = (this as any)[SFC_LOADER_IDENT]
+  const pluginOptions: SFCLoaderPluginOptions = getOptions(this)
   // `.slice(1)` - remove "?" character
   const query: ParsedUrlQuery = querystring.parse(this.resourceQuery.slice(1))
   const block: string = query.block as string

@@ -3,7 +3,7 @@ import LoaderContext = loader.LoaderContext
 import Compilation = compilation.Compilation
 import Compiler = compiler.Compiler
 const RuleSet = require('webpack/lib/RuleSet')
-import querystring, { ParsedUrlQuery } from 'querystring'
+import querystring from 'querystring'
 import {
   NormalizedRuleSetRule,
   NormalizedRuleSetUseItem,
@@ -18,6 +18,12 @@ export type BlockLangMap = { [block: string]: string }
 export type SFCLoaderPluginOptions = {
   fileExtension: string
   blockLangMap: BlockLangMap
+}
+
+export function getOptions(
+  loaderContext: LoaderContext
+): SFCLoaderPluginOptions {
+  return (loaderContext as any)[SFC_LOADER_IDENT]
 }
 
 export const defaultBlockLangMap: BlockLangMap = {

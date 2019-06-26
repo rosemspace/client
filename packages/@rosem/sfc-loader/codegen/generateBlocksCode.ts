@@ -6,8 +6,7 @@ import qs from 'querystring'
 import SFCBlock from '../SFCBlock'
 import SFCDescriptor from '../SFCDescriptor'
 import attrsToQuery from './attrsToQuery'
-import { SFCLoaderPluginOptions } from '../SFCLoaderPlugin'
-import { SFC_LOADER_IDENT } from '..'
+import { getOptions, SFCLoaderPluginOptions } from '../SFCLoaderPlugin'
 
 const stringify = (value: any): string => {
   const string: string | undefined = JSON.stringify(value, null, 2)
@@ -28,9 +27,7 @@ export default function generateBlocksCode(
   loaderContext: LoaderContext,
   descriptor: SFCDescriptor
 ): string {
-  const pluginOptions: SFCLoaderPluginOptions = (loaderContext as any)[
-    SFC_LOADER_IDENT
-  ]
+  const pluginOptions: SFCLoaderPluginOptions = getOptions(loaderContext)
 
   if (!pluginOptions) {
     throw new Error('[sfc-loader Error] SFCLoaderPlugin is required')
