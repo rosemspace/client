@@ -14,3 +14,10 @@ export const enum NodeType {
   DOCUMENT_TYPE_NODE = 10,
   DOCUMENT_FRAGMENT_NODE = 11,
 }
+
+export const enum NodeName {
+  TEXT_NODE = '#text',
+  CDATA_SECTION_NODE = '#cdata-section',
+  COMMENT_NODE = '#comment',
+  DOCUMENT_FRAGMENT_NODE = '#document-fragment',
+}

@@ -1,14 +1,14 @@
+import { NodeName, NodeType, RendererAPI } from '@rosem/dom-api'
 import concatChildren from './concatChildren'
-import { RendererAPI, NodeType } from '@rosem/dom-api'
 import {
   VirtualCDATASection,
   VirtualComment,
+  VirtualContentNode,
   VirtualDocumentFragment,
   VirtualElement,
+  VirtualNode,
   VirtualParentNode,
   VirtualText,
-  VirtualNode,
-  VirtualContentNode,
 } from './VirtualInstance'
 
 let key = 0
@@ -32,7 +32,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createDocumentFragment(): VirtualDocumentFragment {
     return {
-      nodeName: '#document-fragment',
+      nodeName: NodeName.DOCUMENT_FRAGMENT_NODE,
       type: NodeType.DOCUMENT_FRAGMENT_NODE,
       children: [],
     }
@@ -73,7 +73,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createText(text: string | number | boolean): VirtualText {
     return {
-      nodeName: '#text',
+      nodeName: NodeName.TEXT_NODE,
       type: NodeType.TEXT_NODE,
       text,
     }
@@ -81,7 +81,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createComment(comment: string | number | boolean): VirtualComment {
     return {
-      nodeName: '#comment',
+      nodeName: NodeName.COMMENT_NODE,
       type: NodeType.COMMENT_NODE,
       text: comment,
     }
@@ -89,7 +89,7 @@ export default class Renderer<VirtualElementProps extends object>
 
   createCDATASection(cdata: string | number | boolean): VirtualCDATASection {
     return {
-      nodeName: '#cdata-section',
+      nodeName: NodeName.CDATA_SECTION_NODE,
       type: NodeType.CDATA_SECTION_NODE,
       text: cdata,
     }

@@ -1,8 +1,8 @@
-import { NodeType } from '@rosem/dom-api'
+import { NodeName, NodeType } from '@rosem/dom-api'
 
 export interface VirtualNode {
-  nodeName: string,
-  type: NodeType
+  readonly nodeName: NodeName | string,
+  readonly type: NodeType
   parent?: VirtualParentNode
   nextSibling?: VirtualNode
 }
@@ -40,22 +40,22 @@ export interface VirtualContentNode extends VirtualNode {
 }
 
 export interface VirtualDocumentFragment extends VirtualParentNode {
-  nodeName: '#document-fragment'
+  readonly nodeName: NodeName.DOCUMENT_FRAGMENT_NODE
   type: NodeType.DOCUMENT_FRAGMENT_NODE
 }
 
 export interface VirtualText extends VirtualContentNode {
-  nodeName: '#text'
+  readonly nodeName: NodeName.TEXT_NODE
   type: NodeType.TEXT_NODE
 }
 
 export interface VirtualComment extends VirtualContentNode {
-  nodeName: '#comment'
+  readonly nodeName: NodeName.COMMENT_NODE
   type: NodeType.COMMENT_NODE
 }
 
 export interface VirtualCDATASection extends VirtualContentNode {
-  nodeName: '#cdata-section'
+  readonly nodeName: NodeName.CDATA_SECTION_NODE
   type: NodeType.CDATA_SECTION_NODE
 }
 
