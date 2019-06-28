@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "outDir": "./dist",
     "target": "esnext", // esnext - with babel, es5 - otherwise
     "module": "commonjs", // commonjs - for custom loaders
 //    "module": "es2015",
@@ -14,6 +15,8 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "noImplicitReturns": true,
+//    "noLib": false,
     "sourceMap": true,
     "baseUrl": "./packages",
 //    "types": [
@@ -22,8 +25,8 @@
 //      "webpack-env"
 //    ],
 //    "paths": {
-//      "@rosem/*": [
-//        "packages/@rosem/*"
+//      "@rosemlab/*": [
+//        "packages/@rosemlab/*"
 //      ]
 //    },
     "lib": [
@@ -34,7 +37,7 @@
     ]
   },
 //  "references": [],
-//  "typeRoots": ["node_modules/@types", "packages/@rosem" ],
+//  "typeRoots": ["node_modules/@types", "packages/@rosemlab" ],
   "include": [
 //    "webpack.config.ts",
     "packages/**/*.ts",

@@ -1,0 +1,60 @@
+@import "utils/scrollbar.pcss";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/**:not(div, span):empty {
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+}*/
+
+:root {
+  font-size: 10px;
+}
+
+html,
+body {
+  height: 100vh;
+}
+body {
+  margin: 0;
+  overflow-y: scroll;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Adds momentum-based scrolling on iOS Safari */
+  -webkit-overflow-scrolling: touch;
+
+  /* Disable text scaling in horizontal mode */
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+
+  /* Fix different weight of some fonts on iOS Safari */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:visited {
+  color: inherit;
+}
+
+a,
+p {
+  font-size: 1.6rem;
+}
+
+.row {
+  display: flex;
+}
+
+/* Touch devices only (opposite syntax - @media (hover)) */
+@media (pointer: coarse) {}

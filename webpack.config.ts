@@ -5,10 +5,10 @@
 import { resolve } from 'path'
 import moduleAlias from 'module-alias'
 
-const packages: string = resolve(__dirname, 'packages/@rosem')
-moduleAlias.addAlias('@rosem', packages)
+const packages: string = resolve(__dirname, 'packages/@rosemlab')
+moduleAlias.addAlias('@rosemlab', packages)
 
-import SFCLoaderPlugin from '@rosem/sfc-loader/SFCLoaderPlugin'
+import SFCLoaderPlugin from '@rosemlab/sfc-loader/SFCLoaderPlugin'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import { Configuration } from 'webpack'
 
@@ -31,8 +31,8 @@ export default {
   //   console: true,
   // },
   context: resolve(__dirname),
-  entry: './packages/@rosem/app/index.ts',
-  // entry: './packages/@rosem/vue-app/main.ts',
+  entry: './packages/@rosemlab/app/index.ts',
+  // entry: './packages/@rosemlab/vue-app/main.ts',
   output: {
     filename: 'main.js',
     path: resolve(__dirname, 'dist'),
@@ -41,7 +41,7 @@ export default {
     // mainFiles: ['index'],
     modules: ['node_modules', packages],
     // alias: {
-    //   '@rosem': packages,
+    //   '@rosemlab': packages,
     // },
     extensions: ['.es', '.es6', '.js', '.json', '.jsx', '.mjs', '.sfc', '.ts', '.tsx'],
     plugins: [tsconfigPathsPlugin],
@@ -64,7 +64,7 @@ export default {
           // {
           //   loader: 'cache-loader',
           //   options: {
-          //     cacheDirectory: 'D:\\Code\\rosem\\client\\node_modules\\.cache\\babel-loader',
+          //     cacheDirectory: 'D:\\Code\\rosemlab\\client\\node_modules\\.cache\\babel-loader',
           //     cacheIdentifier: '14be64da'
           //   }
           // },
@@ -81,7 +81,7 @@ export default {
           // {
           //   loader: 'cache-loader',
           //   options: {
-          //     cacheDirectory: 'D:\\Code\\rosem\\client\\node_modules\\.cache\\ts-loader',
+          //     cacheDirectory: 'D:\\Code\\rosemlab\\client\\node_modules\\.cache\\ts-loader',
           //     cacheIdentifier: 'fa2c5396'
           //   }
           // },
@@ -109,7 +109,7 @@ export default {
         exclude: /node_modules/,
         use: [
           {
-            loader: '@rosem/ui-template-loader',
+            loader: '@rosemlab/ui-template-loader',
           },
           // {
           //   loader: 'html-loader',
@@ -163,8 +163,8 @@ export default {
           //   loader: 'babel-loader'
           // },
           {
-            loader: '@rosem/sfc-loader',
-            // loader: path.resolve(__dirname, './packages/@rosem/sfc-loader/index.ts'),
+            loader: '@rosemlab/sfc-loader',
+            // loader: path.resolve(__dirname, './packages/@rosemlab/sfc-loader/index.ts'),
             options: {
               sourceMap: true,
               // noPad: true,

@@ -1,0 +1,15 @@
+.no-scrollbars {
+  /* IE 10+ */
+  -ms-overflow-style: none;
+
+  /* Firefox */
+  scrollbar-width: none;
+
+  /* Old Firefox */
+  overflow: -moz-scrollbars-none;
+
+  /* Safari and Chrome */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
