@@ -1,4 +1,4 @@
-import { VirtualNodeList, VirtualParentNode } from './VirtualInstance'
+import { VirtualNodeList, VirtualParentNode } from '.'
 
 export default function concatChildren(
   parentNode: VirtualParentNode,

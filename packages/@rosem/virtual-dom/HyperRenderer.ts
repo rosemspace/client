@@ -5,14 +5,15 @@ import isString from 'lodash/isString'
 import isPrimitive from '@rosem/common-util/isPrimitive'
 import { NodeType } from '@rosem/dom-api'
 import Renderer from './Renderer'
-import VirtualInstance, {
+import {
+  VirtualInstance,
   Primitive,
   VirtualChildNodeList,
   VirtualNode,
   VirtualNodeAttrDescriptor,
   VirtualNodeKey,
   VirtualParentNode,
-} from './VirtualInstance'
+} from '.'
 
 export let key = 0
 

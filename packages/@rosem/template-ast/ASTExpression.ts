@@ -1,6 +1,6 @@
 import {
   VirtualContentNode
-} from '@rosem/virtual-dom/VirtualInstance'
+} from '@rosem/virtual-dom'
 
 // lcfirst - lowerCaseFirst
 // ucfirst - upperCaseFirst

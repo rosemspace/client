@@ -1,6 +1,6 @@
 import ObservableObject from '@rosem/observable/ObservableObject'
 import VirtualDOMHyperRenderer from '@rosem/virtual-dom/HyperRenderer'
-import VirtualInstance from '@rosem/virtual-dom/VirtualInstance'
+import { VirtualInstance } from '@rosem/virtual-dom'
 import WebDOMRenderer from '@rosem/ui-patform-web/WebRenderer'
 import VirtualDOMHydrator from '@rosem/virtual-dom/Hydrator'
 

@@ -1,4 +1,4 @@
-import { VirtualNode as VNode } from './VirtualInstance'
+import { VirtualNode as VNode } from '.'
 
 export type PreHook = () => any
 

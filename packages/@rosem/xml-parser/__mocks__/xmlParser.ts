@@ -8,7 +8,7 @@ import {
   VirtualNode,
   VirtualParentNode,
   VirtualText,
-} from '@rosem/virtual-dom/VirtualInstance'
+} from '@rosem/virtual-dom'
 import XMLParser from '../XMLParser'
 
 export default new (class {

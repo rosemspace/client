@@ -3,7 +3,7 @@ import {
   VirtualCDATASection,
   VirtualElement,
   VirtualText,
-} from '@rosem/virtual-dom/VirtualInstance'
+} from '@rosem/virtual-dom'
 import xmlParser from '../__mocks__/xmlParser'
 
 describe('parseFromString', () => {

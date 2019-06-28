@@ -9,7 +9,7 @@ import {
   VirtualNode,
   VirtualParentNode,
   VirtualText,
-} from './VirtualInstance'
+} from '.'
 
 let key = 0
 

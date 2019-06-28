@@ -1,0 +1,14 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+//    "outDir": "./dist/@rosem/virtual-dom",
+//    "outFile": "../../../dist/@rosem/virtual-dom/index.js",
+//    "target": "es3"//,
+//    "module": "amd"//,
+//    "rootDir": "."//,
+//    "sourceRoot": "."
+  },
+  "include": [
+    "index.ts"
+  ]
+}

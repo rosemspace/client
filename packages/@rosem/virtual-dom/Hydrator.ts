@@ -1,9 +1,10 @@
 import forEach from 'lodash/forEach'
 import { RendererAPI, HydratorAPI, NodeType } from '@rosem/dom-api'
-import VirtualInstance, {
+import {
+  VirtualInstance,
   VirtualNode,
   VirtualNodeAttrDescriptor,
-} from './VirtualInstance'
+} from '.'
 
 export default class Hydrator<OutputNode>
   implements HydratorAPI<VirtualNode, OutputNode> {
