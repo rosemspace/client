@@ -144,8 +144,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     if (matchArray) {
       const content: Content = {
         content: matchArray[1],
-        matchStart: this.cursor,
-        matchEnd: this.cursor + matchArray[0].length,
+        start: this.cursor,
+        end: this.cursor + matchArray[0].length,
       }
 
       this.moveCursor(matchArray[0].length)
@@ -168,8 +168,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
             content: text.slice(
               Number(shouldIgnoreFirstNewline(lastTagNameLowerCased, text))
             ),
-            matchStart: this.cursor,
-            matchEnd: this.cursor + text.length,
+            start: this.cursor,
+            end: this.cursor + text.length,
           }
           this.moveCursor(text.length)
 
@@ -185,8 +185,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
         if (this.source) {
           rawText = {
             content: this.source,
-            matchStart: this.cursor,
-            matchEnd: this.cursor + this.source.length,
+            start: this.cursor,
+            end: this.cursor + this.source.length,
           }
           this.moveCursor(this.source.length)
 
@@ -212,9 +212,9 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
         attrs: [],
         void: isVoid,
         unarySlash: '',
-        matchEnd: endTag.matchStart,
+        end: endTag.start,
       })
-      this.moveCursor(endTag.matchEnd - endTag.matchStart)
+      this.moveCursor(endTag.end - endTag.start)
       this.endTag(endTag)
 
       if (isVoid) {
@@ -227,10 +227,10 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
       voidElementRegExp.test(endTag.name)
     ) {
       this.warn(`Wrong closed void element <${endTag.name}>`, {
-        matchStart: endTag.matchStart,
-        matchEnd: endTag.matchEnd,
+        start: endTag.start,
+        end: endTag.end,
       })
-      this.moveCursor(endTag.matchEnd - endTag.matchStart)
+      this.moveCursor(endTag.end - endTag.start)
       this.nextToken()
     } else {
       return super.matchingStartTagMissed(endTag)
@@ -241,8 +241,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     if (optionalClosingElementRegExp.test(stackTag.name)) {
       this.endTag({
         ...stackTag,
-        matchStart: this.cursor,
-        matchEnd: this.cursor,
+        start: this.cursor,
+        end: this.cursor,
       })
     } else {
       super.matchingEndTagMissed(stackTag)
@@ -259,8 +259,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     ) {
       this.endTag({
         ...startTag,
-        matchStart: this.cursor,
-        matchEnd: this.cursor,
+        start: this.cursor,
+        end: this.cursor,
       })
       this.tagStack.pop()
     } else if (
@@ -269,8 +269,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     ) {
       this.endTag({
         ...startTag,
-        matchStart: this.cursor,
-        matchEnd: this.cursor,
+        start: this.cursor,
+        end: this.cursor,
       })
       this.tagStack.pop()
     } else if (
@@ -290,8 +290,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
           if (optionalClosingElementRegExp.test(stackTag.name)) {
             this.endTag({
               ...stackTag,
-              matchStart: this.cursor,
-              matchEnd: this.cursor,
+              start: this.cursor,
+              end: this.cursor,
             })
           } else {
             // Remove the open elements from the stack
@@ -319,8 +319,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
   ): void {
     if (!this.options.suppressWarnings && reservedAttrRegExp.test(attr.name)) {
       this.warn(`Attribute name reserved: ${attr.name}`, {
-        matchStart: attr.matchStart,
-        matchEnd: attr.matchEnd,
+        start: attr.start,
+        end: attr.end,
       })
     }
 

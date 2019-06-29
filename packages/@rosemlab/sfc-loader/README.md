@@ -86,5 +86,5 @@ export default {
 
 ### TODO
 
-- Use `matchStart` in `generateSourceMap`.
+- Use `start` in `generateSourceMap`.
 - Add `afterTranspile` hook.

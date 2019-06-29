@@ -1,5 +1,4 @@
 //todo
-// - change match interface to `matchStart` and `matchLength`
 // - remove warning about optional element closing
 // - switch parser functionality
 // - add instruction list functionality
@@ -216,27 +215,27 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
   matchingStartTagMissed(endTag: EndTag): EndTag | void {
     if (!this.options.suppressWarnings) {
       this.warn(`<${endTag.name}> element has no matching start tag`, {
-        matchStart: endTag.matchStart,
-        matchEnd: endTag.matchEnd,
+        start: endTag.start,
+        end: endTag.end,
       })
     }
 
-    this.moveCursor(endTag.matchEnd - endTag.matchStart)
+    this.moveCursor(endTag.end - endTag.start)
     this.nextToken()
   }
 
   matchingEndTagMissed(stackTag: StartTag): EndTag | void {
     if (!this.options.suppressWarnings) {
       this.warn(`<${stackTag.name}> element has no matching end tag`, {
-        matchStart: stackTag.matchStart,
-        matchEnd: stackTag.matchEnd,
+        start: stackTag.start,
+        end: stackTag.end,
       })
     }
 
     this.endTag({
       ...stackTag,
-      matchStart: this.cursor,
-      matchEnd: this.cursor,
+      start: this.cursor,
+      end: this.cursor,
     })
   }
 
@@ -246,8 +245,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     if (contentMatch) {
       const content: Content = {
         content: contentMatch[1],
-        matchStart: this.cursor,
-        matchEnd: this.cursor + contentMatch[0].length,
+        start: this.cursor,
+        end: this.cursor + contentMatch[0].length,
       }
 
       this.moveCursor(contentMatch[0].length)
@@ -297,8 +296,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       attrs,
       unarySlash: '',
       void: false,
-      matchStart: this.cursor,
-      matchEnd: this.cursor,
+      start: this.cursor,
+      end: this.cursor,
     }
 
     this.moveCursor(startTagOpenMatch[0].length)
@@ -327,9 +326,9 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
             ? this.options.decodeNewlinesForHref
             : this.options.decodeNewlines
         ),
-        matchStart:
+        start:
           this.cursor + (attrMatch[0].match(/^\s*/) as RegExpMatchArray).length,
-        matchEnd: this.moveCursor(attrMatch[0].length),
+        end: this.moveCursor(attrMatch[0].length),
       }
 
       // Add namespace
@@ -356,8 +355,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
           !this.options.suppressWarnings
         ) {
           this.warn(`Namespace not found for attribute prefix: ${attrPrefix}`, {
-            matchStart: attr.matchStart,
-            matchEnd: attr.matchStart + attrPrefix.length,
+            start: attr.start,
+            end: attr.start + attrPrefix.length,
           })
         } else {
           // this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
@@ -375,7 +374,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     if (startTagCloseTagMatch) {
       startTag.unarySlash = startTagCloseTagMatch[1]
       startTag.void = this.activeProcessor.isVoidElement.call(this, startTag)
-      startTag.matchEnd = this.moveCursor(startTagCloseTagMatch[0].length)
+      startTag.end = this.moveCursor(startTagCloseTagMatch[0].length)
 
       const tagPrefix: string = startTagOpenMatch[2]
 
@@ -386,8 +385,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
           this.namespaceURI = startTag.namespaceURI = namespaceURI
         } else if (!this.options.suppressWarnings) {
           this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
-            matchStart: this.cursor,
-            matchEnd: this.cursor + tagPrefix.length,
+            start: this.cursor,
+            end: this.cursor + tagPrefix.length,
           })
         }
       }
@@ -401,8 +400,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
             this.tagStack.length ? '' : ' at end of template'
           }: <${startTag.name}`,
           {
-            matchStart: startTag.matchStart,
-            matchEnd: this.cursor,
+            start: startTag.start,
+            end: this.cursor,
           }
         )
       }
@@ -470,8 +469,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         prefix: tagPrefix,
         localName: tagLocalName,
         nameLowerCased: tagNameLowerCased,
-        matchStart: this.cursor,
-        matchEnd: this.cursor + endTagMatch[0].length,
+        start: this.cursor,
+        end: this.cursor + endTagMatch[0].length,
       }
 
       // Remove the open elements from the stack
@@ -485,8 +484,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         prefix: tagPrefix,
         localName: tagLocalName,
         nameLowerCased: tagNameLowerCased,
-        matchStart: this.cursor,
-        matchEnd: this.cursor + endTagMatch[0].length,
+        start: this.cursor,
+        end: this.cursor + endTagMatch[0].length,
       })
     }
   }
@@ -530,8 +529,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     if (textContent) {
       const text: Content = {
         content: textContent,
-        matchStart: this.cursor,
-        matchEnd: this.cursor + textContent.length,
+        start: this.cursor,
+        end: this.cursor + textContent.length,
       }
 
       this.moveCursor(textContent.length)
@@ -587,8 +586,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
             this.rootTagStack[this.rootTagStack.length - 1].name
           }> element without namespace.`,
           {
-            matchStart: startTag.matchStart,
-            matchEnd: startTag.matchEnd,
+            start: startTag.start,
+            end: startTag.end,
           }
         )
 

@@ -64,7 +64,7 @@ export default class SFCParser extends HTMLParser {
               if (!options.noPad) {
                 const contentBefore: string = this.originalSource.substr(
                   0,
-                  block.matchStart
+                  block.start
                 )
                 const offset: number = (contentBefore.match(/\r?\n/g) || [])
                   .length
@@ -104,8 +104,8 @@ export default class SFCParser extends HTMLParser {
     this.descriptor[nameLowerCased].push(
       Object.assign(startTag, {
         content: '',
-        matchEnd: startTag.matchEnd,
-        matchStart: startTag.matchEnd,
+        end: startTag.end,
+        start: startTag.end,
       })
     )
   }
