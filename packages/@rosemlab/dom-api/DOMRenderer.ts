@@ -1,4 +1,4 @@
-export default interface Renderer<
+export default interface DOMRenderer<
   Node,
   ParentNode extends Node,
   DocumentFragment extends ParentNode,

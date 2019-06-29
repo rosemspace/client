@@ -1,3 +1,3 @@
-export default interface Serializer<InputNode> {
+export default interface DOMSerializer<InputNode> {
   serializeToString(inputNode: InputNode): string
 }

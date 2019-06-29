@@ -1,4 +1,4 @@
-import { NodeName, NodeType, RendererAPI } from '@rosemlab/dom-api'
+import { NodeName, NodeType, DOMRenderer } from '@rosemlab/dom-api'
 import concatChildren from './concatChildren'
 import {
   VirtualCDATASection,
@@ -13,9 +13,9 @@ import {
 
 let key = 0
 
-export default class Renderer<VirtualElementProps extends object>
+export default class VDOMRenderer<VirtualElementProps extends object>
   implements
-    RendererAPI<
+    DOMRenderer<
       VirtualNode,
       VirtualParentNode,
       VirtualDocumentFragment,
@@ -39,6 +39,13 @@ export default class Renderer<VirtualElementProps extends object>
   }
 
   createElement(qualifiedName: string): VirtualElement<VirtualElementProps> {
+    return this.createElementNS(undefined!, qualifiedName)
+  }
+
+  createElementNS(
+    namespaceURI: string,
+    qualifiedName: string
+  ): VirtualElement<VirtualElementProps> {
     let [prefix, localName] = qualifiedName.split(':', 2)
 
     if (null == localName) {
@@ -52,23 +59,12 @@ export default class Renderer<VirtualElementProps extends object>
       prefix,
       localName,
       tagName: qualifiedName,
-      namespaceURI: '',
+      namespaceURI: namespaceURI,
       key: ++key,
       attrs: {},
       props: {} as VirtualElementProps,
       children: [],
     }
-  }
-
-  createElementNS(
-    namespaceURI: string,
-    qualifiedName: string
-  ): VirtualElement<VirtualElementProps> {
-    const element = this.createElement(qualifiedName)
-
-    element.namespaceURI = namespaceURI
-
-    return element
   }
 
   createText(text: string | number | boolean): VirtualText {

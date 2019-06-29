@@ -1,11 +1,11 @@
 import { NodeName, NodeType } from '@rosemlab/dom-api'
 
-export { default as Hydrator } from './Hydrator'
-export { default as HyperRenderer } from './HyperRenderer'
-export { default as Renderer } from './Renderer'
+export { default as VDOMHydrator } from './VDOMHydrator'
+export { default as VDOMHyperRenderer } from './VDOMHyperRenderer'
+export { default as VDOMRenderer } from './VDOMRenderer'
 
 export interface VirtualNode {
-  readonly nodeName: NodeName | string,
+  readonly nodeName: NodeName | string
   readonly type: NodeType
   parent?: VirtualParentNode
   nextSibling?: VirtualNode
@@ -16,9 +16,9 @@ export type Primitive = string | number | boolean
 export type VirtualNodeKey = Primitive
 
 export type VirtualNodeAttrDescriptor = {
-  prefix?: string
-  localName: string
-  namespaceURI?: string
+  readonly prefix?: string
+  readonly localName: string
+  readonly namespaceURI?: string
   value: Primitive
 }
 
@@ -45,12 +45,12 @@ export interface VirtualContentNode extends VirtualNode {
 
 export interface VirtualDocumentFragment extends VirtualParentNode {
   readonly nodeName: NodeName.DOCUMENT_FRAGMENT_NODE
-  type: NodeType.DOCUMENT_FRAGMENT_NODE
+  readonly type: NodeType.DOCUMENT_FRAGMENT_NODE
 }
 
 export interface VirtualText extends VirtualContentNode {
   readonly nodeName: NodeName.TEXT_NODE
-  type: NodeType.TEXT_NODE
+  readonly type: NodeType.TEXT_NODE
 }
 
 export interface VirtualComment extends VirtualContentNode {
@@ -60,24 +60,24 @@ export interface VirtualComment extends VirtualContentNode {
 
 export interface VirtualCDATASection extends VirtualContentNode {
   readonly nodeName: NodeName.CDATA_SECTION_NODE
-  type: NodeType.CDATA_SECTION_NODE
+  readonly type: NodeType.CDATA_SECTION_NODE
 }
 
 export interface VirtualElement<VirtualElementProps extends object = {}>
   extends VirtualParentNode {
-  type: NodeType.ELEMENT_NODE
-  tagName: string
-  prefix?: string
-  localName: string
+  readonly type: NodeType.ELEMENT_NODE
+  readonly tagName: string
+  readonly prefix?: string
+  readonly localName: string
   attrs: VirtualNodeAttrMap
   props: VirtualElementProps
-  namespaceURI: string
-  key: VirtualNodeKey
+  readonly namespaceURI: string
+  readonly key: VirtualNodeKey
 }
 
 export interface VirtualCustomElement<
   VirtualElementProps extends object,
   VirtualCustomElementProps extends object
-  > extends VirtualElement<VirtualElementProps> {
+> extends VirtualElement<VirtualElementProps> {
   customProps: VirtualCustomElementProps
 }

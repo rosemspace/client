@@ -1,6 +1,6 @@
-import HyperRenderer from '@rosemlab/virtual-dom/HyperRenderer'
+import { VDOMHyperRenderer } from '@rosemlab/virtual-dom'
 
-const hyperRenderer = new HyperRenderer()
+const hyperRenderer = new VDOMHyperRenderer()
 const h = hyperRenderer.createInstance
 
 const vnode = h(

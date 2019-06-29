@@ -4,7 +4,7 @@ import isPlainObject from 'lodash/isPlainObject'
 import isString from 'lodash/isString'
 import isPrimitive from '@rosemlab/common-util/isPrimitive'
 import { NodeType } from '@rosemlab/dom-api'
-import Renderer from './Renderer'
+import VDOMRenderer from './VDOMRenderer'
 import {
   VirtualInstance,
   Primitive,
@@ -29,10 +29,10 @@ export type HyperRendererProps<
   key: VirtualNodeKey
 }>
 
-export default class HyperRenderer<
+export default class VDOMHyperRenderer<
   VirtualElementProps extends object,
   VirtualCustomElementProps extends object
-> extends Renderer<VirtualElementProps> {
+> extends VDOMRenderer<VirtualElementProps> {
   constructor() {
     super()
     this.createInstance = this.createInstance.bind(this)

@@ -1,13 +1,16 @@
 import forEach from 'lodash/forEach'
-import { RendererAPI, HydratorAPI, NodeType } from '@rosemlab/dom-api'
+import { DOMHydrator, DOMRenderer, NodeType } from '@rosemlab/dom-api'
 import {
+  VirtualContentNode,
+  VirtualElement,
   VirtualInstance,
   VirtualNode,
   VirtualNodeAttrDescriptor,
+  VirtualParentNode,
 } from '.'
 
-export default class Hydrator<OutputNode>
-  implements HydratorAPI<VirtualNode, OutputNode> {
+export default class VDOMHydrator<OutputNode>
+  implements DOMHydrator<VirtualNode, OutputNode> {
   public hydrate<
     VirtualElementProps extends object,
     ParentNode extends OutputNode,
@@ -18,7 +21,7 @@ export default class Hydrator<OutputNode>
     CDATASection extends OutputNode = OutputNode
   >(
     inputNode: VirtualInstance<VirtualElementProps>,
-    renderer: RendererAPI<
+    renderer: DOMRenderer<
       OutputNode,
       ParentNode,
       DocumentFragment,
@@ -34,22 +37,24 @@ export default class Hydrator<OutputNode>
 
         this.appendVirtualNodeList(
           documentFragment,
-          inputNode.children as VirtualInstance<VirtualElementProps>[],
+          (inputNode as VirtualParentNode).children as VirtualInstance<
+            VirtualElementProps
+          >[],
           renderer
         )
 
         return documentFragment
       }
       case NodeType.ELEMENT_NODE: {
-        const element: Element = inputNode.namespaceURI
+        const element: Element = (inputNode as VirtualElement).namespaceURI
           ? renderer.createElementNS(
-              inputNode.namespaceURI,
-              inputNode.tagName
+              (inputNode as VirtualElement).namespaceURI,
+              (inputNode as VirtualElement).tagName
             )
-          : renderer.createElement(inputNode.tagName)
+          : renderer.createElement((inputNode as VirtualElement).tagName)
 
-        if (inputNode.attrs) {
-          forEach(inputNode.attrs, function(
+        if ((inputNode as VirtualElement).attrs) {
+          forEach((inputNode as VirtualElement).attrs, function(
             attr: VirtualNodeAttrDescriptor,
             key: string
           ) {
@@ -66,19 +71,29 @@ export default class Hydrator<OutputNode>
 
         this.appendVirtualNodeList(
           element,
-          inputNode.children as VirtualInstance<VirtualElementProps>[],
+          (inputNode as VirtualParentNode).children as VirtualInstance<
+            VirtualElementProps
+          >[],
           renderer
         )
 
         return element
       }
       case NodeType.TEXT_NODE:
-        return renderer.createText(String(inputNode.text))
+        return renderer.createText(
+          String((inputNode as VirtualContentNode).text)
+        )
       case NodeType.COMMENT_NODE:
-        return renderer.createComment(String(inputNode.text))
+        return renderer.createComment(
+          String((inputNode as VirtualContentNode).text)
+        )
       case NodeType.CDATA_SECTION_NODE:
-        return renderer.createCDATASection(String(inputNode.text))
+        return renderer.createCDATASection(
+          String((inputNode as VirtualContentNode).text)
+        )
     }
+
+    throw new Error('Unknown type of node')
   }
 
   protected appendVirtualNodeList<
@@ -92,7 +107,7 @@ export default class Hydrator<OutputNode>
   >(
     parent: DocumentFragment | Element,
     nodeList: VirtualInstance<VirtualElementProps>[],
-    renderer: RendererAPI<
+    renderer: DOMRenderer<
       OutputNode,
       ParentNode,
       DocumentFragment,

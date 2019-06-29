@@ -1,20 +1,21 @@
 // import Style from './style.css' //mtc - multi-type container
 import App from './App.sfc' //mtc - multi-type container
-import VirtualDOMHyperRenderer from '@rosemlab/virtual-dom/HyperRenderer'
+import { VDOMHydrator, VDOMHyperRenderer } from '@rosemlab/virtual-dom'
 import WebDOMRenderer from '@rosemlab/ui-patform-web/WebRenderer'
-import VirtualDOMHydrator from '@rosemlab/virtual-dom/Hydrator'
 
-const virtualHyperDOMRenderer = new VirtualDOMHyperRenderer()
+const vdomHyperRenderer = new VDOMHyperRenderer()
 const webDOMRenderer = new WebDOMRenderer()
-const virtualDOMHydrator = new VirtualDOMHydrator<Node>()
+const vdomHydrator = new VDOMHydrator<Node>()
 // @ts-ignore
 const data = App.script[0].content.setup()
 // @ts-ignore
-const app = App.template[0].content.call(data, virtualHyperDOMRenderer, data)
+const app = App.template[0].content.call(data, vdomHyperRenderer, data)
 
 console.log(App)
-console.log(app);
-document.querySelector('#app')!.appendChild(virtualDOMHydrator.hydrate(app, webDOMRenderer))
+console.log(app)
+document
+  .querySelector('#app')!
+  .appendChild(vdomHydrator.hydrate(app, webDOMRenderer))
 
 // require('@rosemlab/dom-metric/test')
 // require('@rosemlab/ui')

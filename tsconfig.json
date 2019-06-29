@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+//    "rootDir": "./packages",
     "outDir": "./dist",
     "target": "esnext", // esnext - with babel, es5 - otherwise
     "module": "commonjs", // commonjs - for custom loaders
@@ -15,8 +16,10 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "noImplicitReturns": true,
+//    "noImplicitReturns": true,
 //    "noLib": false,
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "baseUrl": "./packages",
 //    "types": [

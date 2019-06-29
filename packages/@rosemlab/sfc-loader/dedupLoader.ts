@@ -89,5 +89,5 @@ export function pitch(
     return `import m from ${request};\nexport default m;\nexport * from ${request};\n`
   }
 
-  return void 0
+  return undefined
 }

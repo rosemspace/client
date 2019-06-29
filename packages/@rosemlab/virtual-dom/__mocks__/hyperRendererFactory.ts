@@ -1,5 +1,5 @@
-import HyperRenderer from '@rosemlab/virtual-dom/HyperRenderer'
+import VDOMHyperRenderer from '@rosemlab/virtual-dom/VDOMHyperRenderer'
 
 export default function hyperRendererFactory() {
-  return new HyperRenderer()
+  return new VDOMHyperRenderer()
 }

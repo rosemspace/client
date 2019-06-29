@@ -24,6 +24,7 @@ const tsconfigPathsPlugin = new TsconfigPathsPlugin()
 
 
 export default {
+  // cache: true,
   mode: 'development',
   devtool: 'cheap-module-eval-source-map',
   // devtool: 'eval-source-map',
@@ -31,7 +32,9 @@ export default {
   //   console: true,
   // },
   context: resolve(__dirname),
-  entry: './packages/@rosemlab/app/index.ts',
+  entry: {
+    main: './packages/@rosemlab/app/index.ts',
+  },
   // entry: './packages/@rosemlab/vue-app/main.ts',
   output: {
     filename: 'main.js',

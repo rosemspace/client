@@ -1,6 +1,6 @@
-import Renderer from './Renderer'
+import DOMRenderer from './DOMRenderer'
 
-export default interface Hydrator<InputNode, OutputNode> {
+export default interface DOMHydrator<InputNode, OutputNode> {
   hydrate<
     ParentNode extends OutputNode,
     DocumentFragment extends ParentNode,
@@ -10,7 +10,7 @@ export default interface Hydrator<InputNode, OutputNode> {
     CDATASection extends OutputNode = OutputNode
   >(
     inputNode: InputNode,
-    renderer: Renderer<
+    renderer: DOMRenderer<
       OutputNode,
       ParentNode,
       DocumentFragment,

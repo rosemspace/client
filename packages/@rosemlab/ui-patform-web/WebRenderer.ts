@@ -1,8 +1,8 @@
-import { RendererAPI } from '@rosemlab/dom-api'
+import { DOMRenderer } from '@rosemlab/dom-api'
 
 export default class WebRenderer
   implements
-    RendererAPI<
+    DOMRenderer<
       Node,
       Node & ParentNode,
       DocumentFragment,

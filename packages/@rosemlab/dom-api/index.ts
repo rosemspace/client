@@ -1,5 +1,5 @@
-export { default as RendererAPI } from './Renderer'
-export { default as HydratorAPI } from './Hydrator'
+export { default as DOMRenderer } from './DOMRenderer'
+export { default as DOMHydrator } from './DOMHydrator'
 
 export const enum NodeType {
   ELEMENT_NODE = 1,

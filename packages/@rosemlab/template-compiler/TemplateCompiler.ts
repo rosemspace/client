@@ -6,7 +6,7 @@ import {
   StartTag,
   Content,
 } from '@rosemlab/xml-parser/nodes'
-import { RendererAPI } from '@rosemlab/dom-api'
+import { DOMRenderer } from '@rosemlab/dom-api'
 
 export default class TemplateCompiler<
   Node,
@@ -17,7 +17,7 @@ export default class TemplateCompiler<
   Comment extends Node = Node,
   CDATASection extends Node = Node
 > implements HookList {
-  protected renderer: RendererAPI<
+  protected renderer: DOMRenderer<
     Node,
     ParentNode,
     DocumentFragment,
@@ -32,7 +32,7 @@ export default class TemplateCompiler<
   protected element!: Element
 
   constructor(
-    renderer: RendererAPI<
+    renderer: DOMRenderer<
       Node,
       ParentNode,
       DocumentFragment,
