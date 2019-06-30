@@ -1,10 +1,10 @@
 import isNaN from 'lodash/isNaN'
 import canRedefineProperty from '@rosemlab/common-util/canRedefineProperty'
-import { OBSERVER_KEY } from './index'
+import { storage, OBSERVABLE_KEY } from '.'
 import normalizeDescriptor from './normalizeDescriptor'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 import ComputedPropertyDescriptor from './ComputedPropertyDescriptor'
-import Observer from './Observer'
+import Observable from './Observable'
 
 export default function defineComputedProperty(
   observableObject: ObservableObject,
@@ -17,11 +17,13 @@ export default function defineComputedProperty(
     )
   }
 
-  const storage: Observer = observableObject[OBSERVER_KEY]
+  const observable: Observable = observableObject[OBSERVABLE_KEY]
+
   descriptor = normalizeDescriptor(
     descriptor,
     observableObject[computedProperty]
   )
+
   const { enumerable, configurable, value, get, set } = descriptor
   const getValue = value || get
 
@@ -31,11 +33,10 @@ export default function defineComputedProperty(
     )
   }
 
-  storage.dependentObserver = function(
+  storage.observer = function(
     newValue: any,
     oldValue: any,
-    property: ObservablePropertyKey,
-    observableObject: ObservableObject
+    property: ObservablePropertyKey
   ): any {
     observableObject[computedProperty] = getValue.call(
       observableObject,
@@ -59,7 +60,7 @@ export default function defineComputedProperty(
       configurable,
     },
     get: function reactiveGetter(): any {
-      storage.dependOnProperty(computedProperty)
+      observable.dependOnProperty(computedProperty)
 
       return computedValue
     },
@@ -81,10 +82,10 @@ export default function defineComputedProperty(
           observableObject
         )
 
-        storage.dispatchPropertyObservers(computedProperty, newValue, oldValue)
+        observable.notifyPropertyObserver(computedProperty, newValue, oldValue)
       }
     },
   })
 
-  delete storage.dependentObserver
+  delete storage.observer
 }

@@ -1,4 +1,5 @@
-import { OBSERVER_KEY } from './index'
+import forEach from 'lodash/forEach'
+import { OBSERVABLE_KEY } from './index'
 import {
   NON_ENUMERABLE_DESCRIPTOR,
   PERMISSIVE_DESCRIPTOR,
@@ -7,7 +8,7 @@ import defineProperty from './defineProperty'
 import defineComputedProperty from './defineComputedProperty'
 import observeProperty from './observeProperty'
 import observeProperties from './observeProperties'
-import Observer from './Observer'
+import Observable from './Observable'
 
 const getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
 const nativeDefineProperty = Object.defineProperty
@@ -18,16 +19,15 @@ export default class ObservableObject implements Object {
   [index: number]: any
   [key: string]: any
 
-  private [OBSERVER_KEY]: Observer
+  private [OBSERVABLE_KEY]: Observable
 
   public constructor(object: object) {
-    Object.defineProperty(this, OBSERVER_KEY, {
+    nativeDefineProperty(this, OBSERVABLE_KEY, {
       ...NON_ENUMERABLE_DESCRIPTOR,
-      value: new Observer(this),
+      value: new Observable(this),
     })
 
-    // todo improve perf
-    for (const [property, value] of Object.entries(object)) {
+    forEach(object, (value: any, property: string | number) => {
       const descriptor = getOwnPropertyDescriptor(object, property)
 
       if (null == descriptor || true === descriptor.configurable) {
@@ -39,7 +39,7 @@ export default class ObservableObject implements Object {
       } else {
         nativeDefineProperty(this, property, descriptor)
       }
-    }
+    })
   }
 
   public static create(object: object): ObservableObject {

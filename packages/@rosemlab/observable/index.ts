@@ -1,6 +1,12 @@
+import supportsSymbol from '@rosemlab/common-util/supportsSymbol'
+import Storage from './Storage'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 
-export const OBSERVER_KEY = '__ob__'
+export const OBSERVABLE_KEY: unique symbol = supportsSymbol
+  ? Symbol('observable')
+  : ('__ob__' as any)
+
+export const storage: Storage = {}
 
 const SSR_ATTRIBUTE = 'data-server-rendered'
 
@@ -31,6 +37,44 @@ const arrayMethodsToPatch = [
 ]
 
 export default class {
+  static test2() {
+    let o1 = ObservableObject.create({
+      value: 'rosem',
+    })
+    let o2 = ObservableObject.create({
+      value: 'roshe',
+    })
+    let o3 = ObservableObject.create({})
+
+    ObservableObject.defineComputedProperty(o3, 'value', {
+      get(
+        newVal: any,
+        oldVal: any,
+        prop: ObservablePropertyKey,
+        obj: ObservableObject
+      ): string {
+        console.log(o1.value + '+' + o2.value)
+        return o1.value + '+' + o2.value
+      },
+    })
+    // ObservableObject.observeProperty(o1, 'value', function(
+    //   newValue: string
+    // ) {
+    //   console.log(newValue, o3.value);
+    // })
+    // ObservableObject.observeProperty(o2, 'value', function(
+    //   newValue: string
+    // ) {
+    //   console.log(newValue, o3.value);
+    // })
+    // @ts-ignore
+    window.o1 = o1
+    // @ts-ignore
+    window.o2 = o2
+    // @ts-ignore
+    window.o3 = o3
+  }
+
   static test() {
     let data = {
       firstName: '',

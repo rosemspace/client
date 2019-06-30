@@ -1,10 +1,10 @@
 import isNaN from 'lodash/isNaN'
 import canRedefineProperty from '@rosemlab/common-util/canRedefineProperty'
-import { OBSERVER_KEY } from './index'
+import { OBSERVABLE_KEY } from './index'
 import normalizeDescriptor from './normalizeDescriptor'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 import ObservablePropertyDescriptor from './ObservablePropertyDescriptor'
-import Observer from './Observer'
+import Observable from './Observable'
 
 export default function defineProperty(
   observableObject: ObservableObject,
@@ -15,8 +15,10 @@ export default function defineProperty(
     throw new TypeError(`Cannot redefine property: ${property}`)
   }
 
-  const storage: Observer = observableObject[OBSERVER_KEY]
+  const observable: Observable = observableObject[OBSERVABLE_KEY]
+
   descriptor = normalizeDescriptor(descriptor, observableObject[property])
+
   const { enumerable, configurable, get, set } = descriptor
   let { value } = descriptor
 
@@ -24,7 +26,7 @@ export default function defineProperty(
     enumerable,
     configurable,
     get: function reactiveGetter(): any {
-      storage.dependOnProperty(property)
+      observable.dependOnProperty(property)
 
       return get ? get.call(observableObject, observableObject) : value
     },
@@ -51,7 +53,7 @@ export default function defineProperty(
             observableObject
           )
         : (value = newValue)
-      storage.dispatchPropertyObservers(property, newValue, oldValue)
+      observable.notifyPropertyObserver(property, newValue, oldValue)
     },
   })
 }

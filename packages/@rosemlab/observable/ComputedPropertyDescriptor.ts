@@ -1,10 +1,10 @@
 import GenericPropertyDescriptor from './GenericPropertyDescriptor'
-import ObserveFunction from './ObserveFunction'
+import Observer from './Observer'
 
 export default interface ComputedPropertyDescriptor
   extends GenericPropertyDescriptor {
-  value?: ObserveFunction
-  get?: ObserveFunction
-  set?: ObserveFunction
+  value?: Observer
+  get?: Observer
+  set?: Observer
   noCache?: boolean
 }

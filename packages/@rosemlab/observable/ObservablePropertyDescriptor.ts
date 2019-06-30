@@ -1,10 +1,10 @@
 import GenericPropertyDescriptor from './GenericPropertyDescriptor'
 import ObservableObject from './ObservableObject'
-import ObserveFunction from './ObserveFunction'
+import Observer from './Observer'
 
 export default interface ObservablePropertyDescriptor
   extends GenericPropertyDescriptor {
   get?(observableObject: ObservableObject): any
-  set?: ObserveFunction
+  set?: Observer
   deep?: boolean
 }
