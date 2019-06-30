@@ -4,6 +4,4 @@ declare module '*.sfc' {
   const descriptor: SFCDescriptor
 
   export default descriptor
-
-  export let test: string
 }

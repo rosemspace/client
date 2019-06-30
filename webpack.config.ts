@@ -171,6 +171,7 @@ export default {
             options: {
               sourceMap: true,
               // noPad: true,
+              // exportName: 'descriptor',
             },
           }
         ],

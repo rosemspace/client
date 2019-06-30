@@ -16,10 +16,9 @@ const nativeDefineProperty = Object.defineProperty
 export type ObservablePropertyKey = string | number
 
 export default class ObservableObject implements Object {
+  [OBSERVABLE_KEY]: Observable
   [index: number]: any
   [key: string]: any
-
-  private [OBSERVABLE_KEY]: Observable
 
   public constructor(object: object) {
     nativeDefineProperty(this, OBSERVABLE_KEY, {

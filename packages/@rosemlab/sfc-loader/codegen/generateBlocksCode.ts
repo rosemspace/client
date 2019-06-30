@@ -25,7 +25,8 @@ const ignoredAttrs = ['block', 'index', 'lang', 'src', 'issuerPath']
 
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
-  descriptor: SFCDescriptor
+  descriptor: SFCDescriptor,
+  exportName?: string
 ): string {
   const pluginOptions: SFCLoaderPluginOptions = getOptions(loaderContext)
 
@@ -34,56 +35,56 @@ export default function generateBlocksCode(
   }
 
   let importCode = ''
-  let exportCode = '\nexport let test = "TEST";\nexport default {'
+  let exportCode = `\nexport ${
+    null == exportName || !exportName
+      ? 'default'
+      : 'default' !== exportName
+      ? `let ${exportName} =`
+      : exportName
+  } {`
 
-  forEach(
-    descriptor,
-    (blocks: SFCBlock[], name: string): void => {
-      exportCode += `\n  "${name}": [`
-      importCode +=
-        `\n/* ${name} blocks */\n` +
-        blocks
-          .map((block, index) => {
-            const attrSet = { ...block.attrSet! }
-            const internalAttrSet: { [name: string]: string } = {
-              block: qs.escape(name),
+  forEach(descriptor, (blocks: SFCBlock[], name: string): void => {
+    exportCode += `\n  "${name}": [`
+    importCode +=
+      `\n/* ${name} blocks */\n` +
+      blocks
+        .map((block, index) => {
+          const attrSet = { ...block.attrSet! }
+          const internalAttrSet: { [name: string]: string } = {
+            block: qs.escape(name),
+          }
+          let src: string = loaderContext.resourcePath
+
+          internalAttrSet.index = String(index)
+
+          // No need `lang` attribute if we have external resource
+          if (attrSet.src) {
+            src = attrSet.src
+            internalAttrSet.issuerPath = qs.escape(loaderContext.resourcePath)
+          } else {
+            const lang: string =
+              attrSet.lang || pluginOptions.blockLangMap[name]
+
+            if (lang) {
+              internalAttrSet.lang = lang
             }
-            let src: string = loaderContext.resourcePath
+          }
 
-            internalAttrSet.index = String(index)
+          // Ignore user attributes which are built-in
+          delete attrSet[pluginOptions.fileExtension]
+          ignoredAttrs.forEach((attrName: string): void => {
+            delete attrSet[attrName]
+          })
 
-            // No need `lang` attribute if we have external resource
-            if (attrSet.src) {
-              src = attrSet.src
-              internalAttrSet.issuerPath = qs.escape(loaderContext.resourcePath)
-            } else {
-              const lang: string =
-                attrSet.lang || pluginOptions.blockLangMap[name]
+          const internalAttrsQuery: string = attrsToQuery(internalAttrSet)
+          const attrsQuery: string = attrsToQuery(attrSet)
+          const inheritQuery: string = loaderContext.resourceQuery
+            ? `&${loaderContext.resourceQuery.slice(1)}`
+            : ''
+          const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
+          const blockName: string = `${name}${index}`
 
-              if (lang) {
-                internalAttrSet.lang = lang
-              }
-            }
-
-            // Ignore user attributes which are built-in
-            delete attrSet[pluginOptions.fileExtension]
-            ignoredAttrs.forEach(
-              (attrName: string): void => {
-                delete attrSet[attrName]
-              }
-            )
-
-            const internalAttrsQuery: string = attrsToQuery(internalAttrSet)
-            const attrsQuery: string = attrsToQuery(attrSet)
-            const inheritQuery: string = loaderContext.resourceQuery
-              ? `&${loaderContext.resourceQuery.slice(1)}`
-              : ''
-            const query: string = `?${
-              pluginOptions.fileExtension
-            }${internalAttrsQuery}${attrsQuery}${inheritQuery}`
-            const blockName: string = `${name}${index}`
-
-            exportCode += `
+          exportCode += `
     {
       attrSet: ${stringify(block.attrSet)},
       attrs: ${stringify(block.attrs)},
@@ -99,16 +100,15 @@ export default function generateBlocksCode(
       void: ${block.void},
     },`
 
-            return `import ${blockName} from ${stringifyRequest(
-              loaderContext,
-              src + query
-            )}`
-            // + `\nif (typeof block{i} === 'function') block{i}(component)`
-          })
-          .join(`\n`)
-      exportCode += '\n  ],'
-    }
-  )
+          return `import ${blockName} from ${stringifyRequest(
+            loaderContext,
+            src + query
+          )}`
+          // + `\nif (typeof block{i} === 'function') block{i}(component)`
+        })
+        .join(`\n`)
+    exportCode += '\n  ],'
+  })
   importCode += '\n'
   exportCode += '\n}\n'
 
