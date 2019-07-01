@@ -1,4 +1,4 @@
 export default interface MatchRange {
-  readonly start: number
-  readonly end: number
+  start: number
+  end: number
 }

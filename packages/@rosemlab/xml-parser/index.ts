@@ -14,5 +14,3 @@ export type NamespaceMap = {
 export type TypeMap = {
   [type: string]: string
 }
-
-export type Mutable<T> = { -readonly [P in keyof T]: T[P] }

@@ -28,7 +28,7 @@ import HookList from './HookList'
 import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
 import { MatchRange, Attr, Content, EndTag, StartTag } from './nodes'
 import decodeAttrEntities from './decodeAttrEntities'
-import { Mutable, NamespaceMap, TypeMap } from '.'
+import { NamespaceMap, TypeMap } from '.'
 
 export const defaultNamespaceMap: NamespaceMap = {
   xml: XML_NAMESPACE,
@@ -287,7 +287,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
 
     const attrs: Attr[] = []
-    const startTag: Mutable<StartTag> = {
+    const startTag: StartTag = {
       name: tagName,
       prefix: tagPrefix,
       localName: tagLocalName,
@@ -314,7 +314,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       const attrNameLowerCased = attrMatch[1].toLowerCase()
       // Local name of an attribute, i. e. "xlink" (before ":")
       const [attrPrefix, attrLocalName] = attrNameLowerCased.split(':', 2)
-      const attr: Mutable<Attr> = {
+      const attr: Attr = {
         name: attrMatch[1],
         nameLowerCased: attrNameLowerCased,
         namespaceURI: undefined,

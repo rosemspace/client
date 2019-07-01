@@ -7,7 +7,6 @@ import {
   XLINK_NAMESPACE,
 } from '@rosemlab/w3-util'
 import XMLParser, {
-  Mutable,
   XMLParserOptions,
   XMLProcessorMap,
 } from '@rosemlab/xml-parser'
@@ -92,9 +91,9 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
 
         if (
           null !=
-          (this.namespaceURI = (startTag as Mutable<
-            StartTag
-          >).namespaceURI = this.namespaceMap[startTag.nameLowerCased])
+          (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
+            startTag.nameLowerCased
+          ])
         ) {
           this.useProcessor(this.namespaceURI)
         }

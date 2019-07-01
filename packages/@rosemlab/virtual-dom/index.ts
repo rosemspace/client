@@ -11,14 +11,13 @@ export interface VirtualNode {
   nextSibling?: VirtualNode
 }
 
-export type Primitive = string | number | boolean
-
 export type VirtualNodeKey = Primitive
 
 export type VirtualNodeAttrDescriptor = {
   readonly prefix?: string
   readonly localName: string
   readonly namespaceURI?: string
+  // readonly ownerElement?: VirtualElement
   value: Primitive
 }
 
@@ -76,8 +75,7 @@ export interface VirtualElement<VirtualElementProps extends object = {}>
 }
 
 export interface VirtualCustomElement<
-  VirtualElementProps extends object,
-  VirtualCustomElementProps extends object
-> extends VirtualElement<VirtualElementProps> {
+  VirtualCustomElementProps extends object = {}
+> extends VirtualElement {
   customProps: VirtualCustomElementProps
 }
