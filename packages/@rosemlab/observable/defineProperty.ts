@@ -3,36 +3,36 @@ import canRedefineProperty from '@rosemlab/common-util/canRedefineProperty'
 import { OBSERVABLE_KEY } from './index'
 import normalizeDescriptor from './normalizeDescriptor'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
-import ObservablePropertyDescriptor from './ObservablePropertyDescriptor'
+import ObservablePropertyDescriptor from './descriptors/ObservablePropertyDescriptor'
 import Observable from './Observable'
 
 export default function defineProperty(
-  observableObject: ObservableObject,
+  target: ObservableObject,
   property: ObservablePropertyKey,
   descriptor?: ObservablePropertyDescriptor & ThisType<ObservableObject>
 ): void {
-  if (!canRedefineProperty(observableObject, property)) {
+  if (!canRedefineProperty(target, property)) {
     throw new TypeError(`Cannot redefine property: ${property}`)
   }
 
-  const observable: Observable = observableObject[OBSERVABLE_KEY]
+  const observable: Observable = target[OBSERVABLE_KEY]
 
-  descriptor = normalizeDescriptor(descriptor, observableObject[property])
+  descriptor = normalizeDescriptor(descriptor, target[property])
 
   const { enumerable, configurable, get, set } = descriptor
   let { value } = descriptor
 
-  Object.defineProperty(observableObject, property, {
+  Object.defineProperty(target, property, {
     enumerable,
     configurable,
     get: function reactiveGetter(): any {
       observable.dependOnProperty(property)
 
-      return get ? get.call(observableObject, observableObject) : value
+      return get ? get.call(target, target) : value
     },
     set: function reactiveSetter(newValue: any): void {
       const oldValue = get
-        ? get.call(observableObject, observableObject)
+        ? get.call(target, target)
         : value
 
       if (
@@ -46,11 +46,11 @@ export default function defineProperty(
 
       set
         ? set.call(
-            observableObject,
+            target,
             newValue,
             oldValue,
             property,
-            observableObject
+            target
           )
         : (value = newValue)
       observable.notifyPropertyObserver(property, newValue, oldValue)

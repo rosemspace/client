@@ -3,9 +3,9 @@ import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 import Observer from './Observer'
 
 export default function observeProperty(
-  observableObject: ObservableObject,
+  target: ObservableObject,
   property: ObservablePropertyKey,
   observer: Observer
 ): void {
-  observableObject[OBSERVABLE_KEY].observeProperty(property, observer)
+  target[OBSERVABLE_KEY].observeProperty(property, observer)
 }

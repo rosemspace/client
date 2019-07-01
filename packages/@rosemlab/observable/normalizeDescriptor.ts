@@ -1,4 +1,4 @@
-import GenericPropertyDescriptor from './GenericPropertyDescriptor'
+import GenericPropertyDescriptor from './descriptors/GenericPropertyDescriptor'
 
 const getOwnPropertyNames = Object.getOwnPropertyNames
 const hasOwnProperty = Object.prototype.hasOwnProperty

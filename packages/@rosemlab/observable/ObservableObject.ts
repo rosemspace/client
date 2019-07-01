@@ -3,7 +3,7 @@ import { OBSERVABLE_KEY } from './index'
 import {
   NON_ENUMERABLE_DESCRIPTOR,
   PERMISSIVE_DESCRIPTOR,
-} from './GenericPropertyDescriptor'
+} from './descriptors/GenericPropertyDescriptor'
 import defineProperty from './defineProperty'
 import defineComputedProperty from './defineComputedProperty'
 import observeProperty from './observeProperty'
@@ -20,7 +20,7 @@ export default class ObservableObject implements Object {
   [index: number]: any
   [key: string]: any
 
-  public constructor(object: object) {
+  public constructor(object: object = {}) {
     nativeDefineProperty(this, OBSERVABLE_KEY, {
       ...NON_ENUMERABLE_DESCRIPTOR,
       value: new Observable(this),

@@ -3,31 +3,32 @@ import canRedefineProperty from '@rosemlab/common-util/canRedefineProperty'
 import { storage, OBSERVABLE_KEY } from '.'
 import normalizeDescriptor from './normalizeDescriptor'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
-import ComputedPropertyDescriptor from './ComputedPropertyDescriptor'
+import ComputedPropertyDescriptor from './descriptors/ComputedPropertyDescriptor'
 import Observable from './Observable'
+import Observer from './Observer'
 
 export default function defineComputedProperty(
-  observableObject: ObservableObject,
+  target: ObservableObject,
   computedProperty: ObservablePropertyKey,
   descriptor: ComputedPropertyDescriptor & ThisType<ObservableObject>
 ): void {
-  if (!canRedefineProperty(observableObject, computedProperty)) {
+  if (!canRedefineProperty(target, computedProperty)) {
     throw new TypeError(
       `Cannot redefine computed property: ${computedProperty}`
     )
   }
 
-  const observable: Observable = observableObject[OBSERVABLE_KEY]
+  const observable: Observable = target[OBSERVABLE_KEY]
 
   descriptor = normalizeDescriptor(
     descriptor,
-    observableObject[computedProperty]
+    target[computedProperty]
   )
 
   const { enumerable, configurable, value, get, set } = descriptor
-  const getValue = value || get
+  const observer: Observer | undefined = value || get
 
-  if (!getValue) {
+  if (!observer) {
     throw new TypeError(
       'Invalid property descriptor. Computed property descriptor should have value or getter'
     )
@@ -38,23 +39,23 @@ export default function defineComputedProperty(
     oldValue: any,
     property: ObservablePropertyKey
   ): any {
-    observableObject[computedProperty] = getValue.call(
-      observableObject,
+    target[computedProperty] = observer.call(
+      target,
       newValue,
       oldValue,
       property,
-      observableObject
+      target
     )
   }
   // Collect properties on which this computed property dependent
-  let computedValue: any = getValue.call(
-    observableObject,
+  let computedValue: any = observer.call(
+    target,
     undefined,
     undefined,
     computedProperty,
-    observableObject
+    target
   )
-  Object.defineProperty(observableObject, computedProperty, {
+  Object.defineProperty(target, computedProperty, {
     ...{
       enumerable,
       configurable,
@@ -75,11 +76,11 @@ export default function defineComputedProperty(
 
       if (set) {
         set.call(
-          observableObject,
+          target,
           newValue,
           oldValue,
           computedProperty,
-          observableObject
+          target
         )
 
         observable.notifyPropertyObserver(computedProperty, newValue, oldValue)
@@ -87,5 +88,5 @@ export default function defineComputedProperty(
     },
   })
 
-  delete storage.observer
+  storage.observer = undefined
 }

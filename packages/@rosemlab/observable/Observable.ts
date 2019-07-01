@@ -5,14 +5,14 @@ import Observer from './Observer'
 export default class Observable {
   // public dependentObserver?: ObserveFunction
 
-  private readonly observableObject: ObservableObject
+  private readonly target: ObservableObject
 
   private observers: { [key: string]: Array<Observer> } = {}
 
   public constructor(
-    observableObject: ObservableObject
+    target: ObservableObject
   ) {
-    this.observableObject = observableObject
+    this.target = target
   }
 
   public observeProperty(
@@ -40,11 +40,11 @@ export default class Observable {
     if (this.observers[property]) {
       this.observers[property].forEach((observer: Observer): void => {
         observer.call(
-          this.observableObject,
+          this.target,
           newValue,
           oldValue,
           property,
-          this.observableObject
+          this.target
         )
       })
     }

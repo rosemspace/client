@@ -7,7 +7,6 @@ import { NodeType } from '@rosemlab/dom-api'
 import VDOMRenderer from './VDOMRenderer'
 import {
   VirtualInstance,
-  Primitive,
   VirtualChildNodeList,
   VirtualNode,
   VirtualNodeAttrDescriptor,

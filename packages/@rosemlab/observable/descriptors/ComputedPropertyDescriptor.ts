@@ -1,5 +1,5 @@
 import GenericPropertyDescriptor from './GenericPropertyDescriptor'
-import Observer from './Observer'
+import Observer from '../Observer'
 
 export default interface ComputedPropertyDescriptor
   extends GenericPropertyDescriptor {

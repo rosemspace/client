@@ -6,6 +6,6 @@ export default interface Observer extends Function {
     oldValue: any,
     newValue: any,
     property: ObservablePropertyKey,
-    observableObject: ObservableObject
+    target: ObservableObject
   ): any
 }
