@@ -1,14 +1,14 @@
-# @rosemlab/observer
+# @rosemlab/observable
 
 ## API
 
 ```javascript
-import { state, computed, observe } from '@rosemlab/observer'
+import { state, computed, watch } from '@rosemlab/observer'
 
 const data = state({ count: 1 })
 const plusOne = computed(() => data.count + 1)
 
-observe(plusOne, value => {
+watch(plusOne, value => {
   console.log(`count + 1 is ${value}`)
 })
 ```

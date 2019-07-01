@@ -83,8 +83,7 @@ export default function defineComputedProperty(
           target
         )
 
-        observable.notifyPropertyObserver(computedProperty, newValue, oldValue)
-      }
+      observable.notifyPropertyObserver(computedProperty, newValue, oldValue)
     },
   })
 

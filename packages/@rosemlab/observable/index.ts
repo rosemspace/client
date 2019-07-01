@@ -15,6 +15,10 @@ export const OBSERVABLE_KEY: unique symbol = supportsSymbol
 
 export const storage: Storage = {}
 
+export function state(target: object): ObservableObject {
+  return new ObservableObject(target)
+}
+
 export function value(
   value: Primitive | ObservablePropertyDescriptor
 ): ObservableObject {
@@ -33,7 +37,7 @@ export function computed(
     'value',
     isFunction(value)
       ? {
-          value,
+          get: value,
         }
       : value
   )

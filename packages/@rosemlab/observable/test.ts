@@ -1,8 +1,8 @@
-import { computed, value, watch } from '.'
+import { computed, state, value, watch } from '.'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 
 export default class {
-  static test3() {
+  static test4() {
     // reactive state
     const count = value(0)
     // computed state
@@ -17,6 +17,19 @@ export default class {
       count,
       plusOne,
       increment
+    })
+  }
+
+  static test3() {
+    const data = state({ count: 1 })
+    const plusOne = computed(() => data.count + 1)
+
+    watch(plusOne, value => {
+      console.log(`count + 1 is ${value}`)
+    })
+    Object.assign(window, {
+      data,
+      plusOne,
     })
   }
 
