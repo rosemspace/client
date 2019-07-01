@@ -49,7 +49,7 @@ export default function generateBlocksCode(
       `\n/* ${name} blocks */\n` +
       blocks
         .map((block, index) => {
-          const attrSet = { ...block.attrSet! }
+          const attrMap = { ...block.attrMap! }
           const internalAttrSet: { [name: string]: string } = {
             block: qs.escape(name),
           }
@@ -58,12 +58,12 @@ export default function generateBlocksCode(
           internalAttrSet.index = String(index)
 
           // No need `lang` attribute if we have external resource
-          if (attrSet.src) {
-            src = attrSet.src
+          if (attrMap.src) {
+            src = String(attrMap.src)
             internalAttrSet.issuerPath = qs.escape(loaderContext.resourcePath)
           } else {
             const lang: string =
-              attrSet.lang || pluginOptions.blockLangMap[name]
+              String(attrMap.lang || pluginOptions.blockLangMap[name])
 
             if (lang) {
               internalAttrSet.lang = lang
@@ -71,13 +71,13 @@ export default function generateBlocksCode(
           }
 
           // Ignore user attributes which are built-in
-          delete attrSet[pluginOptions.fileExtension]
+          delete attrMap[pluginOptions.fileExtension]
           ignoredAttrs.forEach((attrName: string): void => {
-            delete attrSet[attrName]
+            delete attrMap[attrName]
           })
 
           const internalAttrsQuery: string = attrsToQuery(internalAttrSet)
-          const attrsQuery: string = attrsToQuery(attrSet)
+          const attrsQuery: string = attrsToQuery(attrMap)
           const inheritQuery: string = loaderContext.resourceQuery
             ? `&${loaderContext.resourceQuery.slice(1)}`
             : ''
@@ -86,7 +86,7 @@ export default function generateBlocksCode(
 
           exportCode += `
     {
-      attrSet: ${stringify(block.attrSet)},
+      attrMap: ${stringify(block.attrMap)},
       attrs: ${stringify(block.attrs)},
       content: ${blockName},
       localName: "${block.localName}",

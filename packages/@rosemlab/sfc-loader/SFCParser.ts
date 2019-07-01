@@ -5,7 +5,7 @@ import hashSum from 'hash-sum'
 import HTMLParser from '@rosemlab/html-parser'
 import { qualifiedNameRegExp } from '@rosemlab/xml-syntax'
 import { MatchRange, StartTag, Content } from '@rosemlab/xml-parser/nodes'
-import AttrSet from '@rosemlab/xml-parser/modules/AttrSet'
+import AttrMapModule from '@rosemlab/xml-parser/modules/AttrMapModule'
 import SFCDescriptor from './SFCDescriptor'
 import SFCBlock from './SFCBlock'
 import generateSourceMap from './codegen/generateSourceMap'
@@ -30,7 +30,7 @@ export default class SFCParser extends HTMLParser {
       rawTextElement: new RegExp(qualifiedNameRegExp.source, 'i'),
     })
 
-    this.addModule(new AttrSet())
+    this.addModule(new AttrMapModule())
   }
 
   parseFromString(
@@ -72,7 +72,7 @@ export default class SFCParser extends HTMLParser {
                 block.content = ''.padStart(offset, '\n') + block.content
               }
 
-              if (!block.attrSet!.src) {
+              if (!block.attrMap!.src) {
                 block.map = generateSourceMap(
                   filename,
                   source,

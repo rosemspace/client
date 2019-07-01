@@ -4,7 +4,6 @@ import Attr from './Attr'
 export default interface StartTag extends MatchRange {
   readonly [name: string]: any
   readonly attrs: Attr[]
-  // attrMap: {[name: string]: Attr}
   readonly localName: string
   readonly name: string
   readonly nameLowerCased: string

@@ -45,7 +45,7 @@ import script1 from './App.sfc?sfc&block=script&index=0&lang=ts'
 export default {
   template: [
     {
-      attrSet: {
+      attrMap: {
         lang: 'html',
       },
       attrs: [],

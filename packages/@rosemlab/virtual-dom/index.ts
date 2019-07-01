@@ -55,7 +55,7 @@ export interface VirtualText extends VirtualContentNode {
 
 export interface VirtualComment extends VirtualContentNode {
   readonly nodeName: NodeName.COMMENT_NODE
-  type: NodeType.COMMENT_NODE
+  readonly type: NodeType.COMMENT_NODE
 }
 
 export interface VirtualCDATASection extends VirtualContentNode {
