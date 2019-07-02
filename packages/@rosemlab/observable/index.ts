@@ -13,7 +13,21 @@ export const OBSERVABLE_KEY: unique symbol = supportsSymbol
   ? Symbol('observable')
   : ('__ob__' as any)
 
-export const storage: Storage = {}
+export const PERMISSIVE_DESCRIPTOR = {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+}
+
+export const NON_ENUMERABLE_DESCRIPTOR = {
+  configurable: true,
+  enumerable: false,
+  writable: true,
+}
+
+export const storage: Storage = {
+  allowComputed: false,
+}
 
 export function state(target: object): ObservableObject {
   return new ObservableObject(target)

@@ -1,16 +1,19 @@
 import isNaN from 'lodash/isNaN'
 import canRedefineProperty from '@rosemlab/common-util/canRedefineProperty'
 import { storage, OBSERVABLE_KEY } from '.'
-import normalizeDescriptor from './normalizeDescriptor'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
-import ComputedPropertyDescriptor from './descriptors/ComputedPropertyDescriptor'
+import ComputedPropertyDescriptor, {
+  normalize,
+} from './descriptors/ComputedPropertyDescriptor'
 import Observable from './Observable'
 import Observer from './Observer'
+
+const nativeDefineProperty = Object.defineProperty
 
 export default function defineComputedProperty(
   target: ObservableObject,
   computedProperty: ObservablePropertyKey,
-  descriptor: ComputedPropertyDescriptor & ThisType<ObservableObject>
+  descriptor: ComputedPropertyDescriptor
 ): void {
   if (!canRedefineProperty(target, computedProperty)) {
     throw new TypeError(
@@ -18,15 +21,11 @@ export default function defineComputedProperty(
     )
   }
 
+  descriptor = normalize(descriptor, target[computedProperty])
+
   const observable: Observable = target[OBSERVABLE_KEY]
-
-  descriptor = normalizeDescriptor(
-    descriptor,
-    target[computedProperty]
-  )
-
-  const { enumerable, configurable, value, get, set } = descriptor
-  const observer: Observer | undefined = value || get
+  const { enumerable, configurable, get, set } = descriptor
+  const observer: Observer | undefined = get
 
   if (!observer) {
     throw new TypeError(
@@ -39,6 +38,8 @@ export default function defineComputedProperty(
     oldValue: any,
     property: ObservablePropertyKey
   ): any {
+    // todo improve allowComputed
+    storage.allowComputed = true
     target[computedProperty] = observer.call(
       target,
       newValue,
@@ -46,6 +47,7 @@ export default function defineComputedProperty(
       property,
       target
     )
+    storage.allowComputed = false
   }
   // Collect properties on which this computed property dependent
   let computedValue: any = observer.call(
@@ -55,7 +57,8 @@ export default function defineComputedProperty(
     computedProperty,
     target
   )
-  Object.defineProperty(target, computedProperty, {
+
+  nativeDefineProperty(target, computedProperty, {
     ...{
       enumerable,
       configurable,
@@ -66,24 +69,26 @@ export default function defineComputedProperty(
       return computedValue
     },
     set: function reactiveSetter(newValue: any): void {
-      const oldValue = computedValue
-
-      if (newValue === oldValue || (isNaN(newValue) && isNaN(oldValue))) {
+      if (
+        newValue === computedValue ||
+        (isNaN(newValue) && isNaN(computedValue))
+      ) {
         return
       }
 
-      computedValue = newValue
-
       if (set) {
-        set.call(
-          target,
-          newValue,
-          oldValue,
-          computedProperty,
-          target
-        )
+        set.call(target, newValue, computedValue, computedProperty, target)
+      } else if (!storage.allowComputed) {
+        // todo: improve error message
+        throw new Error('Setter is not defined')
+      }
 
-      observable.notifyPropertyObserver(computedProperty, newValue, oldValue)
+      observable.notifyPropertyObserver(
+        computedProperty,
+        newValue,
+        computedValue
+      )
+      computedValue = newValue
     },
   })
 

@@ -3,8 +3,8 @@ import { OBSERVABLE_KEY } from './index'
 import {
   NON_ENUMERABLE_DESCRIPTOR,
   PERMISSIVE_DESCRIPTOR,
-} from './descriptors/GenericPropertyDescriptor'
-import defineProperty from './defineProperty'
+} from '.'
+import defineObservableProperty from './defineObservableProperty'
 import defineComputedProperty from './defineComputedProperty'
 import observeProperty from './observeProperty'
 import observeProperties from './observeProperties'
@@ -30,7 +30,7 @@ export default class ObservableObject implements Object {
       const descriptor = getOwnPropertyDescriptor(object, property)
 
       if (null == descriptor || true === descriptor.configurable) {
-        ObservableObject.defineProperty(
+        defineObservableProperty(
           this,
           property,
           null == descriptor ? { ...PERMISSIVE_DESCRIPTOR, value } : descriptor
@@ -45,7 +45,7 @@ export default class ObservableObject implements Object {
     return new ObservableObject(object)
   }
 
-  public static defineProperty: Function = defineProperty
+  public static defineObservableProperty: Function = defineObservableProperty
 
   public static defineComputedProperty: Function = defineComputedProperty
 
