@@ -1,5 +1,6 @@
+import defineObservableProperty from '@rosemlab/observable/defineObservableProperty'
 import isFunction from 'lodash/isFunction'
-import isPrimitive from '@rosemlab/common-util/isPrimitive'
+import isObject from 'lodash/isObject'
 import supportsSymbol from '@rosemlab/common-util/supportsSymbol'
 import Storage from './Storage'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
@@ -34,9 +35,15 @@ export function state(target: object): ObservableObject {
 export function value(
   value: Primitive | ObservablePropertyDescriptor
 ): ObservableObject {
-  return new ObservableObject(
-    isPrimitive(value) ? { value } : (value as ObservablePropertyDescriptor)
-  )
+  if (isObject(value)) {
+    const target: ObservableObject = new ObservableObject()
+
+    defineObservableProperty(target, 'value', value)
+
+    return target
+  }
+
+  return new ObservableObject({ value })
 }
 
 export function computed(
