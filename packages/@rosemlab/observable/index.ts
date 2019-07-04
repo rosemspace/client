@@ -25,9 +25,7 @@ export const NON_ENUMERABLE_DESCRIPTOR = {
   writable: true,
 }
 
-export const storage: Storage = {
-  allowComputed: false,
-}
+export const storage: Storage = {}
 
 export function state(target: object): ObservableObject {
   return new ObservableObject(target)

@@ -23,7 +23,6 @@ export default function defineComputedProperty(
 
   descriptor = normalize(descriptor, target[computedProperty])
 
-  const observable: Observable = target[OBSERVABLE_KEY]
   const { enumerable, configurable, get, set } = descriptor
   const observer: Observer | undefined = get
 
@@ -33,24 +32,49 @@ export default function defineComputedProperty(
     )
   }
 
+  const observable: Observable = target[OBSERVABLE_KEY]
+  let computedValue: any
+
   storage.observer = function(
     newValue: any,
     oldValue: any,
     property: ObservablePropertyKey
   ): any {
-    // todo improve allowComputed
-    storage.allowComputed = true
-    target[computedProperty] = observer.call(
+    const newComputedValue: any = observer.call(
       target,
       newValue,
       oldValue,
       property,
       target
     )
-    storage.allowComputed = false
+
+    // Reactive setter functionality
+    if (
+      newComputedValue === computedValue ||
+      (isNaN(newComputedValue) && isNaN(computedValue))
+    ) {
+      return
+    }
+
+    if (set) {
+      set.call(
+        target,
+        newComputedValue,
+        computedValue,
+        computedProperty,
+        target
+      )
+    }
+
+    observable.notifyPropertyObserver(
+      computedProperty,
+      newComputedValue,
+      computedValue
+    )
+    computedValue = newComputedValue
   }
   // Collect properties on which this computed property dependent
-  let computedValue: any = observer.call(
+  computedValue = observer.call(
     target,
     undefined,
     undefined,
@@ -59,36 +83,12 @@ export default function defineComputedProperty(
   )
 
   nativeDefineProperty(target, computedProperty, {
-    ...{
-      enumerable,
-      configurable,
-    },
+    enumerable,
+    configurable,
     get: function reactiveGetter(): any {
       observable.dependOnProperty(computedProperty)
 
       return computedValue
-    },
-    set: function reactiveSetter(newValue: any): void {
-      if (
-        newValue === computedValue ||
-        (isNaN(newValue) && isNaN(computedValue))
-      ) {
-        return
-      }
-
-      if (set) {
-        set.call(target, newValue, computedValue, computedProperty, target)
-      } else if (!storage.allowComputed) {
-        // todo: improve error message
-        throw new Error('Setter is not defined')
-      }
-
-      observable.notifyPropertyObserver(
-        computedProperty,
-        newValue,
-        computedValue
-      )
-      computedValue = newValue
     },
   })
 
