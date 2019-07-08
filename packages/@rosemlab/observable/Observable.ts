@@ -3,8 +3,6 @@ import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 import Observer from './Observer'
 
 export default class Observable {
-  // public dependentObserver?: ObserveFunction
-
   private readonly target: ObservableObject
 
   private observers: { [key: string]: Array<Observer> } = {}

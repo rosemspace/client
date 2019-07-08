@@ -28,27 +28,31 @@ export const NON_ENUMERABLE_DESCRIPTOR = {
 
 export const storage: Storage = {}
 
-export function state(target: object): ObservableObject {
+export function reactive(target: object): ObservableObject {
   return new ObservableObject(target)
 }
 
-export function value(
+export interface Binding extends ObservableObject {
+  value: any
+}
+
+export function binding(
   value: Primitive | ObservablePropertyDescriptor
-): ObservableObject {
+): Binding {
   if (isObject(value)) {
     const target: ObservableObject = new ObservableObject()
 
     defineObservableProperty(target, 'value', value)
 
-    return target
+    return target as Binding
   }
 
-  return new ObservableObject({ value })
+  return new ObservableObject({ value }) as Binding
 }
 
 export function computed(
   value: Observer | ComputedPropertyDescriptor
-): ObservableObject {
+): Binding {
   const target: ObservableObject = new ObservableObject()
 
   defineComputedProperty(
@@ -61,7 +65,7 @@ export function computed(
       : value
   )
 
-  return target
+  return target as Binding
 }
 
 export function watch(

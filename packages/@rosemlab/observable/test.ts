@@ -1,10 +1,10 @@
-import { computed, state, value, watch } from '.'
+import { computed, reactive, binding, watch } from '.'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 
 export default class {
   static test4() {
     // reactive state
-    const count = value(0)
+    const count = binding(0)
     // computed state
     const plusOne = computed(() => count.value + 1)
     // method
@@ -21,7 +21,7 @@ export default class {
   }
 
   static test3() {
-    const data = state({ count: 1 })
+    const data = reactive({ count: 1 })
     const plusOne = computed(() => data.count + 1)
 
     watch(plusOne, value => {
