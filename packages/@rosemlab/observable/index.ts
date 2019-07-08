@@ -10,6 +10,8 @@ import ComputedPropertyDescriptor from './descriptors/ComputedPropertyDescriptor
 import defineComputedProperty from './defineComputedProperty'
 import observeProperty from './observeProperty'
 
+export { default as ObservableObject } from './ObservableObject'
+
 export const OBSERVABLE_KEY: unique symbol = supportsSymbol
   ? Symbol('observable')
   : ('__ob__' as any)

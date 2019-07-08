@@ -2,8 +2,9 @@
 <!--  <template &src="../Home.sfc#logo" />-->
 <!--  <template use="line" />-->
   <h1 class="greeting">Text: <span style="font-weight: bold">{{ this.msg }}</span></h1>
-  <img src="@rosemlab/vue-app/assets/logo" alt="Logo">
-  <h2>My name is <span>{{ this.name }}</span></h2>
+  <img class="logo" src="@rosemlab/vue-app/assets/logo.png" alt="Logo">
+  <img class="logo" data-bind:src="require('@rosemlab/vue-app/assets/logo.png')" alt="Logo">
+  <h2>My name is <span :data-name="this.name">{{ this.name }}</span></h2>
 </template>
 
 <template id="line">
@@ -12,17 +13,17 @@
 
 <script lang="ts">
 // import inlineStyle from './App.sfc?sfc&block=template&lang=html&selector=h1:nth-child(1)>span:nth-child(1)'
-// import { value } from '@rosemlab/observable'
+import { reactive } from '@rosemlab/observable'
 
 const msg = 'Hello, Universe!'
 
 export default {
   setup() {
     // debugger
-    return {
+    return reactive({
       msg: 'Hello, world!!!',
       name: 'Rosem',
-    }
+    })
   }
 }
 </script>
@@ -39,6 +40,10 @@ export default 'TEST'
 <style>
 :host {
   --color: red;
+}
+
+.logo {
+  width: 100px;
 }
 
 h1 {

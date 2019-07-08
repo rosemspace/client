@@ -50,23 +50,23 @@ export default function generateBlocksCode(
       blocks
         .map((block, index) => {
           const attrMap = { ...block.attrMap! }
-          const internalAttrSet: { [name: string]: string } = {
+          const internalAttrMap: { [name: string]: string } = {
             block: qs.escape(name),
           }
           let src: string = loaderContext.resourcePath
 
-          internalAttrSet.index = String(index)
+          internalAttrMap.index = String(index)
 
           // No need `lang` attribute if we have external resource
           if (attrMap.src) {
             src = String(attrMap.src)
-            internalAttrSet.issuerPath = qs.escape(loaderContext.resourcePath)
+            internalAttrMap.issuerPath = qs.escape(loaderContext.resourcePath)
           } else {
-            const lang: string =
-              String(attrMap.lang || pluginOptions.blockLangMap[name])
+            const lang: string | number | boolean =
+              attrMap.lang || pluginOptions.blockLangMap[name]
 
-            if (lang) {
-              internalAttrSet.lang = lang
+            if (null != lang) {
+              internalAttrMap.lang = String(lang)
             }
           }
 
@@ -76,7 +76,7 @@ export default function generateBlocksCode(
             delete attrMap[attrName]
           })
 
-          const internalAttrsQuery: string = attrsToQuery(internalAttrSet)
+          const internalAttrsQuery: string = attrsToQuery(internalAttrMap)
           const attrsQuery: string = attrsToQuery(attrMap)
           const inheritQuery: string = loaderContext.resourceQuery
             ? `&${loaderContext.resourceQuery.slice(1)}`
@@ -88,13 +88,14 @@ export default function generateBlocksCode(
     {
       attrMap: ${stringify(block.attrMap)},
       attrs: ${stringify(block.attrs)},
-      content: ${blockName},
+      content: ${stringify(block.content || '')},
       localName: "${block.localName}",
       end: ${block.end},
       start: ${block.start},
       name: "${block.name}",
       nameLowerCased: "${block.nameLowerCased}",
       namespaceURI: ${stringify(block.namespaceURI)},
+      output: ${blockName},
       prefix: ${stringify(block.prefix)},
       unarySlash: "${block.unarySlash}",
       void: ${block.void},

@@ -69,14 +69,14 @@ export default class SFCParser extends HTMLParser {
                 const offset: number = (contentBefore.match(/\r?\n/g) || [])
                   .length
 
-                block.content = ''.padStart(offset, '\n') + block.content
+                block.output = ''.padStart(offset, '\n') + block.output
               }
 
               if (!block.attrMap!.src) {
                 block.map = generateSourceMap(
                   filename,
                   source,
-                  block.content,
+                  block.output,
                   sourceRoot,
                   !options.noPad
                 )
@@ -103,7 +103,7 @@ export default class SFCParser extends HTMLParser {
 
     this.descriptor[nameLowerCased].push(
       Object.assign(startTag, {
-        content: '',
+        output: '',
         end: startTag.end,
         start: startTag.end,
       })
@@ -119,7 +119,7 @@ export default class SFCParser extends HTMLParser {
       ]
 
       Object.assign(blockList[blockList.length - 1], text)
-      // blockList[blockList.length - 1].content = text.content
+      blockList[blockList.length - 1].output = text.content
     }
   }
 
