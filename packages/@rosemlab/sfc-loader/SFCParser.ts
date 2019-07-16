@@ -103,7 +103,7 @@ export default class SFCParser extends HTMLParser {
 
     this.descriptor[nameLowerCased].push(
       Object.assign(startTag, {
-        output: '',
+        output: undefined,
         end: startTag.end,
         start: startTag.end,
       })

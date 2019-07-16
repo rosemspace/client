@@ -9,28 +9,37 @@ import attrsToQuery from './attrsToQuery'
 import { getOptions, SFCLoaderPluginOptions } from '../SFCLoaderPlugin'
 
 const jsonStringify = JSON.stringify
-const stringify = (value: any, space: number = 2): string => {
+const stringify = (value: any, ignoreRootKeyList: string[] = []): string => {
   let cache: any[] = []
 
   const string: string = jsonStringify(
     value,
-    function(key: string, value: any) {
-      if (typeof value === 'object' && value !== null) {
-        if (cache.indexOf(value) !== -1) {
+    function(key: string, innerValue: any) {
+      // Ignore some unnecessary properties to reduce size of generated code
+      if (ignoreRootKeyList.includes(key) && innerValue === value[key]) {
+        return
+      }
+
+      if (typeof innerValue === 'object' && innerValue !== null) {
+        if (cache.indexOf(innerValue) !== -1) {
           // Circular reference found, discard key
           return
         }
         // Store value in our collection
-        cache.push(value)
+        cache.push(innerValue)
       }
 
-      return value
+      return innerValue
     },
-    space
+    2
   )
 
   // Enable garbage collection
   cache.length = 0
+
+  if (string) {
+    return string.replace(/\n/g, '\n    ')
+  }
 
   return string
 }
@@ -66,7 +75,7 @@ export default function generateBlocksCode(
   forEach(descriptor, (blocks: SFCBlock[], name: string): void => {
     descriptorCode += `\n  "${name}": [`
     importCode +=
-      `\n/* ${name} blocks */\n` +
+      `/* ${name} blocks */\n` +
       blocks
         .map((block: SFCBlock, index: number) => {
           const attrMap = { ...block.attrMap! }
@@ -104,7 +113,7 @@ export default function generateBlocksCode(
           const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
           const blockName: string = `${name}${index}`
 
-          descriptorCode += `\n${stringify(block)},`
+          descriptorCode += `\n    ${stringify(block, ['content', 'map'])},`
           outputCode += `\n${exportName}[${jsonStringify(
             name
           )}][${jsonStringify(index)}].output = ${blockName}`
@@ -115,11 +124,12 @@ export default function generateBlocksCode(
           )}`
           // + `\nif (typeof block{i} === 'function') block{i}(component)`
         })
-        .join(`\n`)
+        .join(`\n`) +
+      '\n'
     descriptorCode += '\n  ],'
   })
 
-  return `${importCode}\n\nconst ${exportName} = {${descriptorCode}\n}\n\n${outputCode}\n\nexport ${
+  return `${importCode}\nconst ${exportName} = {${descriptorCode}\n}\n${outputCode}\n\nexport ${
     isDefault ? `default` : ''
-  } ${exportName}`
+  } ${exportName}\n`
 }
