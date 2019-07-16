@@ -12,10 +12,10 @@ const tagAttrMap: { [tagName: string]: string[] } = {
 }
 
 export default class AssetCodeGen extends BlankModule {
-  attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {
+  attribute<T extends Attr>(attr: T): void {
     if (
-      tagAttrMap[startTag.nameLowerCased] &&
-      tagAttrMap[startTag.nameLowerCased].includes(attr.nameLowerCased)
+      tagAttrMap[attr.ownerElement.nameLowerCased] &&
+      tagAttrMap[attr.ownerElement.nameLowerCased].includes(attr.nameLowerCased)
     ) {
       attr.prefix = 'data-bind'
       attr.name = `${attr.prefix}:${attr.localName}`

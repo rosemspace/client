@@ -69,14 +69,14 @@ export default class SFCParser extends HTMLParser {
                 const offset: number = (contentBefore.match(/\r?\n/g) || [])
                   .length
 
-                block.output = ''.padStart(offset, '\n') + block.output
+                block.content = ''.padStart(offset, '\n') + block.content
               }
 
               if (!block.attrMap!.src) {
                 block.map = generateSourceMap(
                   filename,
                   source,
-                  block.output,
+                  block.content,
                   sourceRoot,
                   !options.noPad
                 )
@@ -119,7 +119,6 @@ export default class SFCParser extends HTMLParser {
       ]
 
       Object.assign(blockList[blockList.length - 1], text)
-      blockList[blockList.length - 1].output = text.content
     }
   }
 

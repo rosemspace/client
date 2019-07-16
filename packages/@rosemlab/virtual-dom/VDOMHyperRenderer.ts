@@ -9,7 +9,7 @@ import {
   VirtualInstance,
   VirtualChildNodeList,
   VirtualNode,
-  VirtualNodeAttrDescriptor,
+  VirtualAttr,
   VirtualNodeKey,
   VirtualParentNode,
 } from '.'
@@ -183,22 +183,22 @@ export default class VDOMHyperRenderer<
         forEach(
           virtualElement.attrs,
           (
-            attr: VirtualNodeAttrDescriptor | Primitive,
+            attr: VirtualAttr | Primitive,
             attrName: string
           ): void => {
             isPrimitive(attr)
               ? this.setAttribute(virtualElement, attrName, attr)
-              : null == (attr as VirtualNodeAttrDescriptor).namespaceURI
+              : null == (attr as VirtualAttr).namespaceURI
               ? this.setAttribute(
                   virtualElement,
                   attrName,
-                  (attr as VirtualNodeAttrDescriptor).value
+                  (attr as VirtualAttr).value
                 )
               : this.setAttributeNS(
                   virtualElement,
-                  (attr as VirtualNodeAttrDescriptor).namespaceURI as string,
+                  (attr as VirtualAttr).namespaceURI as string,
                   attrName,
-                  (attr as VirtualNodeAttrDescriptor).value
+                  (attr as VirtualAttr).value
                 )
           }
         )

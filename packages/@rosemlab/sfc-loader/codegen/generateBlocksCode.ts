@@ -8,16 +8,34 @@ import SFCDescriptor from '../SFCDescriptor'
 import attrsToQuery from './attrsToQuery'
 import { getOptions, SFCLoaderPluginOptions } from '../SFCLoaderPlugin'
 
-const stringify = (value: any): string => {
-  const string: string | undefined = JSON.stringify(value, null, 2)
+const jsonStringify = JSON.stringify
+const stringify = (value: any, space: number = 2): string => {
+  let cache: any[] = []
 
-  if (string) {
-    return string.replace(/\n/g, '\n      ')
-  }
+  const string: string = jsonStringify(
+    value,
+    function(key: string, value: any) {
+      if (typeof value === 'object' && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+          // Circular reference found, discard key
+          return
+        }
+        // Store value in our collection
+        cache.push(value)
+      }
+
+      return value
+    },
+    space
+  )
+
+  // Enable garbage collection
+  cache.length = 0
 
   return string
 }
 
+const DEFAULT_EXPORT_VARIABLE_NAME: string = 'sfc'
 // these are built-in query parameters so should be ignored if the user happen
 // to add them as attrs
 // `src` and `lang` will be added as internal attributes
@@ -26,7 +44,7 @@ const ignoredAttrs = ['block', 'index', 'lang', 'src', 'issuerPath']
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
   descriptor: SFCDescriptor,
-  exportName?: string
+  exportName: string = 'default'
 ): string {
   const pluginOptions: SFCLoaderPluginOptions = getOptions(loaderContext)
 
@@ -34,21 +52,23 @@ export default function generateBlocksCode(
     throw new Error('[sfc-loader Error] SFCLoaderPlugin is required')
   }
 
+  let isDefault: boolean = false
+
+  if ('default' === exportName) {
+    isDefault = true
+    exportName = DEFAULT_EXPORT_VARIABLE_NAME
+  }
+
   let importCode = ''
-  let exportCode = `\nexport ${
-    null == exportName || !exportName
-      ? 'default'
-      : 'default' !== exportName
-      ? `let ${exportName} =`
-      : exportName
-  } {`
+  let descriptorCode = ''
+  let outputCode = ''
 
   forEach(descriptor, (blocks: SFCBlock[], name: string): void => {
-    exportCode += `\n  "${name}": [`
+    descriptorCode += `\n  "${name}": [`
     importCode +=
       `\n/* ${name} blocks */\n` +
       blocks
-        .map((block, index) => {
+        .map((block: SFCBlock, index: number) => {
           const attrMap = { ...block.attrMap! }
           const internalAttrMap: { [name: string]: string } = {
             block: qs.escape(name),
@@ -84,22 +104,10 @@ export default function generateBlocksCode(
           const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
           const blockName: string = `${name}${index}`
 
-          exportCode += `
-    {
-      attrMap: ${stringify(block.attrMap)},
-      attrs: ${stringify(block.attrs)},
-      content: ${stringify(block.content || '')},
-      localName: "${block.localName}",
-      end: ${block.end},
-      start: ${block.start},
-      name: "${block.name}",
-      nameLowerCased: "${block.nameLowerCased}",
-      namespaceURI: ${stringify(block.namespaceURI)},
-      output: ${blockName},
-      prefix: ${stringify(block.prefix)},
-      unarySlash: "${block.unarySlash}",
-      void: ${block.void},
-    },`
+          descriptorCode += `\n${stringify(block)},`
+          outputCode += `\n${exportName}[${jsonStringify(
+            name
+          )}][${jsonStringify(index)}].output = ${blockName}`
 
           return `import ${blockName} from ${stringifyRequest(
             loaderContext,
@@ -108,10 +116,10 @@ export default function generateBlocksCode(
           // + `\nif (typeof block{i} === 'function') block{i}(component)`
         })
         .join(`\n`)
-    exportCode += '\n  ],'
+    descriptorCode += '\n  ],'
   })
-  importCode += '\n'
-  exportCode += '\n}\n'
 
-  return importCode + exportCode
+  return `${importCode}\n\nconst ${exportName} = {${descriptorCode}\n}\n\n${outputCode}\n\nexport ${
+    isDefault ? `default` : ''
+  } ${exportName}`
 }

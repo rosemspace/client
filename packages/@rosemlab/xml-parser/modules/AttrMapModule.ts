@@ -14,7 +14,7 @@ declare module '@rosemlab/xml-parser/nodes' {
 }
 
 export default class AttrMapModule extends BlankModule {
-  attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {
+  attribute<T extends Attr>(attr: T): void {
     const name: string = attr.name
     const value: string = attr.value
 
@@ -22,11 +22,11 @@ export default class AttrMapModule extends BlankModule {
       '' === value ||
       name.toLocaleLowerCase() === value.toLocaleLowerCase()
     ) {
-      startTag.attrMap![camelCase(name)] = true
+      attr.ownerElement.attrMap![camelCase(name)] = true
     } else {
       const numericValue: number = parseFloat(value)
 
-      startTag.attrMap![camelCase(name)] = isNaN(numericValue)
+      attr.ownerElement.attrMap![camelCase(name)] = isNaN(numericValue)
         ? value
         : numericValue
     }

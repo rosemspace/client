@@ -116,6 +116,7 @@ export default class VDOMRenderer<VirtualElementProps extends object>
       prefix,
       localName,
       namespaceURI,
+      ownerElement: element,
       value,
     }
   }

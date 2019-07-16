@@ -9,7 +9,7 @@ export default interface HookList {
 
   startTag<T extends StartTag>(startTag: T): void
 
-  attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void
+  attribute<T extends Attr>(attr: T): void
 
   endTag<T extends EndTag>(endTag: T): void
 

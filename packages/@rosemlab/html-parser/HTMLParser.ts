@@ -161,21 +161,18 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
       let rawText: Content | undefined
       const stackedTagRE = getStackedTagRegExp(lastTagNameLowerCased)
 
-      this.source.replace(
-        stackedTagRE,
-        (all: string, text: string): string => {
-          rawText = {
-            content: text.slice(
-              Number(shouldIgnoreFirstNewline(lastTagNameLowerCased, text))
-            ),
-            start: this.cursor,
-            end: this.cursor + text.length,
-          }
-          this.moveCursor(text.length)
-
-          return ''
+      this.source.replace(stackedTagRE, (all: string, text: string): string => {
+        rawText = {
+          content: text.slice(
+            Number(shouldIgnoreFirstNewline(lastTagNameLowerCased, text))
+          ),
+          start: this.cursor,
+          end: this.cursor + text.length,
         }
-      )
+        this.moveCursor(text.length)
+
+        return ''
+      })
       // Parse end tag
       // this.instructionIndex = 6
 
@@ -313,10 +310,7 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     super.startTag(startTag)
   }
 
-  attribute<T extends Attr, U extends StartTag>(
-    attr: T,
-    startTag: StartTag
-  ): void {
+  attribute<T extends Attr>(attr: T): void {
     if (!this.options.suppressWarnings && reservedAttrRegExp.test(attr.name)) {
       this.warn(`Attribute name reserved: ${attr.name}`, {
         start: attr.start,
@@ -324,6 +318,6 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
       })
     }
 
-    super.attribute(attr, startTag)
+    super.attribute(attr)
   }
 }

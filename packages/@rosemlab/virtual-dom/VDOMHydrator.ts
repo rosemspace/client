@@ -5,7 +5,7 @@ import {
   VirtualElement,
   VirtualInstance,
   VirtualNode,
-  VirtualNodeAttrDescriptor,
+  VirtualAttr,
   VirtualParentNode,
 } from '.'
 
@@ -55,16 +55,16 @@ export default class VDOMHydrator<OutputNode>
 
         if ((inputNode as VirtualElement).attrs) {
           forEach((inputNode as VirtualElement).attrs, function(
-            attr: VirtualNodeAttrDescriptor,
+            attr: VirtualAttr,
             key: string
           ) {
             null == attr.namespaceURI
               ? renderer.setAttribute(element, key, attr.value)
               : renderer.setAttributeNS(
                   element,
-                  (attr as VirtualNodeAttrDescriptor).namespaceURI as string,
+                  attr.namespaceURI,
                   key,
-                  (attr as VirtualNodeAttrDescriptor).value
+                  attr.value
                 )
           })
         }

@@ -315,11 +315,12 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       // Local name of an attribute, i. e. "xlink" (before ":")
       const [attrPrefix, attrLocalName] = attrNameLowerCased.split(':', 2)
       const attr: Attr = {
+        localName: attrLocalName,
         name: attrMatch[1],
         nameLowerCased: attrNameLowerCased,
         namespaceURI: undefined,
+        ownerElement: startTag,
         prefix: attrPrefix,
-        localName: attrLocalName,
         value: decodeAttrEntities(
           attrMatch[3] || attrMatch[4] || attrMatch[5] || '',
           'a' === tagNameLowerCased && 'href' === attrNameLowerCased
@@ -582,9 +583,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     ) {
       if (!this.options.suppressWarnings) {
         this.warn(
-          `<${startTag.name}> element is not allowed in context of <${
-            this.rootTagStack[this.rootTagStack.length - 1].name
-          }> element without namespace.`,
+          `<${startTag.name}> element is not allowed in context of <${this.rootTagStack[this.rootTagStack.length - 1].name}> element without namespace.`,
           {
             start: startTag.start,
             end: startTag.end,
@@ -605,7 +604,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
 
     startTag.attrs.forEach((attr: Attr) => {
-      this.attribute(attr, startTag)
+      this.attribute(attr)
     })
 
     if (startTag.void) {
@@ -615,9 +614,9 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     this.nextToken()
   }
 
-  attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {
+  attribute<T extends Attr>(attr: T): void {
     for (const module of this.moduleList) {
-      module.attribute(attr, startTag)
+      module.attribute(attr)
     }
   }
 

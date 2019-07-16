@@ -12,7 +12,7 @@ export default class VDOMCodeGen extends BlankModule {
   protected void: boolean = false
   protected variables: string[] = []
 
-  attribute<T extends Attr, U extends StartTag>(attr: T, startTag: U): void {
+  attribute<T extends Attr>(attr: T): void {
     this.code +=
       '' === attr.prefix || 'data-bind' === attr.prefix
         ? `${stringify(attr.localName)}: ${attr.value},`

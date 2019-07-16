@@ -13,15 +13,15 @@ export interface VirtualNode {
 
 export type VirtualNodeKey = Primitive
 
-export type VirtualNodeAttrDescriptor = {
+export type VirtualAttr = {
   readonly prefix?: string
   readonly localName: string
   readonly namespaceURI?: string
-  // readonly ownerElement?: VirtualElement
+  readonly ownerElement: VirtualElement
   value: Primitive
 }
 
-export type VirtualNodeAttrMap = Record<string, VirtualNodeAttrDescriptor>
+export type VirtualNodeAttrMap = Record<string, VirtualAttr>
 
 export type VirtualInstance<VirtualElementProps extends object = {}> =
   | VirtualDocumentFragment
