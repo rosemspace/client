@@ -23,9 +23,9 @@ export type VirtualAttr = {
 
 export type VirtualNodeAttrMap = Record<string, VirtualAttr>
 
-export type VirtualInstance<VirtualElementProps extends object = {}> =
+export type VirtualInstance =
   | VirtualDocumentFragment
-  | VirtualElement<VirtualElementProps>
+  | VirtualElement
   | VirtualText
   | VirtualComment
   | VirtualCDATASection
@@ -62,20 +62,17 @@ export interface VirtualCDATASection extends VirtualContentNode {
   readonly type: NodeType.CDATA_SECTION_NODE
 }
 
-export interface VirtualElement<VirtualElementProps extends object = {}>
-  extends VirtualParentNode {
+export interface VirtualElement extends VirtualParentNode {
   readonly type: NodeType.ELEMENT_NODE
   readonly tagName: string
   readonly prefix?: string
   readonly localName: string
   attrs: VirtualNodeAttrMap
-  props: VirtualElementProps
   readonly namespaceURI: string
   readonly key: VirtualNodeKey
 }
 
-export interface VirtualCustomElement<
-  VirtualCustomElementProps extends object = {}
-> extends VirtualElement {
-  customProps: VirtualCustomElementProps
+export interface VirtualCustomElement extends VirtualElement {
+  props: any[]
+  shadowRoot: VirtualDocumentFragment
 }

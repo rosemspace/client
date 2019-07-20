@@ -12,7 +12,6 @@ import {
 export default class VDOMHydrator<OutputNode>
   implements DOMHydrator<VirtualNode, OutputNode> {
   public hydrate<
-    VirtualElementProps extends object,
     ParentNode extends OutputNode,
     DocumentFragment extends ParentNode,
     Element extends ParentNode,
@@ -20,7 +19,7 @@ export default class VDOMHydrator<OutputNode>
     Comment extends OutputNode = OutputNode,
     CDATASection extends OutputNode = OutputNode
   >(
-    inputNode: VirtualInstance<VirtualElementProps>,
+    inputNode: VirtualInstance,
     renderer: DOMRenderer<
       OutputNode,
       ParentNode,
@@ -37,9 +36,7 @@ export default class VDOMHydrator<OutputNode>
 
         this.appendVirtualNodeList(
           documentFragment,
-          (inputNode as VirtualParentNode).children as VirtualInstance<
-            VirtualElementProps
-          >[],
+          (inputNode as VirtualParentNode).children as VirtualInstance[],
           renderer
         )
 
@@ -71,9 +68,7 @@ export default class VDOMHydrator<OutputNode>
 
         this.appendVirtualNodeList(
           element,
-          (inputNode as VirtualParentNode).children as VirtualInstance<
-            VirtualElementProps
-          >[],
+          (inputNode as VirtualParentNode).children as VirtualInstance[],
           renderer
         )
 
@@ -97,7 +92,6 @@ export default class VDOMHydrator<OutputNode>
   }
 
   protected appendVirtualNodeList<
-    VirtualElementProps extends object,
     ParentNode extends OutputNode,
     DocumentFragment extends ParentNode,
     Element extends ParentNode,
@@ -106,7 +100,7 @@ export default class VDOMHydrator<OutputNode>
     CDATASection extends OutputNode = OutputNode
   >(
     parent: DocumentFragment | Element,
-    nodeList: VirtualInstance<VirtualElementProps>[],
+    nodeList: VirtualInstance[],
     renderer: DOMRenderer<
       OutputNode,
       ParentNode,

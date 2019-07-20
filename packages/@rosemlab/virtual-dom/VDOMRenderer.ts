@@ -13,13 +13,13 @@ import {
 
 let key = 0
 
-export default class VDOMRenderer<VirtualElementProps extends object>
+export default class VDOMRenderer
   implements
     DOMRenderer<
       VirtualNode,
       VirtualParentNode,
       VirtualDocumentFragment,
-      VirtualElement<VirtualElementProps>,
+      VirtualElement,
       VirtualText,
       VirtualComment,
       VirtualCDATASection
@@ -38,14 +38,11 @@ export default class VDOMRenderer<VirtualElementProps extends object>
     }
   }
 
-  createElement(qualifiedName: string): VirtualElement<VirtualElementProps> {
+  createElement(qualifiedName: string): VirtualElement {
     return this.createElementNS(undefined!, qualifiedName)
   }
 
-  createElementNS(
-    namespaceURI: string,
-    qualifiedName: string
-  ): VirtualElement<VirtualElementProps> {
+  createElementNS(namespaceURI: string, qualifiedName: string): VirtualElement {
     let [prefix, localName] = qualifiedName.split(':', 2)
 
     if (null == localName) {
@@ -62,7 +59,6 @@ export default class VDOMRenderer<VirtualElementProps extends object>
       namespaceURI: namespaceURI,
       key: ++key,
       attrs: {},
-      props: {} as VirtualElementProps,
       children: [],
     }
   }
@@ -91,7 +87,7 @@ export default class VDOMRenderer<VirtualElementProps extends object>
     }
   }
 
-  setAttribute<T extends VirtualElement<VirtualElementProps>>(
+  setAttribute<T extends VirtualElement>(
     element: T,
     qualifiedName: string,
     value: any
@@ -99,7 +95,7 @@ export default class VDOMRenderer<VirtualElementProps extends object>
     this.setAttributeNS(element, undefined!, qualifiedName, value)
   }
 
-  setAttributeNS<T extends VirtualElement<VirtualElementProps>>(
+  setAttributeNS<T extends VirtualElement>(
     element: T,
     namespaceURI: string,
     qualifiedName: string,
@@ -237,7 +233,7 @@ export default class VDOMRenderer<VirtualElementProps extends object>
     return node.nextSibling || null
   }
 
-  tagName<T extends VirtualElement<VirtualElementProps>>(element: T): string {
+  tagName<T extends VirtualElement>(element: T): string {
     return element.tagName
   }
 }

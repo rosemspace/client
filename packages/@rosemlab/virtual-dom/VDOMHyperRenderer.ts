@@ -16,117 +16,84 @@ import {
 
 export let key = 0
 
-export type HyperRendererProps<
-  VirtualElementProps extends object,
-  VirtualCustomElementProps extends object
-> = Partial<{
+export type HyperRendererProps = Partial<{
   tagName: string
   attrs: Record<string, { namespaceURI: string; value: Primitive } | Primitive>
-  props: VirtualElementProps
-  customProps: VirtualCustomElementProps
+  props: any[]
   namespaceURI: string
   key: VirtualNodeKey
 }>
 
-export default class VDOMHyperRenderer<
-  VirtualElementProps extends object,
-  VirtualCustomElementProps extends object
-> extends VDOMRenderer<VirtualElementProps> {
+export default class VDOMHyperRenderer extends VDOMRenderer {
   constructor() {
     super()
     this.createInstance = this.createInstance.bind(this)
   }
 
-  createInstance(type: NodeType): VirtualInstance<VirtualElementProps>
+  createInstance(type: NodeType): VirtualInstance
 
   createInstance(
     type: NodeType,
     childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementProps>
+  ): VirtualInstance
+
+  createInstance(type: NodeType, text: Primitive): VirtualInstance
+
+  createInstance(type: NodeType, props: HyperRendererProps): VirtualInstance
 
   createInstance(
     type: NodeType,
+    props: HyperRendererProps,
+    childList: VirtualChildNodeList
+  ): VirtualInstance
+
+  createInstance(
+    type: NodeType,
+    props: HyperRendererProps,
     text: Primitive
-  ): VirtualInstance<VirtualElementProps>
+  ): VirtualInstance
+
+  createInstance(childList: VirtualChildNodeList): VirtualInstance
+
+  createInstance(name: string): VirtualInstance
+
+  createInstance(name: string, childList: VirtualChildNodeList): VirtualInstance
+
+  createInstance(name: string, text: Primitive): VirtualInstance
+
+  createInstance(name: string, props: HyperRendererProps): VirtualInstance
 
   createInstance(
-    type: NodeType,
-    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
-  ): VirtualInstance<VirtualElementProps>
-
-  createInstance(
-    type: NodeType,
-    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
+    name: string,
+    props: HyperRendererProps,
     childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementProps>
+  ): VirtualInstance
 
   createInstance(
-    type: NodeType,
-    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
+    name: string,
+    props: HyperRendererProps,
     text: Primitive
-  ): VirtualInstance<VirtualElementProps>
-
-  createInstance(
-    childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementProps>
-
-  createInstance(name: string): VirtualInstance<VirtualElementProps>
-
-  createInstance(
-    name: string,
-    childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementProps>
-
-  createInstance(
-    name: string,
-    text: Primitive
-  ): VirtualInstance<VirtualElementProps>
-
-  createInstance(
-    name: string,
-    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
-  ): VirtualInstance<VirtualElementProps>
-
-  createInstance(
-    name: string,
-    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
-    childList: VirtualChildNodeList
-  ): VirtualInstance<VirtualElementProps>
-
-  createInstance(
-    name: string,
-    props: HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>,
-    text: Primitive
-  ): VirtualInstance<VirtualElementProps>
+  ): VirtualInstance
 
   createInstance(
     typeOrChildListOrName: NodeType | VirtualChildNodeList | string,
     propsOrChildListOrText?:
-      | HyperRendererProps<VirtualElementProps, VirtualCustomElementProps>
+      | HyperRendererProps
       | VirtualChildNodeList
       | Primitive,
     childListOrText?: VirtualChildNodeList | Primitive
-  ): VirtualInstance<VirtualElementProps> {
-    let props: HyperRendererProps<
-      VirtualElementProps,
-      VirtualCustomElementProps
-    > = {}
+  ): VirtualInstance {
+    let props: HyperRendererProps = {}
 
     if (arguments.length > 1) {
       if (childListOrText) {
-        props = propsOrChildListOrText as HyperRendererProps<
-          VirtualElementProps,
-          VirtualCustomElementProps
-        >
+        props = propsOrChildListOrText as HyperRendererProps
 
         if (!isArray(childListOrText)) {
           childListOrText = [childListOrText as Primitive]
         }
       } else if (isPlainObject(propsOrChildListOrText)) {
-        props = propsOrChildListOrText as HyperRendererProps<
-          VirtualElementProps,
-          VirtualCustomElementProps
-        >
+        props = propsOrChildListOrText as HyperRendererProps
         childListOrText = []
       } else if (isArray(propsOrChildListOrText)) {
         childListOrText = propsOrChildListOrText as VirtualChildNodeList
@@ -182,10 +149,7 @@ export default class VDOMHyperRenderer<
 
         forEach(
           virtualElement.attrs,
-          (
-            attr: VirtualAttr | Primitive,
-            attrName: string
-          ): void => {
+          (attr: VirtualAttr | Primitive, attrName: string): void => {
             isPrimitive(attr)
               ? this.setAttribute(virtualElement, attrName, attr)
               : null == (attr as VirtualAttr).namespaceURI
