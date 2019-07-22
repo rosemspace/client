@@ -1,5 +1,6 @@
 import { BlankModule } from '@rosemlab/xml-parser'
-import { Attr, StartTag } from '@rosemlab/xml-parser/nodes'
+import { Attr } from '@rosemlab/xml-parser/nodes'
+import { ATTR_SYNTAX_KEYWORDS } from '../index'
 
 const tagAttrMap: { [tagName: string]: string[] } = {
   video: ['src', 'poster'],
@@ -17,9 +18,9 @@ export default class AssetCodeGen extends BlankModule {
       tagAttrMap[attr.ownerElement.nameLowerCased] &&
       tagAttrMap[attr.ownerElement.nameLowerCased].includes(attr.nameLowerCased)
     ) {
-      attr.prefix = 'data-bind'
+      attr.prefix = ATTR_SYNTAX_KEYWORDS.bind.fullName
       attr.name = `${attr.prefix}:${attr.localName}`
-      attr.nameLowerCased = attr.name.toLocaleLowerCase()
+      attr.nameLowerCased = attr.name.toLowerCase()
       attr.value = `require('${attr.value}')`
     }
   }

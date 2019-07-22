@@ -3,9 +3,10 @@ export { default as HookList } from './HookList'
 export { default as BlankModule } from './BlankModule'
 export { default as XMLProcessor, XMLProcessorMap } from './XMLProcessor'
 export {
-  default as decodeAttrEntities,
+  encodeAttrEntities,
+  decodeAttrEntities,
   ATTRIBUTE_ENTITY_DECODING_MAP,
-} from './decodeAttrEntities'
+} from './attrEntities'
 
 export type NamespaceMap = {
   [namespacePrefix: string]: string

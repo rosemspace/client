@@ -63,3 +63,7 @@ export const cDataSectionStartRegExp = /^<!\[CDATA\[/
 export const cDataSectionRegExp = new RegExp(
   `${cDataSectionStartRegExp.source}${anyCharCapturePart}]{2}>`
 )
+
+export function isFalsyAttrValue(value: any): boolean {
+  return null == value || false === value
+}

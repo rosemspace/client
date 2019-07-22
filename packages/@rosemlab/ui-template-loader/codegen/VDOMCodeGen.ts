@@ -1,6 +1,8 @@
 import { NodeType } from '@rosemlab/dom-api'
+import { encodeAttrEntities } from '@rosemlab/xml-parser'
 import BlankModule from '@rosemlab/xml-parser/BlankModule'
 import { Attr, Content, EndTag, StartTag } from '@rosemlab/xml-parser/nodes'
+import { isSyntaxAttr } from '../index'
 
 const stringify = JSON.stringify
 
@@ -13,10 +15,9 @@ export default class VDOMCodeGen extends BlankModule {
   protected variables: string[] = []
 
   attribute<T extends Attr>(attr: T): void {
-    this.code +=
-      '' === attr.prefix || 'data-bind' === attr.prefix
-        ? `${stringify(attr.localName)}: ${attr.value},`
-        : `${stringify(attr.name)}: ${stringify(attr.value)},`
+    this.code += isSyntaxAttr(attr, 'bind')
+      ? `${stringify(attr.localName)}: ${attr.value},`
+      : `${stringify(attr.name)}: ${stringify(encodeAttrEntities(attr.value))},`
   }
 
   cDataSection<T extends Content>(cDATASection: T): void {}

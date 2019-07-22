@@ -27,7 +27,7 @@ import {
 import HookList from './HookList'
 import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
 import { MatchRange, Attr, Content, EndTag, StartTag } from './nodes'
-import decodeAttrEntities from './decodeAttrEntities'
+import { decodeAttrEntities } from './attrEntities'
 import { NamespaceMap, TypeMap } from '.'
 
 export const defaultNamespaceMap: NamespaceMap = {

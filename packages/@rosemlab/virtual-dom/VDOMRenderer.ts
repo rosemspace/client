@@ -225,7 +225,7 @@ export default class VDOMRenderer
     return childNode
   }
 
-  parent(node: VirtualNode): VirtualParentNode | null {
+  parentNode(node: VirtualNode): VirtualParentNode | null {
     return node.parent || null
   }
 

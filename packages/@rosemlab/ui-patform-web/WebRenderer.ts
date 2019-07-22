@@ -78,7 +78,7 @@ export default class WebRenderer
     return node.removeChild(childNode)
   }
 
-  parent(node: Node): Node & ParentNode | null {
+  parentNode(node: Node): Node & ParentNode | null {
     return node.parentNode
   }
 

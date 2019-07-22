@@ -59,7 +59,7 @@ export default interface DOMRenderer<
 
   //replaceWith
 
-  parent(node: Node): ParentNode | null
+  parentNode(node: Node): ParentNode | null
 
   nextSibling(node: Node): Node | null
 

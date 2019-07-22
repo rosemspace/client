@@ -90,7 +90,7 @@ export default class TemplateCompiler<
   }
 
   endTag(parsedEndTag: EndTag): void {
-    this.cursorNode = this.renderer.parent(this.cursorNode) || this.cursorNode
+    this.cursorNode = this.renderer.parentNode(this.cursorNode) || this.cursorNode
   }
 
   text(parsedText: Content): void {
