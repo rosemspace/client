@@ -1,5 +1,3 @@
-import { rawTextElementRegExp } from '@rosemlab/svg-syntax'
-
 export const conditionalCommentStartRegExp = /^<!\[/
 
 export const conditionalCommentRegExp = /^<!(\[[\s\S]*?])>/
@@ -28,7 +26,7 @@ export const voidElementRegExp = /^(area|b(?:ase|r)|col|embed|frame|hr|i(?:mg|np
 export const optionalClosingElementRegExp = /^(colgroup|d[dt]|li|options|p|t(?:[dhr]|head|foot)|source)$/i
 
 // <script>, <style>
-export { rawTextElementRegExp } from '@rosemlab/svg-syntax'
+export const rawTextElementRegExp = /^s(?:cript|tyle)$/i
 
 // <textarea>, <title>
 export const escapableRawTextElementRegExp = /^t(?:extarea|itle)$/i
@@ -36,6 +34,57 @@ export const escapableRawTextElementRegExp = /^t(?:extarea|itle)$/i
 // <math>, <svg>
 export const foreignElementRegExp = /^math|svg$/i
 
+// Global attributes (HTML Standard)
+// accesskey, autocapitalize, contenteditable, dir, draggable, enterkeyhint,
+// hidden, inputmode, is, itemid, itemprop, itemref, itemscope, itemtype, lang,
+// nonce, spellcheck, style, tabindex, title, translate
+// Global attributes (DOM Standard)
+// class, id, slot
+// title, translate, dir, target, href, crossorigin, rel, media, integrity, hreflang, type, referrerpolicy, sizes, imagesrcset, imagesizes, as, color
+// itemprop, charset, http-equiv, name, content, charset, cite, reversed, start, value, async, defer, hidden, download, ping, cite, datetime, src, srcset, alt, usemap, ismap, width, height, decoding
+// export const isBooleanAttr = makeMap(
+//   'allowfullscreen,async,autofocus,autoplay,checked,compact,controls,declare,' +
+//     'default,defaultchecked,defaultmuted,defaultselected,defer,disabled,' +
+//     'enabled,formnovalidate,hidden,indeterminate,inert,ismap,itemscope,loop,multiple,' +
+//     'muted,nohref,noresize,noshade,novalidate,nowrap,open,pauseonexit,readonly,' +
+//     'required,reversed,scoped,seamless,selected,sortable,translate,' +
+//     'truespeed,typemustmatch,visible'
+// )
+//
+// export const isEnumeratedAttr = makeMap('contenteditable,draggable,spellcheck')
+//
+// const isValidContentEditableValue = makeMap(
+//   'events,caret,typing,plaintext-only'
+// )
+
+export const propsToAttrMap = {
+  acceptCharset: 'accept-charset',
+  className: 'class',
+  defaultChecked: 'checked',
+  defaultSelected: 'selected',
+  defaultValue: 'value',
+  htmlFor: 'for',
+  httpEquiv: 'http-equiv',
+}
+
+const attrToPropsMap = {
+  'accept-charset': 'acceptCharset',
+  checked: 'defaultChecked',
+  class: 'className',
+  for: 'htmlFor',
+  'http-equiv': 'httpEquiv',
+  selected: 'defaultSelected',
+  value: 'defaultValue',
+}
+
+// Custom data attributes
+export const customDataAttrRegExp = /^data-/i
+
+export function isCustomDataAttr(name: string): boolean {
+  return customDataAttrRegExp.test(name)
+}
+
+// Exceptions
 // https://www.w3.org/TR/html5/infrastructure.html#conformance-requirements-extensibility
 export const reservedAttrRegExp = /^(x-)|^([^_]*_[^_]*)$/i
 
