@@ -77,7 +77,7 @@ export default {
         ]
       },
       {
-        test: /\.tsx?$/,
+        test: /\.m?tsx?$/,
         // resourceQuery: /^\?sfc&block=script&lang=ts/,
         exclude: /node_modules/,
         use: [

@@ -1,6 +1,6 @@
 import ObservableObject from '@rosemlab/observable/ObservableObject'
 import { VDOMHydrator, VDOMHyperRenderer, VirtualInstance } from '@rosemlab/virtual-dom'
-import WebDOMRenderer from '@rosemlab/ui-patform-web/WebRenderer'
+import WebDOMRenderer from '@rosemlab/web-ui/WebRenderer'
 
 const vdomHyperRenderer = new VDOMHyperRenderer()
 const webRenderer = new WebDOMRenderer()

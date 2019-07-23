@@ -1,5 +1,11 @@
 import { DOMRenderer } from '@rosemlab/dom-api'
 
+const createDocumentFragment = document.createDocumentFragment.bind(document)
+const createElement = document.createElement.bind(document)
+const createElementNS = document.createElementNS.bind(document)
+const createTextNode = document.createTextNode.bind(document)
+const createComment = document.createComment.bind(document)
+
 export default class WebRenderer
   implements
     DOMRenderer<
@@ -11,28 +17,22 @@ export default class WebRenderer
       Comment,
       CDATASection
     > {
-  createDocumentFragment(): DocumentFragment {
-    return document.createDocumentFragment()
-  }
+  createDocumentFragment = createDocumentFragment
 
-  createElement(tagName: string): Element {
-    return document.createElement(tagName)
-  }
+  createElement = createElement
 
-  createElementNS(namespaceURI: string, qualifiedName: string): Element {
-    return document.createElementNS(namespaceURI, qualifiedName)
-  }
+  createElementNS = createElementNS
 
   createText(text: string | number | boolean): Text {
-    return document.createTextNode(String(text))
+    return createTextNode(String(text))
   }
 
   createComment(comment: string | number | boolean): Comment {
-    return document.createComment(String(comment))
+    return createComment(String(comment))
   }
 
   createCDATASection(data: string | number | boolean): CDATASection {
-    return document.createTextNode(String(data))
+    return createTextNode(String(data))
   }
 
   setAttribute<T extends Element>(

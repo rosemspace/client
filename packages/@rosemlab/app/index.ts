@@ -2,7 +2,11 @@
 import { OBSERVABLE_KEY, ObservableObject } from '@rosemlab/observable'
 import App from './App.sfc' //mtc - multi-type container
 import { VDOMHydrator, VDOMHyperRenderer } from '@rosemlab/virtual-dom'
-import WebDOMRenderer from '@rosemlab/ui-patform-web/WebRenderer'
+import WebDOMRenderer from '@rosemlab/web-ui/WebRenderer'
+import { isValidHTMLElementAttr } from '@rosemlab/html-syntax/attr'
+
+//@ts-ignore
+window.isValidHTMLElementAttr = isValidHTMLElementAttr
 
 const vdomHyperRenderer = new VDOMHyperRenderer()
 const webDOMRenderer = new WebDOMRenderer()

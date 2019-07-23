@@ -3,7 +3,7 @@ console.log(vnode)
 import HTMLParser from '@rosemlab/html-parser/HTMLParser'
 import { VDOMHydrator, VDOMRenderer } from '@rosemlab/virtual-dom'
 import TemplateCompiler from '@rosemlab/template-compiler/TemplateCompiler'
-import WebRenderer from '@rosemlab/ui-patform-web/WebRenderer'
+import WebRenderer from '@rosemlab/web-ui/WebRenderer'
 import testHTML from './testHTML'
 
 document.querySelector('#app')!.innerHTML = testHTML

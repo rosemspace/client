@@ -24,7 +24,7 @@ import { qualifiedNameRegExp } from '@rosemlab/xml-syntax'
 import HTMLParser from '@rosemlab/html-parser'
 import TemplateCompiler from '@rosemlab/template-compiler/TemplateCompiler'
 import { VDOMRenderer } from '@rosemlab/virtual-dom'
-import WebRenderer from '@rosemlab/ui-patform-web/WebRenderer'
+import WebRenderer from '@rosemlab/web-ui/WebRenderer'
 
 const htmlParser = new HTMLParser({
   rawTextElement: new RegExp(qualifiedNameRegExp.source, 'i'),
