@@ -37,7 +37,7 @@ export default class VDOMCodeGen extends BlankModule {
     this.pad = this.pad.slice(2)
 
     if (this.depthLevel) {
-      this.code += `\n${this.pad}]`
+      this.code += `${this.depthCode}\n${this.pad}]`
     } else {
       this.code += '} }'
     }
