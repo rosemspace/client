@@ -4,12 +4,12 @@ import {
   foreignElementRegExp,
   nonPhrasingElementRegExp,
   optionalClosingElementRegExp,
-  reservedAttrRegExp,
   voidElementRegExp,
   shouldIgnoreFirstNewline,
   rawTextElementRegExp,
   escapableRawTextElementRegExp,
 } from '@rosemlab/html-syntax'
+import { reservedAttrRegExp } from '@rosemlab/html-syntax/attr'
 import {
   APPLICATION_MATHML_XML_MIME_TYPE,
   TEXT_HTML_MIME_TYPE,

@@ -34,52 +34,6 @@ export const escapableRawTextElementRegExp = /^t(?:extarea|itle)$/i
 // <math>, <svg>
 export const foreignElementRegExp = /^math|svg$/i
 
-// export const isBooleanAttr = makeMap(
-//   'allowfullscreen,async,autofocus,autoplay,checked,compact,controls,declare,' +
-//     'default,defaultchecked,defaultmuted,defaultselected,defer,disabled,' +
-//     'enabled,formnovalidate,hidden,indeterminate,inert,ismap,itemscope,loop,multiple,' +
-//     'muted,nohref,noresize,noshade,novalidate,nowrap,open,pauseonexit,readonly,' +
-//     'required,reversed,scoped,seamless,selected,sortable,translate,' +
-//     'truespeed,typemustmatch,visible'
-// )
-//
-// export const isEnumeratedAttr = makeMap('contenteditable,draggable,spellcheck')
-//
-// const isValidContentEditableValue = makeMap(
-//   'events,caret,typing,plaintext-only'
-// )
-
-export const propsToAttrMap = {
-  acceptCharset: 'accept-charset',
-  className: 'class',
-  defaultChecked: 'checked',
-  defaultSelected: 'selected',
-  defaultValue: 'value',
-  htmlFor: 'for',
-  httpEquiv: 'http-equiv',
-}
-
-const attrToPropsMap = {
-  'accept-charset': 'acceptCharset',
-  checked: 'defaultChecked',
-  class: 'className',
-  for: 'htmlFor',
-  'http-equiv': 'httpEquiv',
-  selected: 'defaultSelected',
-  value: 'defaultValue',
-}
-
-// Custom data attributes
-export const customDataAttrRegExp = /^data-/i
-
-export function isCustomDataAttr(name: string): boolean {
-  return customDataAttrRegExp.test(name)
-}
-
-// Exceptions
-// https://www.w3.org/TR/html5/infrastructure.html#conformance-requirements-extensibility
-export const reservedAttrRegExp = /^(x-)|^([^_]*_[^_]*)$/i
-
 // https://www.w3.org/TR/html5/syntax.html#restrictions-on-content-models
 export function shouldIgnoreFirstNewline(tag: string, html: string) {
   return '\n' === html[0] && /^(pre|textarea)$/i.test(tag)

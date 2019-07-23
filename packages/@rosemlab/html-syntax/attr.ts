@@ -1,3 +1,5 @@
+import { isWaiAriaAttr } from '@rosemlab/wai-aria-syntax'
+
 const linkElementAttrRegExpPart = `re(?:ferrerpolicy|l)|href`
 const hyperlinkElementAttrRegExpPart = `download|${linkElementAttrRegExpPart}`
 const mediaElementAttrRegExpPart = `autoplay|controls|crossorigin|loop|muted|preload|src`
@@ -19,6 +21,17 @@ const multipleInputElementAttrRegExpPart = `required|(?:multipl|siz)e`
 function RE(pattern: string): RegExp {
   return new RegExp(`^(${pattern})$`, 'i')
 }
+
+// Custom data attributes
+export const customDataAttrRegExp = /^data-/i
+
+export function isCustomDataAttr(name: string): boolean {
+  return customDataAttrRegExp.test(name)
+}
+
+// Exceptions
+// https://www.w3.org/TR/html5/infrastructure.html#conformance-requirements-extensibility
+export const reservedAttrRegExp = /^(x-)|^([^_]*_[^_]*)$/i
 
 export type HTMLElementAttrMap = {
   [tagName in keyof HTMLElementTagNameMap]?: RegExp
@@ -202,15 +215,52 @@ export const htmlElementAttrMap: HTMLElementAttrMap = {
   canvas: RE(boundedElementAttrRegExpPart),
 }
 
-export default htmlElementAttrMap
+// export const isBooleanAttr = makeMap(
+//   'allowfullscreen,async,autofocus,autoplay,checked,compact,controls,declare,' +
+//     'default,defaultchecked,defaultmuted,defaultselected,defer,disabled,' +
+//     'enabled,formnovalidate,hidden,indeterminate,inert,ismap,itemscope,loop,multiple,' +
+//     'muted,nohref,noresize,noshade,novalidate,nowrap,open,pauseonexit,readonly,' +
+//     'required,reversed,scoped,seamless,selected,sortable,translate,' +
+//     'truespeed,typemustmatch,visible'
+// )
+//
+// export const isEnumeratedAttr = makeMap('contenteditable,draggable,spellcheck')
+//
+// const isValidContentEditableValue = makeMap(
+//   'events,caret,typing,plaintext-only'
+// )
+
+export const propsToAttrMap = {
+  acceptCharset: 'accept-charset',
+  className: 'class',
+  defaultChecked: 'checked',
+  defaultSelected: 'selected',
+  defaultValue: 'value',
+  htmlFor: 'for',
+  httpEquiv: 'http-equiv',
+}
+
+const attrToPropsMap = {
+  'accept-charset': 'acceptCharset',
+  checked: 'defaultChecked',
+  class: 'className',
+  for: 'htmlFor',
+  'http-equiv': 'httpEquiv',
+  selected: 'defaultSelected',
+  value: 'defaultValue',
+}
 
 export function isValidHTMLElementAttr(
   attrName: string,
   tagName?: keyof HTMLElementTagNameMap
 ): boolean {
-  return tagName
-    ? tagName in htmlElementAttrMap &&
+  return (
+    (tagName
+      ? tagName in htmlElementAttrMap &&
         (htmlElementAttrMap[tagName]!.test(attrName) ||
           globalHTMLElementAttrRegExp.test(attrName))
-    : globalHTMLElementAttrRegExp.test(attrName)
+      : globalHTMLElementAttrRegExp.test(attrName)) ||
+    isCustomDataAttr(attrName) ||
+    isWaiAriaAttr(attrName)
+  )
 }
