@@ -33,18 +33,28 @@ export function isCustomDataAttr(name: string): boolean {
 // https://www.w3.org/TR/html5/infrastructure.html#conformance-requirements-extensibility
 export const reservedAttrRegExp = /^(x-)|^([^_]*_[^_]*)$/i
 
-export type HTMLElementAttrMap = {
-  [tagName in keyof HTMLElementTagNameMap]?: RegExp
-}
-
 // Global attributes (HTML Standard)
 // https://html.spec.whatwg.org/#global-attributes
 // accesskey, autocapitalize, contenteditable, dir, draggable, enterkeyhint,
 // hidden, inputmode, is, itemid, itemprop, itemref, itemscope, itemtype, lang,
-// nonce, spellcheck, style, tabindex, title, translate
+// nonce, spellcheck, style, tabindex, title, translate, data-*
 // Global attributes (DOM Standard)
 // class, id, slot
-export const globalHTMLElementAttrRegExp: RegExp = /^(a(?:ccesskey|utocapitalize)|c(?:lass|ontenteditable)|d(?:ir|raggable)|enterkeyhint|hidden|i(?:[ds]|nputmode|tem(?:id|prop|ref|scope|type))|lang|nonce|s(?:lot|pellcheck|tyle)|t(?:abindex|itle|ranslate))$/
+// Global attributes (ARIA Standard)
+// role, aria-*
+export const htmlElementCommonAttrRegExp: RegExp = /^(a(?:ccesskey|utocapitalize)|c(?:lass|ontenteditable)|d(?:ir|raggable)|enterkeyhint|hidden|i(?:[ds]|nputmode|tem(?:id|prop|ref|scope|type))|lang|nonce|role|s(?:lot|pellcheck|tyle)|t(?:abindex|itle|ranslate))$/
+
+export function isValidHTMLElementGlobalAttribute(attrName: string): boolean {
+  return (
+    htmlElementCommonAttrRegExp.test(attrName) ||
+    isCustomDataAttr(attrName) ||
+    isWaiAriaAttr(attrName)
+  )
+}
+
+export type HTMLElementAttrMap = {
+  [tagName in keyof HTMLElementTagNameMap]?: RegExp
+}
 
 export const htmlElementAttrMap: HTMLElementAttrMap = {
   // The document element
@@ -254,13 +264,9 @@ export function isValidHTMLElementAttr(
   attrName: string,
   tagName?: keyof HTMLElementTagNameMap
 ): boolean {
-  return (
-    (tagName
-      ? tagName in htmlElementAttrMap &&
+  return tagName
+    ? tagName in htmlElementAttrMap &&
         (htmlElementAttrMap[tagName]!.test(attrName) ||
-          globalHTMLElementAttrRegExp.test(attrName))
-      : globalHTMLElementAttrRegExp.test(attrName)) ||
-    isCustomDataAttr(attrName) ||
-    isWaiAriaAttr(attrName)
-  )
+          isValidHTMLElementGlobalAttribute(attrName))
+    : isValidHTMLElementGlobalAttribute(attrName)
 }
