@@ -34,14 +34,6 @@ export const escapableRawTextElementRegExp = /^t(?:extarea|itle)$/i
 // <math>, <svg>
 export const foreignElementRegExp = /^math|svg$/i
 
-// Global attributes (HTML Standard)
-// accesskey, autocapitalize, contenteditable, dir, draggable, enterkeyhint,
-// hidden, inputmode, is, itemid, itemprop, itemref, itemscope, itemtype, lang,
-// nonce, spellcheck, style, tabindex, title, translate
-// Global attributes (DOM Standard)
-// class, id, slot
-// title, translate, dir, target, href, crossorigin, rel, media, integrity, hreflang, type, referrerpolicy, sizes, imagesrcset, imagesizes, as, color
-// itemprop, charset, http-equiv, name, content, charset, cite, reversed, start, value, async, defer, hidden, download, ping, cite, datetime, src, srcset, alt, usemap, ismap, width, height, decoding
 // export const isBooleanAttr = makeMap(
 //   'allowfullscreen,async,autofocus,autoplay,checked,compact,controls,declare,' +
 //     'default,defaultchecked,defaultmuted,defaultselected,defer,disabled,' +

@@ -20,7 +20,20 @@ function RE(pattern: string): RegExp {
   return new RegExp(`^(${pattern})$`, 'i')
 }
 
-export default {
+export type HTMLElementAttrMap = {
+  [tagName in keyof HTMLElementTagNameMap]?: RegExp
+}
+
+// Global attributes (HTML Standard)
+// https://html.spec.whatwg.org/#global-attributes
+// accesskey, autocapitalize, contenteditable, dir, draggable, enterkeyhint,
+// hidden, inputmode, is, itemid, itemprop, itemref, itemscope, itemtype, lang,
+// nonce, spellcheck, style, tabindex, title, translate
+// Global attributes (DOM Standard)
+// class, id, slot
+export const globalHTMLElementAttrRegExp: RegExp = /^(a(?:ccesskey|utocapitalize)|c(?:lass|ontenteditable)|d(?:ir|raggable)|enterkeyhint|hidden|i(?:[ds]|nputmode|tem(?:id|prop|ref|scope|type))|lang|nonce|s(?:lot|pellcheck|tyle)|t(?:abindex|itle|ranslate))$/
+
+export const htmlElementAttrMap: HTMLElementAttrMap = {
   // The document element
   // Ignore <html>
 
@@ -187,4 +200,17 @@ export default {
   slot: /^(name)$/i,
   // height (ulong), width (ulong)
   canvas: RE(boundedElementAttrRegExpPart),
+}
+
+export default htmlElementAttrMap
+
+export function isValidHTMLElementAttr(
+  attrName: string,
+  tagName?: keyof HTMLElementTagNameMap
+): boolean {
+  return tagName
+    ? tagName in htmlElementAttrMap &&
+        (htmlElementAttrMap[tagName]!.test(attrName) ||
+          globalHTMLElementAttrRegExp.test(attrName))
+    : globalHTMLElementAttrRegExp.test(attrName)
 }
