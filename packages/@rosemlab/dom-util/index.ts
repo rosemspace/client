@@ -1,3 +1,10 @@
+export {
+  default as supportsEventListenerOption,
+  supportsPassive,
+  supportsOnce,
+} from './supportsEventListenerOption'
+export { default as supportsPreload } from './supportsPreload'
+
 const { getComputedStyle } = globalThis
 const documentElement = globalThis.document.documentElement
 const { display, height, overflowX, msOverflowStyle } = documentElement.style

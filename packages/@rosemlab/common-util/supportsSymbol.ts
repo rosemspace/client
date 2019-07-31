@@ -1,6 +1,6 @@
 import isNative from 'lodash/isNative'
 
-export default null != Symbol &&
+export default typeof Symbol !== 'undefined' &&
   isNative(Symbol) &&
-  null != Reflect &&
+  typeof Reflect !== 'undefined' &&
   isNative(Reflect.ownKeys)

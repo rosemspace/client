@@ -1,26 +1,28 @@
+//https://dev.w3.org/html5/html-author/
+
 import { isWaiAriaAttr } from '@rosemlab/wai-aria-syntax'
+
+function RE(pattern: string): RegExp {
+  return new RegExp(`^${pattern}$`, 'i')
+}
 
 const linkElementAttrRegExpPart = `re(?:ferrerpolicy|l)|href`
 const hyperlinkElementAttrRegExpPart = `download|${linkElementAttrRegExpPart}`
 const mediaElementAttrRegExpPart = `autoplay|controls|crossorigin|loop|muted|preload|src`
 const tableCellElementAttrRegExpPart = `(?:col|row)span|headers`
 const optionElementAttrRegExpPart = `disabled|label`
-const interactiveElementAttrRegExp = /^(open)$/i
-const quoteElementAttrRegExp = /^(cite)$/i
-const editElementAttrRegExp = /^(cite|datetime)$/i
+const interactiveElementAttrRegExp = RE('open')
+const quoteElementAttrRegExp = RE('cite')
+const editElementAttrRegExp = RE('cite|datetime')
 const boundedElementAttrRegExpPart = `height|width`
 const referElementAttrRegExpPart = `referrerpolicy|src`
 const crossReferElementAttrRegExpPart = `crossorigin|integrity|type`
-const colElementAttrRegExp = /^(span)$/i
+const colElementAttrRegExp = RE('span')
 const inputElementAutoAttrRegExpPart = `auto(?:complete|focus)`
 const formAssociatedElementRegExpPart = `name|disabled|form`
 const formAssociatedElementExtendedRegExpPart = `${formAssociatedElementRegExpPart}(?:action|enctype|method|novalidate|target)?|type|value`
 const textInputElementAttrRegExpPart = `dirname|placeholder|readonly`
 const multipleInputElementAttrRegExpPart = `required|(?:multipl|siz)e`
-
-function RE(pattern: string): RegExp {
-  return new RegExp(`^(${pattern})$`, 'i')
-}
 
 // Custom data attributes
 export const customDataAttrRegExp = /^data-/i
@@ -30,8 +32,8 @@ export function isCustomDataAttr(name: string): boolean {
 }
 
 // Exceptions
-// https://www.w3.org/TR/html5/infrastructure.html#conformance-requirements-extensibility
-export const reservedAttrRegExp = /^(x-)|^([^_]*_[^_]*)$/i
+// https://html.spec.whatwg.org/multipage/introduction.html#restrictions-on-content-models-and-on-attribute-values
+export const reservedAttrRegExp = /^x-|^[^_]*_[^_]*$/i
 
 // Global attributes (HTML Standard)
 // https://html.spec.whatwg.org/#global-attributes
@@ -44,7 +46,7 @@ export const reservedAttrRegExp = /^(x-)|^([^_]*_[^_]*)$/i
 // role, aria-*
 export const htmlElementCommonAttrRegExp: RegExp = /^(a(?:ccesskey|utocapitalize)|c(?:lass|ontenteditable)|d(?:ir|raggable)|enterkeyhint|hidden|i(?:[ds]|nputmode|tem(?:id|prop|ref|scope|type))|lang|nonce|role|s(?:lot|pellcheck|tyle)|t(?:abindex|itle|ranslate))$/
 
-export function isValidHTMLElementGlobalAttribute(attrName: string): boolean {
+export function isValidHTMLElementGlobalAttr(attrName: string): boolean {
   return (
     htmlElementCommonAttrRegExp.test(attrName) ||
     isCustomDataAttr(attrName) ||
@@ -56,7 +58,7 @@ export type HTMLElementAttrMap = {
   [tagName in keyof HTMLElementTagNameMap]?: RegExp
 }
 
-export const htmlElementAttrMap: HTMLElementAttrMap = {
+export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   // The document element
   // Ignore <html>
 
@@ -85,7 +87,7 @@ export const htmlElementAttrMap: HTMLElementAttrMap = {
   // reversed (boolean), start (long), type
   ol: /^(reversed|start|type)$/i,
   // Ignore <ul>, <menu>
-  // value (long) - if a child of <ol>
+  // value (long) - if a child of an <ol> element
   li: /^(value)$/i,
   // Ignore <dl>, <dd>, <dt>, <figure>, <figcaption>, <main>, <div>
 
@@ -260,13 +262,19 @@ const attrToPropsMap = {
   value: 'defaultValue',
 }
 
+//todo
+const unsafeAttrCharRE = /[>/="'\u0009\u000a\u000c\u0020]/ // eslint-disable-line no-control-regex
+export const isSSRUnsafeAttr = (name: string): boolean => {
+  return unsafeAttrCharRE.test(name)
+}
+
 export function isValidHTMLElementAttr(
   attrName: string,
   tagName?: keyof HTMLElementTagNameMap
 ): boolean {
   return tagName
-    ? tagName in htmlElementAttrMap &&
-        (htmlElementAttrMap[tagName]!.test(attrName) ||
-          isValidHTMLElementGlobalAttribute(attrName))
-    : isValidHTMLElementGlobalAttribute(attrName)
+    ? tagName in htmlElementLocalAttrMap &&
+        (htmlElementLocalAttrMap[tagName]!.test(attrName) ||
+          isValidHTMLElementGlobalAttr(attrName))
+    : isValidHTMLElementGlobalAttr(attrName)
 }

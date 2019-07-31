@@ -3,15 +3,22 @@
  * is in that map.
  */
 export default function makeMap(
-  str: string,
-  expectsLowerCase?: boolean
+  data: any[] | string,
+  options: {
+    delimiter: string
+    expectsLowerCase?: boolean
+  } = {
+    delimiter: ',',
+  }
 ): (key: string) => true | void {
   const map = Object.create(null)
-  const list: Array<string> = str.split(',')
+  const list: any[] = Array.isArray(data) ? data : data.split(options.delimiter)
 
-  for (let i = 0; i < list.length; i++) {
+  for (let i = 0; i < list.length; ++i) {
     map[list[i]] = true
   }
 
-  return expectsLowerCase ? (val) => map[val.toLowerCase()] : (val) => map[val]
+  return options.expectsLowerCase
+    ? (val) => map[val.toLowerCase()]
+    : (val) => map[val]
 }
