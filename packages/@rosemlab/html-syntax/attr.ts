@@ -44,7 +44,7 @@ export const reservedAttrRegExp = /^x-|^[^_]*_[^_]*$/i
 // class, id, slot
 // Global attributes (ARIA Standard)
 // role, aria-*
-export const htmlElementCommonAttrRegExp: RegExp = /^(a(?:ccesskey|utocapitalize)|c(?:lass|ontenteditable)|d(?:ir|raggable)|enterkeyhint|hidden|i(?:[ds]|nputmode|tem(?:id|prop|ref|scope|type))|lang|nonce|role|s(?:lot|pellcheck|tyle)|t(?:abindex|itle|ranslate))$/
+export const htmlElementCommonAttrRegExp: RegExp = /^a(?:ccesskey|utocapitalize)|c(?:lass|ontenteditable)|d(?:ir|raggable)|enterkeyhint|hidden|i(?:[ds]|nputmode|tem(?:id|prop|ref|scope|type))|lang|nonce|role|s(?:lot|pellcheck|tyle)|t(?:abindex|itle|ranslate)$/
 
 export function isValidHTMLElementGlobalAttr(attrName: string): boolean {
   return (
@@ -65,16 +65,16 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   // Document metadata
   // Ignore <head>, <title>
   // href, target
-  base: /^(href|target)$/i,
+  base: /^href|target$/i,
   // as, color, crossorigin, href, hreflang, imagesizes, imagesrcset, integrity,
   // media, referrerpolicy, rel, sizes, type
   link: RE(
     `as|color|${crossReferElementAttrRegExpPart}|${linkElementAttrRegExpPart}(?:lang)?|image(?:sizes|srcset)|media|sizes`
   ),
   // charset, content, http-equiv, name
-  meta: /^(c(?:harset|ontent)|http-equiv|name)$/i,
+  meta: /^c(?:harset|ontent)|http-equiv|name$/i,
   // media
-  style: /^(media)$/i,
+  style: /^media$/i,
 
   // Sections
   // Ignore <body>, <article>, <section>, <nav>, <aside>, <h1>, <h2>, <h3>,
@@ -85,10 +85,10 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   // cite
   blockquote: quoteElementAttrRegExp,
   // reversed (boolean), start (long), type
-  ol: /^(reversed|start|type)$/i,
+  ol: /^reversed|start|type$/i,
   // Ignore <ul>, <menu>
   // value (long) - if a child of an <ol> element
-  li: /^(value)$/i,
+  li: /^value$/i,
   // Ignore <dl>, <dd>, <dt>, <figure>, <figcaption>, <main>, <div>
 
   // Text-level semantics
@@ -100,9 +100,9 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   q: quoteElementAttrRegExp,
   // Ignore <dfn>, <abbr>, <ruby>, <rt>, <rp>
   // value
-  data: /^(value)$/i,
+  data: /^value$/i,
   // datetime
-  time: /^(datetime)$/i,
+  time: /^datetime$/i,
   // Ignore <code>, <var>, <samp>, <kbd>, <sub>, <sup>, <i>, <b>, <u>, <mark>,
   // <bdi>, <bdo>, <span>, <br>, <wbr>
 
@@ -115,7 +115,7 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   // Embedded content
   // Ignore <picture>
   // media, sizes, src, srcset, type
-  source: /^(media|s(?:izes|rc(?:set)?)|type)$/i,
+  source: /^media|s(?:izes|rc(?:set)?)|type$/i,
   // alt, crossorigin, decoding, height (ulong), ismap (boolean),
   // referrerpolicy, sizes, src, srcset, usemap, width (ulong)
   img: RE(
@@ -131,7 +131,7 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   // data, form, height, name, type, usemap, width
   object: RE(`data|form|${boundedElementAttrRegExpPart}|name|type|usemap`),
   // name, value
-  param: /^(name|value)$/i,
+  param: /^name|value$/i,
   // Extends HTMLMediaElement
   // autoplay, controls, crossorigin, height, loop, muted,
   // playsinline (boolean), poster, preload, src, width
@@ -142,8 +142,8 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   // autoplay, controls, crossorigin, loop, muted, preload, src
   audio: RE(mediaElementAttrRegExpPart),
   // default (boolean), kind, label, src, srclang
-  track: /^(default|kind|label|src(?:lang)?)$/i,
-  map: /^(name)$/i,
+  track: /^default|kind|label|src(?:lang)?$/i,
+  map: /^name$/i,
   // Uses mixin HTMLHyperlinkElementUtils
   // alt, coords, download, href, name, ping, referrerpolicy, rel, shape, target
   area: RE(
@@ -165,9 +165,9 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   // Forms
   // accept-charset, action, autocomplete, enctype, method, name,
   // novalidate (boolean), rel, target
-  form: /^(a(?:c(?:cept-charset|tion)utocomplete)|enctype|method|n(?:ame|ovalidate)|rel|target)$/i,
+  form: /^a(?:c(?:cept-charset|tion)utocomplete)|enctype|method|n(?:ame|ovalidate)|rel|target$/i,
   // for
-  label: /^(for)$/i,
+  label: /^for$/i,
   // accept, alt, autocomplete, autofocus (boolean), checked (boolean), dirname,
   // disabled (boolean), form, formaction, formenctype, formmethod,
   // formnovalidate (boolean), formtarget, height (number), list, max,
@@ -197,12 +197,12 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
     `${inputElementAutoAttrRegExpPart}|(?:col|row)s|${textInputElementAttrRegExpPart}|${formAssociatedElementRegExpPart}|m(?:ax|in)length|required|wrap`
   ),
   // for, form, name
-  output: /^(form?|name)$/i,
+  output: /^form?|name$/i,
   // max (double), value (double)
-  progress: /^(max|value)$/i,
+  progress: /^max|value$/i,
   // high (double), low (double), min (double), max (double), optimum (double),
   // value (double)
-  meter: /^(high|low|m(?:in|ax)|optimum|value)$/i,
+  meter: /^high|low|m(?:in|ax)|optimum|value$/i,
   // disabled (boolean), form, name
   fieldset: RE(formAssociatedElementRegExpPart),
   // Ignore <legend>
@@ -222,7 +222,7 @@ export const htmlElementLocalAttrMap: HTMLElementAttrMap = {
   ),
   // Ignore <noscript>, <template>
   // name
-  slot: /^(name)$/i,
+  slot: /^name$/i,
   // height (ulong), width (ulong)
   canvas: RE(boundedElementAttrRegExpPart),
 }
