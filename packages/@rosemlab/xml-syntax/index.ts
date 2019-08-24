@@ -1,5 +1,5 @@
-function RE(string: string): RegExp {
-  return new RegExp(string)
+function RE(string: string, flags?: string): RegExp {
+  return new RegExp(string, flags)
 }
 
 export const anyCharCapturePart = '([\\s\\S]*?)'
@@ -7,12 +7,16 @@ export const anyCharCapturePart = '([\\s\\S]*?)'
 export const processingInstructionStartRegExp = /^<\?/
 
 export const processingInstructionRegExp = RE(
-  `${processingInstructionStartRegExp.source}${anyCharCapturePart}\\?>`
+  `${processingInstructionStartRegExp.source}${anyCharCapturePart}\\?>`,
+  'i'
 )
 
 export const declarationStartRegExp = /^<!/
 
-export const declarationRegExp = RE(`${declarationStartRegExp.source}([^>]*)>`)
+export const declarationRegExp = RE(
+  `${declarationStartRegExp.source}([^>]*)>`,
+  'i'
+)
 
 /**
  * Unicode characters used for parsing html tags, component names and property paths.
@@ -21,7 +25,7 @@ export const declarationRegExp = RE(`${declarationStartRegExp.source}([^>]*)>`)
  *
  * avoid compression of unicode sequences by using regexp instead of string
  */
-export const potentialCustomElementNameCharRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u10000-\uEFFFF/
+export const potentialCustomElementNameCharRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD/ //\u10000-\uEFFFF/
 
 // Non-colonized name e.g. "name"
 // could use CombiningChar and Extender characters
