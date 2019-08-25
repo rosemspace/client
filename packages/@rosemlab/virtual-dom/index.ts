@@ -73,6 +73,6 @@ export interface VirtualElement extends VirtualParentNode {
 }
 
 export interface VirtualCustomElement extends VirtualElement {
-  props: any[]
+  props: unknown[]
   shadowRoot: VirtualDocumentFragment
 }

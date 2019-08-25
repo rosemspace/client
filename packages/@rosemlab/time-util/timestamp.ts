@@ -17,7 +17,7 @@ let timestamp: () => number = Date.now
 // All IE versions use low-res event timestamps, and have problematic clock
 // implementations (#9632)
 if (inBrowser && !isIE) {
-  const performance = window.performance
+  const performance = globalThis.performance
 
   if (
     performance &&

@@ -18,8 +18,8 @@
     "allowSyntheticDefaultImports": true,
 //    "noImplicitReturns": true,
 //    "noLib": false,
-    "declaration": true,
-    "declarationMap": true,
+//    "declaration": true,
+//    "declarationMap": true,
     "sourceMap": true,
     "baseUrl": "./packages",
 //    "types": [

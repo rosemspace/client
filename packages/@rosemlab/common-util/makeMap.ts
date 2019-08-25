@@ -1,9 +1,12 @@
+const createObject = Object.create
+const isArray = Array.isArray
+
 /**
  * Make a map and return a function for checking if a key
  * is in that map.
  */
 export default function makeMap(
-  data: any[] | string,
+  data: unknown[] | string,
   options: {
     delimiter: string
     expectsLowerCase?: boolean
@@ -11,11 +14,11 @@ export default function makeMap(
     delimiter: ',',
   }
 ): (key: string) => true | void {
-  const map = Object.create(null)
-  const list: any[] = Array.isArray(data) ? data : data.split(options.delimiter)
+  const map = createObject(null)
+  const list: unknown[] = isArray(data) ? data : data.split(options.delimiter)
 
   for (let i = 0; i < list.length; ++i) {
-    map[list[i]] = true
+    map[String(list[i])] = true
   }
 
   return options.expectsLowerCase
