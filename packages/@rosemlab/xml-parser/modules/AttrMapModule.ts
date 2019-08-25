@@ -20,11 +20,11 @@ export default class AttrMapModule extends BlankModule {
 
     if (
       '' === value ||
-      name.toLocaleLowerCase() === value.toLocaleLowerCase()
+      name.toLowerCase() === value.toLowerCase()
     ) {
       attr.ownerElement.attrMap![camelCase(name)] = true
     } else {
-      const numericValue: number = parseFloat(value)
+      const numericValue: number = globalThis.parseFloat(value)
 
       attr.ownerElement.attrMap![camelCase(name)] = isNaN(numericValue)
         ? value

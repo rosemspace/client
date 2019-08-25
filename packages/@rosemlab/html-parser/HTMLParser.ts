@@ -144,11 +144,11 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     if (matchArray) {
       const content: Content = {
         content: matchArray[1],
-        start: this.cursor,
-        end: this.cursor + matchArray[0].length,
+        start: this.sourceCursor,
+        end: this.sourceCursor + matchArray[0].length,
       }
 
-      this.moveCursor(matchArray[0].length)
+      this.moveSourceCursor(matchArray[0].length)
 
       return content
     }
@@ -166,10 +166,10 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
           content: text.slice(
             Number(shouldIgnoreFirstNewline(lastTagNameLowerCased, text))
           ),
-          start: this.cursor,
-          end: this.cursor + text.length,
+          start: this.sourceCursor,
+          end: this.sourceCursor + text.length,
         }
-        this.moveCursor(text.length)
+        this.moveSourceCursor(text.length)
 
         return ''
       })
@@ -182,10 +182,10 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
         if (this.source) {
           rawText = {
             content: this.source,
-            start: this.cursor,
-            end: this.cursor + this.source.length,
+            start: this.sourceCursor,
+            end: this.sourceCursor + this.source.length,
           }
-          this.moveCursor(this.source.length)
+          this.moveSourceCursor(this.source.length)
 
           return rawText
         }
@@ -211,11 +211,11 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
         unarySlash: '',
         end: endTag.start,
       })
-      this.moveCursor(endTag.end - endTag.start)
+      this.moveSourceCursor(endTag.end - endTag.start)
       this.endTag(endTag)
 
       if (isVoid) {
-        this.nextToken()
+        this.resetInstructionPointer()
       }
 
       return endTag
@@ -227,8 +227,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
         start: endTag.start,
         end: endTag.end,
       })
-      this.moveCursor(endTag.end - endTag.start)
-      this.nextToken()
+      this.moveSourceCursor(endTag.end - endTag.start)
+      this.resetInstructionPointer()
     } else {
       return super.matchingStartTagMissed(endTag)
     }
@@ -238,8 +238,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     if (optionalClosingElementRegExp.test(stackTag.name)) {
       this.endTag({
         ...stackTag,
-        start: this.cursor,
-        end: this.cursor,
+        start: this.sourceCursor,
+        end: this.sourceCursor,
       })
     } else {
       super.matchingEndTagMissed(stackTag)
@@ -256,8 +256,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     ) {
       this.endTag({
         ...startTag,
-        start: this.cursor,
-        end: this.cursor,
+        start: this.sourceCursor,
+        end: this.sourceCursor,
       })
       this.tagStack.pop()
     } else if (
@@ -266,8 +266,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     ) {
       this.endTag({
         ...startTag,
-        start: this.cursor,
-        end: this.cursor,
+        start: this.sourceCursor,
+        end: this.sourceCursor,
       })
       this.tagStack.pop()
     } else if (
@@ -287,8 +287,8 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
           if (optionalClosingElementRegExp.test(stackTag.name)) {
             this.endTag({
               ...stackTag,
-              start: this.cursor,
-              end: this.cursor,
+              start: this.sourceCursor,
+              end: this.sourceCursor,
             })
           } else {
             // Remove the open elements from the stack
@@ -304,7 +304,7 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     }
 
     if (shouldIgnoreFirstNewline(startTag.name, this.source)) {
-      this.moveCursor(1)
+      this.moveSourceCursor(1)
     }
 
     super.startTag(startTag)

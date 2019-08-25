@@ -19,7 +19,7 @@ export const nonPhrasingElementRegExp = /^a(?:ddress|rticle|side)|b(?:ase|lockqu
 // Elements that cannot have children
 // <area>, <base>, <br>, <col>, <embed>, <frame>, <hr>, <img>, <input>,
 // <isindex>, <keygen>, <link>, <meta>, <param>, <source>, <track>, <wbr>
-export const voidElementRegExp = /^area|b(?:ase|r)|col|embed|frame|hr|i(?:mg|nput|sindex)|keygen|link|meta|param|source|track|wbr$/i
+export const voidElementRegExp = /^area|b(?:ase(?:font)?|r)|col|embed|frame|hr|i(?:mg|nput|sindex)|keygen|link|meta|param|source|track|wbr$/i
 
 // Elements that you can, intentionally, leave open
 // (and which close themselves)

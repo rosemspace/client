@@ -2,7 +2,7 @@ import MatchRange from './MatchRange'
 import Attr from './Attr'
 
 export default interface StartTag extends MatchRange {
-  [name: string]: any
+  [name: string]: any //todo remove
   attrs: Attr[]
   localName: string
   name: string

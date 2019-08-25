@@ -80,13 +80,17 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
   }
 
   tagOpened(startTag: StartTag): void {
-    super.tagOpened(startTag)
+    if (!startTag.void) {
+      // Add start tag to the stack of opened tags
+      this.tagStack.push(startTag)
 
-    // Switch parser for foreign tag
-    if (
-      this.activeProcessor.isForeignElement.call(this, startTag.nameLowerCased)
-    ) {
-      if (!startTag.void) {
+      // Switch parser for foreign tag
+      if (
+        this.activeProcessor.isForeignElement.call(
+          this,
+          startTag.nameLowerCased
+        )
+      ) {
         this.rootTagStack.push(startTag)
 
         if (
