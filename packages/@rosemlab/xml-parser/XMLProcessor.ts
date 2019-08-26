@@ -3,25 +3,25 @@ import { Content, EndTag, StartTag } from './nodes'
 export type XMLProcessorMap = { [mimeType: string]: XMLProcessor }
 
 export default interface XMLProcessor {
-  parseProcessingInstruction(): Content | void
-
-  parseDeclaration(): Content | void
-
-  parseStartTag(): StartTag | void
-
-  parseEndTag(): EndTag | void
-
-  parseComment(): Content | void
-
-  parseCDataSection(): Content | void
-
-  parseText(): Content | void
+  // parseProcessingInstruction(): Content | void
+  //
+  // parseDeclaration(): Content | void
+  //
+  // parseStartTag(): StartTag | void
+  //
+  // parseEndTag(): EndTag | void
+  //
+  // parseComment(): Content | void
+  //
+  // parseCDataSection(): Content | void
+  //
+  // parseText(): Content | void
 
   startsWithInstruction(source: string): boolean
 
   isVoidElement(startTag: StartTag): boolean
 
-  tagOpened(startTag: StartTag): void
+  startTagFound(startTag: StartTag): void
 
   matchingStartTagMissed(endTag: EndTag): EndTag | void
 

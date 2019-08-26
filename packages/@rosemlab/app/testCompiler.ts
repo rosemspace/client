@@ -1,5 +1,5 @@
-import vnode from './hTest'
-console.log(vnode)
+// import vnode from './hTest'
+// console.log(vnode)
 import HTMLParser from '@rosemlab/html-parser/HTMLParser'
 import { VDOMHydrator, VDOMRenderer } from '@rosemlab/virtual-dom'
 import TemplateCompiler from '@rosemlab/template-compiler/TemplateCompiler'

@@ -79,28 +79,23 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
     return (this.options.svgForeignElement as RegExp).test(tagName)
   }
 
-  tagOpened(startTag: StartTag): void {
-    if (!startTag.void) {
-      // Add start tag to the stack of opened tags
-      this.tagStack.push(startTag)
+  startTagFound(startTag: StartTag): void {
+    super.startTagFound(startTag)
 
+    if (
+      !startTag.void &&
+      this.activeProcessor.isForeignElement.call(this, startTag.nameLowerCased)
+    ) {
       // Switch parser for foreign tag
-      if (
-        this.activeProcessor.isForeignElement.call(
-          this,
-          startTag.nameLowerCased
-        )
-      ) {
-        this.rootTagStack.push(startTag)
+      this.rootTagStack.push(startTag)
 
-        if (
-          null !=
-          (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
-            startTag.nameLowerCased
-          ])
-        ) {
-          this.useProcessor(this.namespaceURI)
-        }
+      if (
+        null !=
+        (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
+          startTag.nameLowerCased
+        ])
+      ) {
+        this.useProcessor(this.namespaceURI)
       }
     }
   }

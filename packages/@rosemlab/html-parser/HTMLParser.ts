@@ -246,7 +246,7 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
     }
   }
 
-  startTag<T extends StartTag>(startTag: T): void {
+  startTagFound(startTag: StartTag): void {
     const lastTagNameLowerCased: string = this.lastTagNameLowerCased
     const tagNameLowerCased = startTag.nameLowerCased
 
@@ -307,7 +307,7 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
       this.moveSourceCursor(1)
     }
 
-    super.startTag(startTag)
+    super.startTagFound(startTag)
   }
 
   attribute<T extends Attr>(attr: T): void {

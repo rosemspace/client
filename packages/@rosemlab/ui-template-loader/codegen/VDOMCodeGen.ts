@@ -60,7 +60,7 @@ export default class VDOMCodeGen extends BlankModule {
   startTag<T extends StartTag>(startTag: T): void {
     this.code += `${this.depthCode}\n${this.pad}h(${stringify(
       startTag.nameLowerCased
-    )}, { attrs: {`
+    )}, { namespaceURI: ${stringify(startTag.namespaceURI)}, attrs: {`
     this.pad += '  '
     this.depthCode = '} }, ['
     this.void = startTag.void

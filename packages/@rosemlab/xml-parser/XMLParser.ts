@@ -339,8 +339,6 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
             tagNameLowerCased,
             (this.namespaceURI = startTag.namespaceURI = attr.value)
           )
-          attr.localName = attrPrefix
-          attr.prefix = undefined
         } // else {
         //   this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
         // }
@@ -355,13 +353,12 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
             start: attr.start,
             end: attr.start + attrPrefix.length,
           })
-        } else {
-          // this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
         }
-      } else {
+      }
+
+      if (!attrLocalName) {
         attr.localName = attrPrefix
         attr.prefix = undefined
-        // this.namespaceURI = startTag.namespaceURI = this.rootNamespaceURI
       }
 
       attrs.push(attr)
@@ -384,6 +381,32 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
             end: this.sourceCursor + tagPrefix.length,
           })
         }
+      }
+
+      // We don't have namespace from closest foreign element
+      if (
+        null == this.namespaceURI &&
+        this.rootTagStack.length &&
+        !this.rootTagStack[this.rootTagStack.length - 1].namespaceURI
+      ) {
+        if (!this.options.suppressWarnings) {
+          this.warn(
+            `<${startTag.name}> element is not allowed in context of <${this.rootTagStack[this.rootTagStack.length - 1].name}> element without namespace.`,
+            {
+              start: startTag.start,
+              end: startTag.end,
+            }
+          )
+        }
+
+        this.useProcessor((this.namespaceURI = this.defaultNamespaceURI))
+      }
+
+      this.activeProcessor.startTagFound.call(this, startTag)
+
+      if (!startTag.void) {
+        // Add start tag to the stack of opened tags
+        this.tagStack.push(startTag)
       }
 
       return startTag
@@ -534,12 +557,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     }
   }
 
-  tagOpened(startTag: StartTag): void {
-    if (!startTag.void) {
-      // Add start tag to the stack of opened tags
-      this.tagStack.push(startTag)
-    }
-  }
+  startTagFound(startTag: StartTag): void {}
 
   start(type: string) {
     for (const module of this.moduleList) {
@@ -572,28 +590,6 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
   }
 
   startTag<T extends StartTag>(startTag: T): void {
-    // We don't have namespace from closest foreign element
-    if (
-      null == this.namespaceURI &&
-      this.rootTagStack.length &&
-      !this.rootTagStack[this.rootTagStack.length - 1].namespaceURI
-    ) {
-      if (!this.options.suppressWarnings) {
-        this.warn(
-          `<${startTag.name}> element is not allowed in context of <${this.rootTagStack[this.rootTagStack.length - 1].name}> element without namespace.`,
-          {
-            start: startTag.start,
-            end: startTag.end,
-          }
-        )
-      }
-
-      this.useProcessor((this.namespaceURI = this.defaultNamespaceURI))
-    }
-
-    this.activeProcessor.tagOpened.call(this, startTag)
-    this.resetInstructionPointer()
-
     for (const module of this.moduleList) {
       module.startTag(startTag)
     }
@@ -605,6 +601,9 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     if (startTag.void) {
       this.endTag(startTag)
     }
+
+    // todo: check why it's important
+    this.resetInstructionPointer()
   }
 
   attribute<T extends Attr>(attr: T): void {
