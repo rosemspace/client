@@ -12,37 +12,51 @@ const tagAttrMap: { [tagName: string]: string[] } = {
   image: ['xlink:href', 'href'],
   use: ['xlink:href', 'href'],
 }
+const modulePathRegExp: RegExp = /^[.~@]|^import:/i
+const modulePathRemovePrefixRegExp: RegExp = /^~|^import:/i
+
+function wrapInRequire(source: string) {
+  return `require(${source})`
+}
 
 export default class AssetCodeGen extends BlankModule {
   attribute<T extends Attr>(attr: T): void {
     const ownerElementTagName: string = attr.ownerElement.nameLowerCased
+    const attrValue = attr.value
 
     if (
       tagAttrMap[ownerElementTagName] &&
       tagAttrMap[ownerElementTagName].includes(attr.nameLowerCased) &&
+      modulePathRegExp.test(attrValue) &&
       // Ignore SVG <symbol> references
-      ('xlink:href' !== attr.nameLowerCased || !attr.value.startsWith('#'))
+      ('xlink:href' !== attr.nameLowerCased || !attrValue.startsWith('#'))
     ) {
       attr.prefix = ATTR_SYNTAX_KEYWORDS.bind.fullName
       attr.name = `${attr.prefix}:${attr.localName}`
       attr.nameLowerCased = attr.name.toLowerCase()
       attr.value =
         'srcset' === attr.localName
-          ? attr.value
+          ? attrValue
               .trim()
               .split(',')
               .map((src: string): string => {
                 const parts: string[] = src
                   .trim()
-                  .split(' ')
+                  .split(/\s+/)
                   .map((part: string): string => stringify(` ${part}`))
 
-                parts[0] = `require(${parts[0].replace(' ', '')})`
+                parts[0] = wrapInRequire(
+                  `"${parts[0]
+                    .slice(2)
+                    .replace(modulePathRemovePrefixRegExp, '')}`
+                )
 
                 return parts.join('+')
               })
               .join(',')
-          : `require(${stringify(attr.value)})`
+          : wrapInRequire(
+              stringify(attrValue.replace(modulePathRemovePrefixRegExp, ''))
+            )
     }
   }
 }
