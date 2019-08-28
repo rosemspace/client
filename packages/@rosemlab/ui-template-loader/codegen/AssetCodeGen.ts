@@ -16,7 +16,7 @@ const modulePathRegExp: RegExp = /^[.~@]|^import:/i
 const modulePathRemovePrefixRegExp: RegExp = /^~|^import:/i
 
 function wrapInRequire(source: string) {
-  return `require(${source})`
+  return `require(${stringify(source)})`
 }
 
 export default class AssetCodeGen extends BlankModule {
@@ -43,20 +43,18 @@ export default class AssetCodeGen extends BlankModule {
                 const parts: string[] = src
                   .trim()
                   .split(/\s+/)
-                  .map((part: string): string => stringify(` ${part}`))
+                  .map((part: string, index: number): string =>
+                    index > 0 ? stringify(` ${part}`) : part
+                  )
 
                 parts[0] = wrapInRequire(
-                  `"${parts[0]
-                    .slice(2)
-                    .replace(modulePathRemovePrefixRegExp, '')}`
+                  parts[0].replace(modulePathRemovePrefixRegExp, '')
                 )
 
                 return parts.join('+')
               })
               .join(',')
-          : wrapInRequire(
-              stringify(attrValue.replace(modulePathRemovePrefixRegExp, ''))
-            )
+          : wrapInRequire(attrValue.replace(modulePathRemovePrefixRegExp, ''))
     }
   }
 }

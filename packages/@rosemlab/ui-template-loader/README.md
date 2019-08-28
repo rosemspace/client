@@ -1,4 +1,4 @@
-# HTML and Static Assets
+# @rosemlab/ui-template-loader
 
 ## Static Assets Handling
 
@@ -14,4 +14,4 @@
     <img src="~some-npm-package/foo.png">
     ```
 
-- If the URL starts with @, it's also interpreted as a module request. This is useful for `npm` scoped packages and for `@` aliased to `<projectRoot>/src`.
+- If the URL starts with `@`, it's also interpreted as a module request. This is useful for `npm` scoped packages and for `@` aliased to `<projectRoot>/src`.

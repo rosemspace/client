@@ -24,8 +24,8 @@ const tsconfigPathsPlugin = new TsconfigPathsPlugin()
 
 
 export default {
+  // mode: 'development',
   // cache: true,
-  mode: 'development',
   devtool: 'cheap-module-eval-source-map',
   // devtool: 'eval-source-map',
   // node: {
@@ -112,6 +112,9 @@ export default {
         exclude: /node_modules/,
         use: [
           {
+            loader: 'babel-loader'
+          },
+          {
             loader: '@rosemlab/ui-template-loader',
           },
           // {
@@ -159,9 +162,6 @@ export default {
       {
         test: /\.sfc$/,
         use: [
-          // {
-          //   loader: 'babel-loader'
-          // },
           {
             loader: '@rosemlab/sfc-loader',
             // loader: path.resolve(__dirname, './packages/@rosemlab/sfc-loader/index.ts'),
