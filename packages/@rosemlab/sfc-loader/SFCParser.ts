@@ -2,6 +2,7 @@ import { basename, dirname } from 'path'
 import forEach from 'lodash/forEach'
 import LRUCache from 'lru-cache'
 import hashSum from 'hash-sum'
+import { isProduction } from '@rosemlab/env'
 import HTMLParser from '@rosemlab/html-parser'
 import { qualifiedNameRegExp } from '@rosemlab/xml-syntax'
 import { MatchRange, StartTag, Content } from '@rosemlab/xml-parser/nodes'
@@ -40,7 +41,7 @@ export default class SFCParser extends HTMLParser {
   ): SFCDescriptor {
     options = { ...defaultOptions, ...options }
 
-    const filename: string = basename(file)
+    const filename: string = isProduction ? basename(file) : file
     const sourceRoot: string = dirname(file)
     const cacheKey: string = hashSum(filename + source)
     let output: SFCDescriptor | undefined = cache.get(cacheKey)
@@ -59,6 +60,8 @@ export default class SFCParser extends HTMLParser {
         (blocks: SFCBlock[]): void => {
           blocks.forEach(
             (block: SFCBlock): void => {
+              block.scopeId = cacheKey
+
               // Pad content so that linters and pre-processors can output
               // correct line numbers in errors and warnings
               if (!options.noPad) {
@@ -103,6 +106,7 @@ export default class SFCParser extends HTMLParser {
 
     this.descriptor[nameLowerCased].push(
       Object.assign(startTag, {
+        scopeId: '',
         output: undefined,
         end: startTag.end,
         start: startTag.end,
