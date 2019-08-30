@@ -4,6 +4,10 @@ export { default as VDOMHydrator } from './VDOMHydrator'
 export { default as VDOMHyperRenderer } from './VDOMHyperRenderer'
 export { default as VDOMRenderer } from './VDOMRenderer'
 
+export type VirtualContent = string | number | boolean
+
+export type VirtualNodeKey = VirtualContent
+
 export interface VirtualNode {
   readonly nodeName: NodeName | string
   readonly type: NodeType
@@ -11,14 +15,12 @@ export interface VirtualNode {
   nextSibling?: VirtualNode
 }
 
-export type VirtualNodeKey = Primitive
-
 export type VirtualAttr = {
   readonly prefix?: string
   readonly localName: string
   readonly namespaceURI?: string
   readonly ownerElement: VirtualElement
-  value: Primitive
+  value: VirtualContent
 }
 
 export type VirtualNodeAttrMap = Record<string, VirtualAttr>
@@ -32,14 +34,14 @@ export type VirtualInstance =
 
 export type VirtualNodeList = VirtualNode[]
 
-export type VirtualChildNodeList = Array<VirtualNode | Primitive>
+export type VirtualChildNodeList = Array<VirtualNode | VirtualContent>
 
 export interface VirtualParentNode extends VirtualNode {
   children: VirtualNodeList
 }
 
 export interface VirtualContentNode extends VirtualNode {
-  text: Primitive
+  text: VirtualContent
 }
 
 export interface VirtualDocumentFragment extends VirtualParentNode {

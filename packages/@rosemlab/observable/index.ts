@@ -1,12 +1,13 @@
-import defineObservableProperty from '@rosemlab/observable/defineObservableProperty'
 import isFunction from 'lodash/isFunction'
 import isObject from 'lodash/isObject'
+import { Primitive } from '@rosemlab/types'
 import supportsSymbol from '@rosemlab/common-util/supportsSymbol'
 import Storage from './Storage'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 import Observer from './Observer'
 import ObservablePropertyDescriptor from './descriptors/ObservablePropertyDescriptor'
 import ComputedPropertyDescriptor from './descriptors/ComputedPropertyDescriptor'
+import defineObservableProperty from './defineObservableProperty'
 import defineComputedProperty from './defineComputedProperty'
 import observeProperty from './observeProperty'
 
@@ -75,21 +76,21 @@ export function watch(
   observer: Observer
 ): void {
   if (isFunction(observable)) {
-    let oldValue: any
+    let oldResultValue: any
 
     storage.observer = (
-      _oldValue: any,
-      _newValue: any,
+      newValue: any,
+      oldValue: any,
       property: ObservablePropertyKey,
       target: ObservableObject
     ) => {
-      const newValue: any = observable()
+      const newResultValue: any = observable()
 
-      observer.call(target, newValue, oldValue, property, target)
-      oldValue = newValue
+      observer.call(target, newResultValue, oldResultValue, property, target)
+      oldResultValue = newResultValue
     }
     // Collect properties on which this computed property dependent
-    oldValue = observable()
+    oldResultValue = observable()
     storage.observer = undefined
   } else {
     observeProperty(observable, 'value', observer)

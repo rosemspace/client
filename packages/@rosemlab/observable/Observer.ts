@@ -3,8 +3,8 @@ import ObservableObject from './ObservableObject'
 
 export default interface Observer extends Function {
   (
-    oldValue: any,
     newValue: any,
+    oldValue: any,
     property: ObservablePropertyKey,
     target: ObservableObject
   ): any

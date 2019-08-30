@@ -12,13 +12,17 @@ import {
   VirtualAttr,
   VirtualNodeKey,
   VirtualParentNode,
+  VirtualContent,
 } from '.'
 
 export let key = 0
 
 export type HyperRendererProps = Partial<{
   tagName: string
-  attrs: Record<string, { namespaceURI: string; value: Primitive } | Primitive>
+  attrs: Record<
+    string,
+    { namespaceURI: string; value: VirtualContent } | VirtualContent
+  >
   props: any[]
   namespaceURI: string
   key: VirtualNodeKey
@@ -37,7 +41,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
     childList: VirtualChildNodeList
   ): VirtualInstance
 
-  createInstance(type: NodeType, text: Primitive): VirtualInstance
+  createInstance(type: NodeType, text: VirtualContent): VirtualInstance
 
   createInstance(type: NodeType, props: HyperRendererProps): VirtualInstance
 
@@ -50,7 +54,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
   createInstance(
     type: NodeType,
     props: HyperRendererProps,
-    text: Primitive
+    text: VirtualContent
   ): VirtualInstance
 
   createInstance(childList: VirtualChildNodeList): VirtualInstance
@@ -59,7 +63,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
 
   createInstance(name: string, childList: VirtualChildNodeList): VirtualInstance
 
-  createInstance(name: string, text: Primitive): VirtualInstance
+  createInstance(name: string, text: VirtualContent): VirtualInstance
 
   createInstance(name: string, props: HyperRendererProps): VirtualInstance
 
@@ -72,7 +76,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
   createInstance(
     name: string,
     props: HyperRendererProps,
-    text: Primitive
+    text: VirtualContent
   ): VirtualInstance
 
   createInstance(
@@ -80,8 +84,8 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
     propsOrChildListOrText?:
       | HyperRendererProps
       | VirtualChildNodeList
-      | Primitive,
-    childListOrText?: VirtualChildNodeList | Primitive
+      | VirtualContent,
+    childListOrText?: VirtualChildNodeList | VirtualContent
   ): VirtualInstance {
     let props: HyperRendererProps = {}
 
@@ -90,7 +94,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
         props = propsOrChildListOrText as HyperRendererProps
 
         if (!isArray(childListOrText)) {
-          childListOrText = [childListOrText as Primitive]
+          childListOrText = [childListOrText as VirtualContent]
         }
       } else if (isPlainObject(propsOrChildListOrText)) {
         props = propsOrChildListOrText as HyperRendererProps
@@ -98,7 +102,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
       } else if (isArray(propsOrChildListOrText)) {
         childListOrText = propsOrChildListOrText as VirtualChildNodeList
       } else {
-        childListOrText = [propsOrChildListOrText as Primitive]
+        childListOrText = [propsOrChildListOrText as VirtualContent]
       }
     } else {
       childListOrText = []
@@ -149,7 +153,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
 
         forEach(
           virtualElement.attrs,
-          (attr: VirtualAttr | Primitive, attrName: string): void => {
+          (attr: VirtualAttr | VirtualContent, attrName: string): void => {
             isPrimitive(attr)
               ? this.setAttribute(virtualElement, attrName, attr)
               : null == (attr as VirtualAttr).namespaceURI
@@ -172,11 +176,13 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
         return virtualElement
       }
       case NodeType.TEXT_NODE:
-        return this.createText((childListOrText[0] as Primitive) || '')
+        return this.createText((childListOrText[0] as VirtualContent) || '')
       case NodeType.COMMENT_NODE:
-        return this.createComment((childListOrText[0] as Primitive) || '')
+        return this.createComment((childListOrText[0] as VirtualContent) || '')
       case NodeType.CDATA_SECTION_NODE:
-        return this.createCDATASection((childListOrText[0] as Primitive) || '')
+        return this.createCDATASection(
+          (childListOrText[0] as VirtualContent) || ''
+        )
     }
 
     throw TypeError(`Unsupported virtual node type "${typeOrChildListOrName}"`)
@@ -191,7 +197,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
       this.appendChild(
         parent,
         isPrimitive(child)
-          ? this.createText(child as Primitive)
+          ? this.createText(child as VirtualContent)
           : (child as VirtualNode)
       )
     }
