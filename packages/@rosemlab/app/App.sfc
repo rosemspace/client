@@ -1,8 +1,12 @@
-<template lang="html">
+<!--<head>-->
+<!--  <title>Rosem App</title>-->
+<!--</head>-->
+
+<template lang="html" scoped xmlns:rosem="http://www.w3.org/1999/xhtml">
 <!--  <template &src="../Home.sfc#logo" />-->
 <!--  <template use="line" />-->
   <h1 class="greeting">Text: <span style="font-weight: bold">{{ this.msg }}</span></h1>
-  <img class="logo" srcset="@rosemlab/vue-app/assets/logo.png 320w" alt="Logo">
+  <img class="logo" srcset="@rosemlab/vue-app/assets/logo.png?query#hash 320w" alt="Logo">
 <!--  <img class="logo" src="import:@rosemlab/vue-app/assets/logo.png" alt="Logo">-->
   <img class="logo" x-bind:src="require('@rosemlab/vue-app/assets/logo.png')" alt="Logo">
   <h2>My name is <span :data-name="this.name">{{ this.name }}</span></h2>
@@ -39,9 +43,13 @@ export default 'TEST'
 <style src="./style.css"></style>
 <!--<style src="@rosemlab/web-design/index.pcss"></style>-->
 
-<style>
+<style scoped>
 :host {
   --color: red;
+}
+
+:host > h1 {
+  font-weight: normal;
 }
 
 .logo {

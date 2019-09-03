@@ -152,6 +152,12 @@ export default {
             }
           },
           {
+            loader: '@rosemlab/scoped-css-loader',
+            options: {
+              sourceMap: true,
+            },
+          },
+          {
             loader: 'postcss-loader',
             options: {
               sourceMap: true

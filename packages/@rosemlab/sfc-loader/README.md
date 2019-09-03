@@ -19,6 +19,10 @@ Why another naming? Because the main goal of this package is to be standalone.
 - **index** - reserved. User value will be ignored
 - **src** - source file path. Cannot include any content, warning will be shown (probable in development mode only) otherwise
 
+### How it works?
+
+`SFCLoaderPlugin` goes through all `webpack` rules, clones them with some modifications and places them on top. It needs to clone instead of direct mutation of a rule to avoid issues because some existed rules can be shared between several configurations.
+
 ### Loading stages
 
 #### `App.sfc` file
@@ -45,10 +49,12 @@ import script1 from './App.sfc?sfc&block=script&index=0&lang=ts'
 export default {
   template: [
     {
-      attrMap: {
-        lang: 'html',
-      },
-      attrs: [],
+      attrs: [
+        {
+          name: 'lang',
+          value: 'html',
+        }
+      ],
       text: {
         content: template1,
       },

@@ -44,19 +44,19 @@ export default class SFCParser extends HTMLParser {
     const filename: string = isProduction ? basename(file) : file
     const sourceRoot: string = dirname(file)
     const cacheKey: string = hashSum(filename + source)
-    let output: SFCDescriptor | undefined = cache.get(cacheKey)
+    let sfcDescriptor: SFCDescriptor | undefined = cache.get(cacheKey)
 
-    if (output) {
-      return output
+    if (sfcDescriptor) {
+      return sfcDescriptor
     }
 
     super.parseFromString(source)
 
-    output = this.descriptor
+    sfcDescriptor = this.descriptor
 
     if (options.sourceMap) {
       forEach(
-        output,
+        sfcDescriptor,
         (blocks: SFCBlock[]): void => {
           blocks.forEach(
             (block: SFCBlock): void => {
@@ -75,7 +75,7 @@ export default class SFCParser extends HTMLParser {
                 block.content = ''.padStart(offset, '\n') + block.content
               }
 
-              if (!block.attrMap!.src) {
+              if (!block.attrs.src) {
                 block.map = generateSourceMap(
                   filename,
                   source,
@@ -90,9 +90,9 @@ export default class SFCParser extends HTMLParser {
       )
     }
 
-    cache.set(cacheKey, output)
+    cache.set(cacheKey, sfcDescriptor)
 
-    return output
+    return sfcDescriptor
   }
 
   startTag<T extends StartTag>(startTag: T): void {
@@ -107,7 +107,7 @@ export default class SFCParser extends HTMLParser {
     this.descriptor[nameLowerCased].push(
       Object.assign(startTag, {
         scopeId: '',
-        output: undefined,
+        content: undefined,
         end: startTag.end,
         start: startTag.end,
       })

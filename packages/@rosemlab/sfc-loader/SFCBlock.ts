@@ -5,7 +5,7 @@ import { RawSourceMap } from 'source-map'
 export default interface SFCBlock extends StartTag {
   scopeId: string,
   map?: RawSourceMap
-  output: any
+  content: any
   // type?: string // instead of lang
   // src?: string
   // global?: boolean // instead of "scoped", should be scoped by default

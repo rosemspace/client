@@ -206,7 +206,7 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
       this.startTag({
         ...endTag,
         namespaceURI: this.namespaceURI,
-        attrs: [],
+        attrs: [] as any,
         void: isVoid,
         unarySlash: '',
         end: endTag.start,

@@ -26,7 +26,7 @@ import {
 } from '@rosemlab/w3-util'
 import HookList from './HookList'
 import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
-import { MatchRange, Attr, Content, EndTag, StartTag } from './nodes'
+import { Attr, AttrList, Content, EndTag, MatchRange, StartTag } from './nodes'
 import { decodeAttrEntities } from './attrEntities'
 import { NamespaceMap, TypeMap } from '.'
 
@@ -281,7 +281,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     const tagNameLowerCased: string = tagName.toLowerCase()
     const tagPrefix: string | undefined = startTagOpenMatch[2]
     const tagLocalName: string = startTagOpenMatch[3].toLowerCase()
-    const attrs: Attr[] = []
+    const attrs: AttrList = [] as any
     const startTag: StartTag = {
       name: tagName,
       prefix: tagPrefix && tagPrefix.toLowerCase(),

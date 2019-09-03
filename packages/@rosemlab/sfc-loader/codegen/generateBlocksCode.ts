@@ -1,8 +1,11 @@
+import camelCase from 'lodash/camelCase'
 import forEach from 'lodash/forEach'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import { stringifyRequest } from 'loader-utils'
-import qs from 'querystring'
+import { escape } from 'querystring'
+import { AttrMap } from '@rosemlab/xml-parser/nodes'
+import { getAttrMap } from '@rosemlab/xml-parser/modules/AttrMapModule'
 import SFCBlock from '../SFCBlock'
 import SFCDescriptor from '../SFCDescriptor'
 import attrsToQuery from './attrsToQuery'
@@ -31,7 +34,7 @@ const stringify = (value: any, ignoreRootKeyList: string[] = []): string => {
 
       return innerValue
     },
-    2
+    2 //todo: remove
   )
 
   // Enable garbage collection
@@ -48,7 +51,7 @@ const DEFAULT_EXPORT_VARIABLE_NAME: string = 'sfc'
 // these are built-in query parameters so should be ignored if the user happen
 // to add them as attrs
 // `src` and `lang` will be added as internal attributes
-const ignoredAttrs = ['block', 'index', 'lang', 'src', 'issuerPath']
+const ignoredAttrs = ['block', 'index', 'lang', 'src', 'scopeId', 'issuerPath']
 
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
@@ -78,29 +81,36 @@ export default function generateBlocksCode(
       `/* ${name} blocks */\n` +
       blocks
         .map((block: SFCBlock, index: number) => {
-          const attrMap = { ...block.attrMap! }
-          const internalAttrMap: { [name: string]: string } = {
-            block: qs.escape(name),
+          // todo: improve getAttrMap
+          const attrMap: AttrMap = getAttrMap(block.attrs)
+          const internalAttrMap: AttrMap<string> = {
+            block: escape(name),
           }
           let src: string = loaderContext.resourcePath
 
-          internalAttrMap.index = String(index)
-
-          // No need `lang` attribute if we have external resource
-          if (attrMap.src) {
-            src = String(attrMap.src)
-            internalAttrMap.issuerPath = qs.escape(loaderContext.resourcePath)
-          } else {
+          if (!attrMap.src) {
             const lang: string | number | boolean =
               attrMap.lang || pluginOptions.blockLangMap[name]
 
             if (null != lang) {
-              internalAttrMap.lang = String(lang)
+              internalAttrMap.lang = escape(String(lang))
             }
           }
 
+          internalAttrMap.index = escape(String(index))
+
+          if (attrMap.scoped) {
+            internalAttrMap.scopeId = escape(block.scopeId)
+          }
+
+          // No need `lang` attribute if we have an external resource
+          if (attrMap.src) {
+            src = String(attrMap.src)
+            internalAttrMap.issuerPath = escape(loaderContext.resourcePath)
+          }
+
           // Ignore user attributes which are built-in
-          delete attrMap[pluginOptions.fileExtension]
+          delete attrMap[camelCase(pluginOptions.fileExtension)]
           ignoredAttrs.forEach((attrName: string): void => {
             delete attrMap[attrName]
           })

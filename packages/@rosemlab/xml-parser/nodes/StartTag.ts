@@ -1,9 +1,8 @@
 import MatchRange from './MatchRange'
-import Attr from './Attr'
+import { AttrList } from '../nodes'
 
 export default interface StartTag extends MatchRange {
-  [name: string]: any //todo remove
-  attrs: Attr[]
+  attrs: AttrList
   localName: string
   name: string
   nameLowerCased: string

@@ -1,38 +1,51 @@
 import camelCase from 'lodash/camelCase'
 import isNaN from 'lodash/isNaN'
 import BlankModule from '../BlankModule'
-import { Attr, StartTag } from '../nodes'
+import { Attr, AttrMap, StartTag } from '../nodes'
 
-export type AttrMap = {
-  [camelCaseName: string]: string | number | boolean
-}
+const defineProperties = Object.defineProperties
 
-declare module '@rosemlab/xml-parser/nodes' {
-  interface StartTag {
-    attrMap?: AttrMap
-  }
-}
+export function getAttrMap<T>(
+  attrs: Attr[],
+  transformer: (value: string | number | boolean) => T = (
+    value: string | number | boolean
+  ): T => (value as unknown) as T
+): AttrMap<T> {
+  const attrMap: AttrMap<T> = {}
 
-export default class AttrMapModule extends BlankModule {
-  attribute<T extends Attr>(attr: T): void {
-    const name: string = attr.name
+  attrs.forEach((attr: Attr): void => {
+    const name: string = attr.prefix
+      ? `${camelCase(attr.prefix)}:${camelCase(attr.localName)}`
+      : camelCase(attr.name)
     const value: string = attr.value
+    let scalarValue: T
 
-    if (
-      '' === value ||
-      name.toLowerCase() === value.toLowerCase()
-    ) {
-      attr.ownerElement.attrMap![camelCase(name)] = true
+    if ('' === value || attr.name.toLowerCase() === value.toLowerCase()) {
+      scalarValue = transformer(true)
     } else {
       const numericValue: number = globalThis.parseFloat(value)
 
-      attr.ownerElement.attrMap![camelCase(name)] = isNaN(numericValue)
-        ? value
-        : numericValue
+      scalarValue = transformer(isNaN(numericValue) ? value : numericValue)
     }
-  }
 
+    attrMap[name] = scalarValue
+  })
+
+  return attrMap
+}
+
+export default class AttrMapModule extends BlankModule {
   startTag<T extends StartTag>(startTag: T): void {
-    startTag.attrMap = {}
+    defineProperties(
+      startTag.attrs,
+      getAttrMap(
+        startTag.attrs,
+        (value: string | number | boolean): PropertyDescriptor => ({
+          configurable: true,
+          writable: true,
+          value,
+        })
+      )
+    )
   }
 }

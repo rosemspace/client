@@ -1,0 +1,26 @@
+{
+  "name": "@rosemlab/scoped-css-loader",
+  "version": "0.0.1",
+  "description": "PostCSS loader for scoped CSS",
+  "keywords": [
+    "postcss",
+    "plugin",
+    "scoped",
+    "css"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "postcss": "^7.0.17"
+  },
+  "devDependencies": {
+  }
+}
