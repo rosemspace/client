@@ -123,7 +123,7 @@ export default function generateBlocksCode(
           const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
           const blockName: string = `${name}${index}`
 
-          descriptorCode += `\n    ${stringify(block, ['content', 'map'])},`
+          descriptorCode += `\n    ${stringify(block, ['output', 'map'])},`
           outputCode += `\n${exportName}[${jsonStringify(
             name
           )}][${jsonStringify(index)}].output = ${blockName}`

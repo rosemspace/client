@@ -55,39 +55,39 @@ export default class SFCParser extends HTMLParser {
     sfcDescriptor = this.descriptor
 
     if (options.sourceMap) {
-      forEach(
-        sfcDescriptor,
-        (blocks: SFCBlock[]): void => {
-          blocks.forEach(
-            (block: SFCBlock): void => {
-              block.scopeId = cacheKey
+      forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
+        blocks.forEach((block: SFCBlock): void => {
+          block.scopeId = cacheKey
 
-              // Pad content so that linters and pre-processors can output
-              // correct line numbers in errors and warnings
-              if (!options.noPad) {
-                const contentBefore: string = this.originalSource.substr(
-                  0,
-                  block.start
-                )
-                const offset: number = (contentBefore.match(/\r?\n/g) || [])
-                  .length
+          // Pad content so that linters and pre-processors can output
+          // correct line numbers in errors and warnings
+          if (!options.noPad) {
+            const contentBefore: string = this.originalSource.substr(
+              0,
+              block.start
+            )
+            const offset: number = (contentBefore.match(/\r?\n/g) || []).length
 
-                block.content = ''.padStart(offset, '\n') + block.content
-              }
+            block.output = ''.padStart(offset, '\n') + block.output
+          }
 
-              if (!block.attrs.src) {
-                block.map = generateSourceMap(
-                  filename,
-                  source,
-                  block.content,
-                  sourceRoot,
-                  !options.noPad
-                )
-              }
-            }
-          )
-        }
-      )
+          if (!block.attrs.src) {
+            block.map = generateSourceMap(
+              filename,
+              source,
+              block.output,
+              sourceRoot,
+              !options.noPad
+            )
+          }
+        })
+      })
+    } else {
+      forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
+        blocks.forEach((block: SFCBlock): void => {
+          block.scopeId = cacheKey
+        })
+      })
     }
 
     cache.set(cacheKey, sfcDescriptor)
@@ -99,15 +99,16 @@ export default class SFCParser extends HTMLParser {
     super.startTag(startTag)
 
     const nameLowerCased: string = startTag.nameLowerCased
+    const descriptor: SFCDescriptor = this.descriptor
 
-    if (!this.descriptor[nameLowerCased]) {
-      this.descriptor[nameLowerCased] = []
+    if (!descriptor[nameLowerCased]) {
+      descriptor[nameLowerCased] = []
     }
 
-    this.descriptor[nameLowerCased].push(
+    descriptor[nameLowerCased].push(
       Object.assign(startTag, {
         scopeId: '',
-        content: undefined,
+        output: undefined,
         end: startTag.end,
         start: startTag.end,
       })
@@ -121,8 +122,11 @@ export default class SFCParser extends HTMLParser {
       const blockList: SFCBlock[] = this.descriptor[
         this.tagStack[this.tagStack.length - 1].nameLowerCased
       ]
+      const lastBlock: SFCBlock = blockList[blockList.length - 1]
 
-      Object.assign(blockList[blockList.length - 1], text)
+      lastBlock.output = text.content
+      lastBlock.start = text.start
+      lastBlock.end = text.end
     }
   }
 

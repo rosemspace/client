@@ -7,7 +7,7 @@ import querystring from 'querystring'
 import {
   NormalizedRuleSetRule,
   NormalizedRuleSetUseItem,
-} from './normalizedRule'
+} from './normalizedRuleSet'
 import cloneRule from './cloneRule'
 import { SFC_KEYWORD, SFC_LOADER_IDENT } from './index'
 
@@ -111,36 +111,36 @@ export default class SFCLoaderPlugin {
 
     if (!sfcRule) {
       throw new Error(
-        `[SFCLoaderPlugin Error] No matching rule for .${
-          this.options.fileExtension
-        } files found.\n` +
-          `Make sure there is at least one root-level rule that matches .${
-            this.options.fileExtension
-          } or .${this.options.fileExtension}.html files.`
+        `[SFCLoaderPlugin Error] No matching rule for ` +
+          `.${this.options.fileExtension} files found.\n` +
+          `Make sure there is at least one root-level rule that matches ` +
+          `.${this.options.fileExtension} or ` +
+          `.${this.options.fileExtension}.html files.`
       )
     }
 
     if (sfcRule.oneOf) {
       throw new Error(
-        `[SFCLoaderPlugin Error] sfc-loader currently does not support rules with oneOf.`
+        `[SFCLoaderPlugin Error] sfc-loader does not support rules with oneOf.`
       )
     }
 
     // get the normalized "use" for SFC files
-    const sfcUse = sfcRule.use
+    const sfcUse: NormalizedRuleSetUseItem[] = sfcRule.use
     // get sfc-loader options
-    const sfcLoaderUseIndex = sfcUse.findIndex((u) => {
-      return new RegExp(`^${SFC_LOADER_IDENT}|[/\@]${SFC_LOADER_IDENT}`).test(
-        u.loader
-      )
-    })
+    const sfcLoaderUseIndex: number = sfcUse.findIndex(
+      (use: NormalizedRuleSetUseItem): boolean => {
+        return new RegExp(`^${SFC_LOADER_IDENT}|[/\@]${SFC_LOADER_IDENT}`).test(
+          use.loader
+        )
+      }
+    )
 
     if (sfcLoaderUseIndex < 0) {
       throw new Error(
         `[SFCLoaderPlugin Error] No matching use for sfc-loader is found.\n` +
-          `Make sure the rule matching .${
-            this.options.fileExtension
-          } files include sfc-loader in its use.`
+          `Make sure the rule matching .${this.options.fileExtension} files ` +
+          `include sfc-loader in its use.`
       )
     }
 
@@ -150,13 +150,14 @@ export default class SFCLoaderPlugin {
     const sfcLoaderUse: NormalizedRuleSetUseItem = sfcUse[sfcLoaderUseIndex]
 
     sfcLoaderUse.ident = SFC_LOADER_IDENT
-    sfcLoaderUse.options = sfcLoaderUse.options || {}
+    // todo: do we need it?
+    // sfcLoaderUse.options = sfcLoaderUse.options || {}
 
     // for each user rule (expect the SFC rule), create a cloned rule
     // that targets the corresponding language blocks in *.sfc files.
     const clonedRules: RuleSetRule[] = []
 
-    rules.forEach((rule: NormalizedRuleSetRule) => {
+    rules.forEach((rule: NormalizedRuleSetRule): void => {
       // When the user defines a rule that has only resourceQuery but no test,
       // both that rule and the cloned rule will match, resulting in duplicated
       // loaders. Therefore it is necessary to perform a dedupe here.
@@ -176,6 +177,7 @@ export default class SFCLoaderPlugin {
           querystring.parse(query.slice(1))[this.options.fileExtension] != null
         )
       },
+      //todo
       // options: {
       //   cacheDirectory: sfcLoaderUse.options.cacheDirectory,
       //   cacheIdentifier: sfcLoaderUse.options.cacheIdentifier,

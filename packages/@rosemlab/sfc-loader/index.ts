@@ -1,6 +1,6 @@
 import { relative } from 'path'
 import querystring, { ParsedUrlQuery } from 'querystring'
-import { loader } from 'webpack'
+import { loader, RuleSetUse } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import loaderUtils from 'loader-utils'
 import SFCDescriptor from './SFCDescriptor'
@@ -12,6 +12,11 @@ export type SFCLoaderOptions = {
   sourceMap?: boolean
   noPad?: boolean
   exportName?: string
+  //todo
+  extendRule?: {
+    match: string,
+    use: RuleSetUse
+  }
 }
 
 export const SFC_KEYWORD = 'sfc'

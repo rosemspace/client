@@ -55,9 +55,7 @@ export default {
           value: 'html',
         }
       ],
-      text: {
-        content: template1,
-      },
+      output: template1,
     }
   ],
   script: [

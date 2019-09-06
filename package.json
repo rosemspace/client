@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "webpack --mode=development",
-    "build": "webpack --mode=production",
+    "dev": "node_modules/.bin/webpack --mode=development",
+    "build": "node_modules/.bin/webpack --mode=production",
     "build:ci": "yarn build --report",
     "lint:eslint": "vue-cli-service lint",
     "lint:stylelint": "stylelint --fix",
@@ -110,7 +110,8 @@
     "vue-property-decorator": "^8.2.1",
     "vue-template-compiler": "^2.6.10",
     "vuepress": "^1.0.3",
-    "webpack-cli": "^3.3.7"
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.8"
   },
   "workspaces": {
     "packages": [
