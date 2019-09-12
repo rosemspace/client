@@ -1,12 +1,15 @@
 import querystring, { ParsedUrlQuery } from 'querystring'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
-import loaderUtils from 'loader-utils'
+import { getOptions } from 'loader-utils'
+import { isProduction } from '@rosemlab/env'
 import HTMLParser from '@rosemlab/html-parser'
 import { Attr } from '@rosemlab/xml-parser/nodes'
 import AssetCodeGen from './codegen/AssetCodeGen'
-import ScopedCSSClassCodeGen from './codegen/ScopedCSSClassCodeGen'
+import ScopeCodeGen from './codegen/ScopeCodeGen'
 import VDOMCodeGen from './codegen/VDOMCodeGen'
+
+export const SCOPE_PREFIX = isProduction ? 's' : 'scope-'
 
 const isArray = Array.isArray
 
@@ -26,19 +29,27 @@ export function isSyntaxAttr<T extends Attr>(attr: T, syntax: 'bind'): boolean {
   )
 }
 export type UITemplateLoaderOptions = {
+  scopePrefix: string
   prettify?: boolean
+}
+
+const defaultUITemplateLoaderOptions: UITemplateLoaderOptions = {
+  scopePrefix: isProduction ? 's' : 'scope-',
 }
 
 const htmlParser: HTMLParser = new HTMLParser()
 const virtualDOMCodeGen: VDOMCodeGen = new VDOMCodeGen()
-const scopedCSSClassCodeGen: ScopedCSSClassCodeGen = new ScopedCSSClassCodeGen()
+const scopeCodeGen: ScopeCodeGen = new ScopeCodeGen()
 
-htmlParser.addModule(scopedCSSClassCodeGen)
+htmlParser.addModule(scopeCodeGen)
 htmlParser.addModule(new AssetCodeGen())
 htmlParser.addModule(virtualDOMCodeGen)
 
 export default function(this: LoaderContext, source: string): string | void {
-  const options: UITemplateLoaderOptions = loaderUtils.getOptions(this) || {}
+  const options: UITemplateLoaderOptions = {
+    scopePrefix: SCOPE_PREFIX,
+    ...(getOptions(this) || {}),
+  }
   // `.slice(1)` - remove "?" character
   const query: ParsedUrlQuery = querystring.parse(this.resourceQuery.slice(1))
   const scopeId: string | undefined = isArray(query.scopeId)
@@ -46,7 +57,7 @@ export default function(this: LoaderContext, source: string): string | void {
     : query.scopeId
 
   if (null != scopeId) {
-    scopedCSSClassCodeGen.setScopeId(scopeId)
+    scopeCodeGen.setScopeId(`${options.scopePrefix}${scopeId}`)
   }
 
   htmlParser.parseFromString(source)

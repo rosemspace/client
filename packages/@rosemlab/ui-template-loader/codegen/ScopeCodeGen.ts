@@ -3,7 +3,7 @@ import { Attr, AttrList, EndTag, StartTag } from '@rosemlab/xml-parser/nodes'
 
 const CLASS_ATTR_NAME = 'class'
 
-export default class ScopedCSSClassCodeGen extends BlankModule {
+export default class ScopeCodeGen extends BlankModule {
   private scopeId?: string
   private elementsDepth: number = 0
 
@@ -18,7 +18,7 @@ export default class ScopedCSSClassCodeGen extends BlankModule {
       return
     }
 
-    const scopeCSSClass: string = `s${this.scopeId}`
+    const scopeCSSClass: string = this.scopeId
     const attrs: AttrList = startTag.attrs
     const lastAttrEnd: number =
       attrs.length > 0 ? attrs[attrs.length - 1].end : startTag.end

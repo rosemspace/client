@@ -6,10 +6,14 @@ import { stringifyRequest } from 'loader-utils'
 import { escape } from 'querystring'
 import { AttrMap } from '@rosemlab/xml-parser/nodes'
 import { getAttrMap } from '@rosemlab/xml-parser/modules/AttrMapModule'
+import { SFC_LOADER_IDENT } from '../index'
 import SFCBlock from '../SFCBlock'
 import SFCDescriptor from '../SFCDescriptor'
 import attrsToQuery from './attrsToQuery'
-import { getOptions, SFCLoaderPluginOptions } from '../SFCLoaderPlugin'
+import SFCLoaderPlugin, {
+  getOptions,
+  SFCLoaderPluginOptions,
+} from '../SFCLoaderPlugin'
 
 const jsonStringify = JSON.stringify
 const stringify = (value: any, ignoreRootKeyList: string[] = []): string => {
@@ -61,7 +65,9 @@ export default function generateBlocksCode(
   const pluginOptions: SFCLoaderPluginOptions = getOptions(loaderContext)
 
   if (!pluginOptions) {
-    throw new Error('[sfc-loader Error] SFCLoaderPlugin is required')
+    throw new Error(
+      `[${SFC_LOADER_IDENT} Error] ${SFCLoaderPlugin.name} is required`
+    )
   }
 
   let isDefault: boolean = false

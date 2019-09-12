@@ -1,8 +1,9 @@
 import { relative } from 'path'
 import querystring, { ParsedUrlQuery } from 'querystring'
-import { loader, RuleSetUse } from 'webpack'
+import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
-import loaderUtils from 'loader-utils'
+import { getOptions } from 'loader-utils'
+import { ScopedCSSLoaderOptions } from '@rosemlab/scoped-css-loader'
 import SFCDescriptor from './SFCDescriptor'
 import SFCParser, { SFCParserOptions } from './SFCParser'
 import processBlock from './processBlock'
@@ -15,7 +16,13 @@ export const SFC_LOADER_IDENT = `${SFC_KEYWORD}-loader`
 
 export type SFCLoaderOptions = {
   exportName?: string
-} & SFCParserOptions
+  //todo
+  injectBefore?: {
+    [name: string]: Function
+  }
+  cacheDirectory?: string
+  cacheIdentifier?: string
+} & SFCParserOptions & ScopedCSSLoaderOptions
 
 const sfcParser = new SFCParser()
 
@@ -24,7 +31,7 @@ export default function sfcLoader(
   source: string
 ): string | void {
   const options: SFCLoaderOptions = {
-    ...loaderUtils.getOptions(this),
+    ...(getOptions(this) || {}),
   }
   // `.slice(1)` - remove "?" character
   const query: ParsedUrlQuery = querystring.parse(this.resourceQuery.slice(1))

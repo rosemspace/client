@@ -1,11 +1,13 @@
 import isString from 'lodash/isString'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
-import loaderUtils from 'loader-utils'
+import { getOptions, stringifyRequest } from 'loader-utils'
 import querystring, { ParsedUrlQuery } from 'querystring'
-import { getOptions, SFCLoaderPluginOptions } from './SFCLoaderPlugin'
+import { SFC_LOADER_IDENT, SFCLoaderOptions } from '@rosemlab/sfc-loader/index'
+import { SFCLoaderPluginOptions } from './SFCLoaderPlugin'
 
-const isDedupLoader = (loader: any): boolean => __filename === loader.path
+const scopedCSSLoaderPath = require.resolve('@rosemlab/scoped-css-loader')
+const isPitcher = (loader: any): boolean => __filename === loader.path
 const isNullLoader = (loader: any): boolean =>
   /[/\\@]null-loader/.test(loader.path)
 const isCSSLoader = (loader: any): boolean =>
@@ -16,15 +18,11 @@ const sfcLoaderPath = require.resolve('./index')
 const isSFCLoader = (loader: any): boolean => loader.path === sfcLoaderPath
 const shouldIgnoreCustomBlock = (loaders: any[]) => {
   const actualLoaders: any[] = loaders.filter((loader) => {
-    return (
-      !isDedupLoader(loader) && !isSFCLoader(loader) && !isCacheLoader(loader)
-    )
+    return !isPitcher(loader) && !isSFCLoader(loader) && !isCacheLoader(loader)
   })
 
   return 0 === actualLoaders.length
 }
-const scopedCSSLoaderPath = require.resolve('@rosemlab/scoped-css-loader')
-const stringifyRequest = loaderUtils.stringifyRequest
 
 export default function(source: string): string {
   return source
@@ -49,9 +47,10 @@ export function pitch(
 
   // `.slice(1)` - remove "?" character
   const query: ParsedUrlQuery = querystring.parse(this.resourceQuery.slice(1))
-  const pluginOptions: SFCLoaderPluginOptions = getOptions(this)
+  const options: SFCLoaderOptions = { ...(getOptions(this) || {}) }
+  // const pluginOptions: SFCLoaderPluginOptions = getOptions(this)
   // todo cache
-  const { cacheDirectory, cacheIdentifier } = pluginOptions
+  const { cacheDirectory, cacheIdentifier } = options
 
   // When the user defines a rule that has only resourceQuery but no test,
   // both that rule and the cloned rule will match, resulting in duplicated
@@ -63,17 +62,25 @@ export function pitch(
   const seen: { [identifier: string]: boolean } = {}
   const loaderStrings: string[] = []
 
-  // Inject scoped-css-loader before css-loader for scoped CSS and trimming
-  if ('style' === query.block) {
+  // Inject scoped-css-loader before css-loader for scoped CSS // todo trimming
+  if (
+    'style' === query.block ||
+    (query.lang && /^((post)?c|le|s[a|c])ss|styl$/.test(query.lang.toString()))
+  ) {
     const cssLoaderIndex: number = loaders.findIndex(isCSSLoader)
 
     if (cssLoaderIndex > -1) {
-      loaders.splice(cssLoaderIndex + 1, 0, scopedCSSLoaderPath)
+      loaders.splice(
+        cssLoaderIndex + 1,
+        0,
+        // Use sfc-loader options in scoped-css-loader
+        `${scopedCSSLoaderPath}??${SFC_LOADER_IDENT}`
+      )
     }
   }
 
   loaders.forEach((loader: any) => {
-    if (isDedupLoader(loader)) {
+    if (isPitcher(loader)) {
       return
     }
 

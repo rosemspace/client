@@ -19,6 +19,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
+    "@rosemlab/scoped-css-loader": "^0.0.1",
     "hash-sum": "^1.0.2",
     "lru-cache": "^5.1.1",
     "querystring": "^0.2.0",

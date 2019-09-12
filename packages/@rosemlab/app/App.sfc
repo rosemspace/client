@@ -9,7 +9,7 @@
   <img class="logo" srcset="@rosemlab/vue-app/assets/logo.png?query#hash 320w" alt="Logo">
 <!--  <img class="logo" src="import:@rosemlab/vue-app/assets/logo.png" alt="Logo">-->
   <img class="logo" x-bind:src="require('@rosemlab/vue-app/assets/logo.png')" alt="Logo">
-  <h2>My name is <span :data-name="this.name">{{ this.name }}</span></h2>
+  <h2 class="ident">My name is <span :data-name="this.name" class="name">{{ this.name }}</span></h2>
   <svg><use xlink:href="#logo"></use></svg>
 </template>
 
@@ -25,7 +25,7 @@ const msg = 'Hello, Universe!'
 
 export default {
   setup() {
-    // debugger
+    debugger
     return reactive({
       msg: 'Hello, world!!!',
       name: 'Rosem',
@@ -34,20 +34,23 @@ export default {
 }
 </script>
 
-<script>
-// import firstTemplate from './App.sfc#template0'
-
-export default 'TEST'
-</script>
+<!--<script type="importmap">-->
+<!--{-->
+<!--  "imports": {-->
+<!--    "logo": "../logo.png",-->
+<!--  },-->
+<!--}-->
+<!--</script>-->
 
 <style src="./style.css"></style>
 <!--<style src="@rosemlab/web-design/index.pcss"></style>-->
 
-<style scoped>
+<style lang="postcss" scoped>
 :host {
   --color: red;
 }
 
+/* h1.h123, h1.s123 */
 :host > h1 {
   font-weight: normal;
 }
@@ -57,7 +60,12 @@ export default 'TEST'
 }
 
 h1 {
+  font-weight: normal;
   background-color: green;
+}
+
+.ident > >>> .name {
+  color: red;
 }
 </style>
 

@@ -1,8 +1,8 @@
 import querystring, { ParsedUrlQuery } from 'querystring'
 import { RawSourceMap } from 'source-map'
 import { loader } from 'webpack'
-import LoaderContext = loader.LoaderContext
 import Loader = loader.Loader
+import LoaderContext = loader.LoaderContext
 import loaderCallback = loader.loaderCallback
 import {
   getOptions,
@@ -16,16 +16,28 @@ import postcss, {
   ResultMessage,
 } from 'postcss'
 import { version } from 'postcss/package.json'
+import { isProduction } from '@rosemlab/env'
 import postCSSScopedCSSPlugin from './postCSSScopedCSSPlugin'
 import Warning from './Warning'
 import CSSSyntaxError from './CSSSyntaxError'
 
 const isArray = Array.isArray
 
+type loaderCallbackWithMeta = ((
+  err: Error | undefined | null,
+  content?: string | Buffer,
+  sourceMap?: RawSourceMap,
+  meta?: any
+) => void) &
+  loaderCallback
+
 export type ScopedCSSLoaderOptions = {
+  scopePrefix?: string
   sourceMap?: boolean
   useStrictPostCSSVersion?: boolean
 }
+
+export const SCOPE_PREFIX = isProduction ? 's' : 'scope-'
 
 export default (function scopedCSSloader(
   this: LoaderContext,
@@ -33,7 +45,7 @@ export default (function scopedCSSloader(
   sourceMap?: RawSourceMap,
   meta?: any
 ): string | Buffer | void | undefined {
-  const callback: loaderCallback | undefined = this.async()
+  const callback: loaderCallbackWithMeta | undefined = this.async()
 
   if (!callback) {
     return
@@ -46,16 +58,21 @@ export default (function scopedCSSloader(
     : query.scopeId
 
   if (null == scopeId) {
-    //@ts-ignore
     callback(null, source, sourceMap, meta)
 
     return
   }
 
-  const options: ScopedCSSLoaderOptions = getOptions(this) || {}
+  // we can get access to another loader options by using an ident set in the
+  // request for this loader.
+  const options: ScopedCSSLoaderOptions = {
+    scopePrefix: SCOPE_PREFIX,
+    ...(getOptions(this) || {})
+  }
   const useSourceMap: boolean | undefined = options.sourceMap
 
-  // Some loaders (example `"postcss-loader": "1.x.x"`) always generates source map, we should remove it
+  // Some loaders (example `"postcss-loader": "1.x.x"`) always generates source
+  // map, we should remove it
   // eslint-disable-next-line no-param-reassign
   sourceMap = (useSourceMap && sourceMap) || undefined
 
@@ -65,7 +82,7 @@ export default (function scopedCSSloader(
 
     if (
       ast &&
-      ast.type === 'postcss' &&
+      'postcss' === ast.type &&
       (!options.useStrictPostCSSVersion || ast.version === version)
     ) {
       // eslint-disable-next-line no-param-reassign
@@ -73,7 +90,9 @@ export default (function scopedCSSloader(
     }
   }
 
-  postcss([postCSSScopedCSSPlugin({ scopeId })])
+  postcss([
+    postCSSScopedCSSPlugin({ scopeId: `${options.scopePrefix}${scopeId}` }),
+  ])
     .process(source, {
       from: getRemainingRequest(this)
         .split('!')
@@ -104,7 +123,6 @@ export default (function scopedCSSloader(
         return
       }
 
-      // @ts-ignore
       callback(null, result.css, sourceMap, meta)
     })
     .catch((error: PostCSSSyntaxError | Error): void => {

@@ -9,7 +9,7 @@ import {
   NormalizedRuleSetUseItem,
 } from './normalizedRuleSet'
 import cloneRule from './cloneRule'
-import { SFC_KEYWORD, SFC_LOADER_IDENT } from './index'
+import { SFC_KEYWORD, SFC_LOADER_IDENT, SFCLoaderOptions } from './index'
 
 export const SFC_LOADER_PLUGIN_ID = `SFCLoaderPlugin`
 
@@ -18,8 +18,6 @@ export type BlockLangMap = { [block: string]: string }
 export type SFCLoaderPluginOptions = {
   fileExtension: string
   blockLangMap: BlockLangMap
-  cacheDirectory?: string
-  cacheIdentifier?: string
 }
 
 export function getOptions(
@@ -148,7 +146,9 @@ export default class SFCLoaderPlugin {
     // make sure sfc-loader options has a known ident so that we can share
     // options by reference in the template-loader by using a ref query like
     // template-loader??sfc-loader
-    const sfcLoaderUse: NormalizedRuleSetUseItem = sfcUse[sfcLoaderUseIndex]
+    const sfcLoaderUse: NormalizedRuleSetUseItem & {
+      options?: SFCLoaderOptions
+    } = sfcUse[sfcLoaderUseIndex]
 
     sfcLoaderUse.ident = SFC_LOADER_IDENT
     sfcLoaderUse.options = sfcLoaderUse.options || {}
@@ -170,18 +170,14 @@ export default class SFCLoaderPlugin {
     // global pitcher (responsible for injecting template compiler loader & CSS
     // post loader)
     const pitcher = {
-      loader: require.resolve('./dedupLoader'),
+      loader: require.resolve('./pitcher'),
       resourceQuery: (query: string): boolean => {
         // `.slice(1)` - remove "?" character
         return (
-          querystring.parse(query.slice(1))[this.options.fileExtension] != null
+          null != querystring.parse(query.slice(1))[this.options.fileExtension]
         )
       },
-      //todo cache
-      options: {
-        cacheDirectory: sfcLoaderUse.options.cacheDirectory,
-        cacheIdentifier: sfcLoaderUse.options.cacheIdentifier,
-      },
+      options: sfcLoaderUse.options,
     }
 
     // replace original rules
