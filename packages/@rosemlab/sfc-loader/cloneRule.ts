@@ -25,16 +25,23 @@ export default function cloneRule(
       },
     },
     resourceQuery(query: string): boolean {
-      // console.log('\n', currentResource, '\n', query, '\n');
       const parsed: ParsedUrlQuery = querystring.parse(query.slice(1))
 
-      return (
-        null != parsed[fileExtension] &&
-        (!resource ||
-          (null != parsed.lang &&
-            resource(`${currentResource}.${parsed.lang}`))) &&
-        (!resourceQuery || resourceQuery(query))
-      )
+      if (null == parsed[fileExtension]) {
+        return false
+      }
+
+      if (resource && null == parsed.lang) {
+        return false
+      }
+
+      const fakeResourcePath: string = `${currentResource}.${parsed.lang}`
+
+      if (resource && !resource(fakeResourcePath)) {
+        return false
+      }
+
+      return !(resourceQuery && !resourceQuery(query))
     },
   }
 

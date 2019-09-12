@@ -16,6 +16,7 @@ const cache = new LRUCache<string, SFCDescriptor>(100)
 export type SFCParserOptions = {
   sourceMap?: boolean
   noPad?: boolean
+  noCache?: boolean
 }
 
 const defaultOptions: SFCParserOptions = {
@@ -43,21 +44,24 @@ export default class SFCParser extends HTMLParser {
 
     const filename: string = isProduction ? basename(file) : file
     const sourceRoot: string = dirname(file)
-    const cacheKey: string = hashSum(filename + source)
-    let sfcDescriptor: SFCDescriptor | undefined = cache.get(cacheKey)
+    const hash: string = hashSum(filename + source)
 
-    if (sfcDescriptor) {
-      return sfcDescriptor
+    if (!options.noCache) {
+      const sfcDescriptor: SFCDescriptor | undefined = cache.get(hash)
+
+      if (sfcDescriptor) {
+        return sfcDescriptor
+      }
     }
 
     super.parseFromString(source)
 
-    sfcDescriptor = this.descriptor
+    const sfcDescriptor = this.descriptor
 
     if (options.sourceMap) {
       forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
         blocks.forEach((block: SFCBlock): void => {
-          block.scopeId = cacheKey
+          block.scopeId = hash
 
           // Pad content so that linters and pre-processors can output
           // correct line numbers in errors and warnings
@@ -85,12 +89,14 @@ export default class SFCParser extends HTMLParser {
     } else {
       forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
         blocks.forEach((block: SFCBlock): void => {
-          block.scopeId = cacheKey
+          block.scopeId = hash
         })
       })
     }
 
-    cache.set(cacheKey, sfcDescriptor)
+    if (!options.noCache) {
+      cache.set(hash, sfcDescriptor)
+    }
 
     return sfcDescriptor
   }

@@ -1,11 +1,10 @@
 export type NormalizedRuleSetCondition = (path: string) => boolean
 
 export type NormalizedRuleSetUseItem = {
-  loader: string
-  options: string
-  // options?: { [key: string]: any }
   ident?: string
-  // query?: string
+  loader?: string
+  options?: { [key: string]: any }
+  query?: string
 }
 
 export type NormalizedRuleSetUse = NormalizedRuleSetUseItem[]

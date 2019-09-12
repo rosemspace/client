@@ -18,6 +18,8 @@ export type BlockLangMap = { [block: string]: string }
 export type SFCLoaderPluginOptions = {
   fileExtension: string
   blockLangMap: BlockLangMap
+  cacheDirectory?: string
+  cacheIdentifier?: string
 }
 
 export function getOptions(
@@ -96,15 +98,13 @@ export default class SFCLoaderPlugin {
     const { rules } = new RuleSet(rawRules) as {
       rules: NormalizedRuleSetRule[]
     }
+    const { fileExtension } = this.options
+    const fakeFile: string = `${fileExtension[0]}.${fileExtension}`
     // find the rule that applies to SFC files
-    let sfcRuleIndex = rawRules.findIndex(
-      createMatcher(`a.${this.options.fileExtension}`)
-    )
+    let sfcRuleIndex = rawRules.findIndex(createMatcher(fakeFile))
 
     if (sfcRuleIndex < 0) {
-      sfcRuleIndex = rawRules.findIndex(
-        createMatcher(`a.${this.options.fileExtension}.html`)
-      )
+      sfcRuleIndex = rawRules.findIndex(createMatcher(`${fakeFile}.html`))
     }
 
     const sfcRule: NormalizedRuleSetRule = rules[sfcRuleIndex]
@@ -112,10 +112,9 @@ export default class SFCLoaderPlugin {
     if (!sfcRule) {
       throw new Error(
         `[SFCLoaderPlugin Error] No matching rule for ` +
-          `.${this.options.fileExtension} files found.\n` +
+          `.${fileExtension} files found.\n` +
           `Make sure there is at least one root-level rule that matches ` +
-          `.${this.options.fileExtension} or ` +
-          `.${this.options.fileExtension}.html files.`
+          `.${fileExtension} or .${fileExtension}.html files.`
       )
     }
 
@@ -130,9 +129,11 @@ export default class SFCLoaderPlugin {
     // get sfc-loader options
     const sfcLoaderUseIndex: number = sfcUse.findIndex(
       (use: NormalizedRuleSetUseItem): boolean => {
-        return new RegExp(`^${SFC_LOADER_IDENT}|[/\@]${SFC_LOADER_IDENT}`).test(
-          use.loader
-        )
+        return use.loader
+          ? new RegExp(`^${SFC_LOADER_IDENT}|[/\@]${SFC_LOADER_IDENT}`).test(
+              use.loader
+            )
+          : false
       }
     )
 
@@ -150,8 +151,7 @@ export default class SFCLoaderPlugin {
     const sfcLoaderUse: NormalizedRuleSetUseItem = sfcUse[sfcLoaderUseIndex]
 
     sfcLoaderUse.ident = SFC_LOADER_IDENT
-    // todo: do we need it?
-    // sfcLoaderUse.options = sfcLoaderUse.options || {}
+    sfcLoaderUse.options = sfcLoaderUse.options || {}
 
     // for each user rule (expect the SFC rule), create a cloned rule
     // that targets the corresponding language blocks in *.sfc files.
@@ -177,11 +177,11 @@ export default class SFCLoaderPlugin {
           querystring.parse(query.slice(1))[this.options.fileExtension] != null
         )
       },
-      //todo
-      // options: {
-      //   cacheDirectory: sfcLoaderUse.options.cacheDirectory,
-      //   cacheIdentifier: sfcLoaderUse.options.cacheIdentifier,
-      // },
+      //todo cache
+      options: {
+        cacheDirectory: sfcLoaderUse.options.cacheDirectory,
+        cacheIdentifier: sfcLoaderUse.options.cacheIdentifier,
+      },
     }
 
     // replace original rules

@@ -108,7 +108,7 @@ export default {
       },
       {
         test: /\.sfc\.html$/,
-        // resourceQuery: /^\?sfc&block=template&lang=html/,
+        // resourceQuery: /^\?sfc&.*?&lang=html&/,
         exclude: /node_modules/,
         use: [
           {
@@ -148,15 +148,15 @@ export default {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              importLoaders: 2,
+              importLoaders: 1,
             }
           },
-          {
-            loader: '@rosemlab/scoped-css-loader',
-            options: {
-              sourceMap: true,
-            },
-          },
+          // {
+          //   loader: '@rosemlab/scoped-css-loader',
+          //   options: {
+          //     sourceMap: true,
+          //   },
+          // },
           {
             loader: 'postcss-loader',
             options: {
