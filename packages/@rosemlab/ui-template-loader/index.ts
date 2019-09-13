@@ -9,7 +9,7 @@ import AssetCodeGen from './codegen/AssetCodeGen'
 import ScopeCodeGen from './codegen/ScopeCodeGen'
 import VDOMCodeGen from './codegen/VDOMCodeGen'
 
-export const SCOPE_PREFIX = isProduction ? 's' : 'scope-'
+export const SCOPE_PREFIX = isProduction ? '_' : '_scope-'
 
 const isArray = Array.isArray
 
@@ -31,10 +31,6 @@ export function isSyntaxAttr<T extends Attr>(attr: T, syntax: 'bind'): boolean {
 export type UITemplateLoaderOptions = {
   scopePrefix: string
   prettify?: boolean
-}
-
-const defaultUITemplateLoaderOptions: UITemplateLoaderOptions = {
-  scopePrefix: isProduction ? 's' : 'scope-',
 }
 
 const htmlParser: HTMLParser = new HTMLParser()

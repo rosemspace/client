@@ -37,7 +37,7 @@ export type ScopedCSSLoaderOptions = {
   useStrictPostCSSVersion?: boolean
 }
 
-export const SCOPE_PREFIX = isProduction ? 's' : 'scope-'
+export const SCOPE_PREFIX = isProduction ? '_' : '_scope-'
 
 export default (function scopedCSSloader(
   this: LoaderContext,

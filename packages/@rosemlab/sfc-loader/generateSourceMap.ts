@@ -4,32 +4,23 @@ const splitRE = /\r?\n/g
 const emptyRE = /^(?:\/\/)?\s*$/
 
 export default function generateSourceMap(
-  file: string,
+  filename: string,
   source: string,
   generated: string,
   sourceRoot: string,
-  pad: boolean = false
+  offset: number = 0
 ): RawSourceMap {
   const map: SourceMapGenerator = new SourceMapGenerator({
-    file: file.replace(/\\/g, '/'),
+    file: filename.replace(/\\/g, '/'),
     sourceRoot: sourceRoot.replace(/\\/g, '/'),
   })
-  let offset: number = 0
 
-  //todo
-  if (!pad) {
-    offset =
-      source
-        .split(generated)[0]
-        .split(splitRE).length - 1
-  }
-
-  map.setSourceContent(file, source)
+  map.setSourceContent(filename, source)
   generated.split(splitRE).forEach(
     (line: string, index: number): void => {
       if (!emptyRE.test(line)) {
         map.addMapping({
-          source: file,
+          source: filename,
           original: {
             line: index + 1 + offset,
             column: 0,

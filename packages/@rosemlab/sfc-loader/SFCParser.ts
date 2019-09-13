@@ -9,7 +9,7 @@ import { MatchRange, StartTag, Content } from '@rosemlab/xml-parser/nodes'
 import AttrMapModule from '@rosemlab/xml-parser/modules/AttrMapModule'
 import SFCDescriptor from './SFCDescriptor'
 import SFCBlock from './SFCBlock'
-import generateSourceMap from './codegen/generateSourceMap'
+import generateSourceMap from './generateSourceMap'
 
 const cache = new LRUCache<string, SFCDescriptor>(100)
 
@@ -37,17 +37,30 @@ export default class SFCParser extends HTMLParser {
 
   parseFromString(
     source: string,
-    file: string = '',
+    filepathWithQuery: string = '',
     options: SFCParserOptions = {}
   ): SFCDescriptor {
     options = { ...defaultOptions, ...options }
 
-    const filename: string = isProduction ? basename(file) : file
-    const sourceRoot: string = dirname(file)
-    const hash: string = hashSum(filename + source)
+    const [filepath, query] = filepathWithQuery.split('?', 2)
+    const filename: string = basename(filepath)
+    const sourceRoot: string = dirname(filepath)
+    const cacheKey: string = hashSum(filename + source)
+    const rawShortFilePath: string = filepath.replace(/^(\.\.[/\\])+/, '')
+    const shortFilePathWithQuery: string =
+      rawShortFilePath.replace(/\\/g, '/') + `?${query}`
+    const id: string = hashSum(
+      isProduction
+        ? `${shortFilePathWithQuery}\n${source}`
+        : shortFilePathWithQuery
+    )
+    //todo expose on descriptor
+    const file: string = JSON.stringify(
+      isProduction ? filename : rawShortFilePath.replace(/\\/g, '/')
+    )
 
     if (!options.noCache) {
-      const sfcDescriptor: SFCDescriptor | undefined = cache.get(hash)
+      const sfcDescriptor: SFCDescriptor | undefined = cache.get(cacheKey)
 
       if (sfcDescriptor) {
         return sfcDescriptor
@@ -61,7 +74,10 @@ export default class SFCParser extends HTMLParser {
     if (options.sourceMap) {
       forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
         blocks.forEach((block: SFCBlock): void => {
-          block.scopeId = hash
+          //todo expose on descriptor
+          block.scopeId = id
+
+          let offset: number = 0
 
           // Pad content so that linters and pre-processors can output
           // correct line numbers in errors and warnings
@@ -70,8 +86,8 @@ export default class SFCParser extends HTMLParser {
               0,
               block.start
             )
-            const offset: number = (contentBefore.match(/\r?\n/g) || []).length
 
+            offset = (contentBefore.match(/\r?\n/g) || []).length
             block.output = ''.padStart(offset, '\n') + block.output
           }
 
@@ -81,7 +97,7 @@ export default class SFCParser extends HTMLParser {
               source,
               block.output,
               sourceRoot,
-              !options.noPad
+              offset
             )
           }
         })
@@ -89,13 +105,13 @@ export default class SFCParser extends HTMLParser {
     } else {
       forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
         blocks.forEach((block: SFCBlock): void => {
-          block.scopeId = hash
+          block.scopeId = id
         })
       })
     }
 
     if (!options.noCache) {
-      cache.set(hash, sfcDescriptor)
+      cache.set(cacheKey, sfcDescriptor)
     }
 
     return sfcDescriptor

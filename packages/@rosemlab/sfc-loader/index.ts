@@ -22,7 +22,8 @@ export type SFCLoaderOptions = {
   }
   cacheDirectory?: string
   cacheIdentifier?: string
-} & SFCParserOptions & ScopedCSSLoaderOptions
+} & SFCParserOptions &
+  ScopedCSSLoaderOptions
 
 const sfcParser = new SFCParser()
 
@@ -37,7 +38,8 @@ export default function sfcLoader(
   const query: ParsedUrlQuery = querystring.parse(this.resourceQuery.slice(1))
   const sfcDescriptor: SFCDescriptor = sfcParser.parseFromString(
     source,
-    relative(this.rootContext || process.cwd(), this.resourcePath),
+    relative(this.rootContext || process.cwd(), this.resourcePath) +
+      this.resourceQuery,
     {
       sourceMap: options.sourceMap,
       noPad: options.noPad,

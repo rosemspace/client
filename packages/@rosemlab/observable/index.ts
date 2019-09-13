@@ -46,6 +46,9 @@ export function binding(
     const target: ObservableObject = new ObservableObject()
 
     defineObservableProperty(target, 'value', value)
+    target.toString = function() {
+      return String(this.value)
+    }
 
     return target as Binding
   }
@@ -67,6 +70,9 @@ export function computed(
         }
       : value
   )
+  target.toString = function() {
+    return String(this.value)
+  }
 
   return target as Binding
 }
