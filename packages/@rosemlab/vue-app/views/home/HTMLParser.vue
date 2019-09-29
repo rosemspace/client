@@ -44,6 +44,8 @@ htmlParser.addModule(templateCompiler)
             delete value.parent
             //@ts-ignore
             delete value.nextSibling
+            //@ts-ignore
+            delete value.ownerElement
           }
 
           return value

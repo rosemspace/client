@@ -8,7 +8,8 @@
       <router-link to="/">Home</router-link>
       <router-link to="/about">About</router-link>
     </div>
-    <router-view />
+    <router-view name="splashScreen" />
+<!--    <router-view />-->
   </div>
 </template>
 
@@ -26,6 +27,7 @@ export default class App extends Vue {}
   font-family: 'Montserrat', Helvetica, Arial, sans-serif;
   color: #294766;
 }
+
 #nav {
   padding: 30px;
   text-align: center;
@@ -33,7 +35,9 @@ export default class App extends Vue {}
 
 #nav a {
   padding: 4px 10px;
+  font-size: 1.6rem;
   font-weight: bold;
+  line-height: 1.25;
   color: #2c3e50;
   border-left: solid 1px #2c3e50;
 
