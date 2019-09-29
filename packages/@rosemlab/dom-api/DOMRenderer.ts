@@ -61,7 +61,7 @@ export default interface DOMRenderer<
 
   parentNode(node: Node): ParentNode | null
 
-  nextSibling(node: Node): Node | null
+  // nextSibling(node: Node): Node | null
 
   // nextElementSibling(node: Node): Element | null
 

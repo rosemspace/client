@@ -34,11 +34,12 @@ export type UITemplateLoaderOptions = {
 }
 
 const htmlParser: HTMLParser = new HTMLParser()
-const virtualDOMCodeGen: VDOMCodeGen = new VDOMCodeGen()
 const scopeCodeGen: ScopeCodeGen = new ScopeCodeGen()
+const assetCodeGen: AssetCodeGen = new AssetCodeGen()
+const virtualDOMCodeGen: VDOMCodeGen = new VDOMCodeGen()
 
 htmlParser.addModule(scopeCodeGen)
-htmlParser.addModule(new AssetCodeGen())
+htmlParser.addModule(assetCodeGen)
 htmlParser.addModule(virtualDOMCodeGen)
 
 export default function(this: LoaderContext, source: string): string | void {

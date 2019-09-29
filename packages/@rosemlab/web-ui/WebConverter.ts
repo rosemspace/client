@@ -2,7 +2,7 @@
 // import {AttrMap} from '@rosemlab/vdom/Attribute'
 // import VNode from '@rosemlab/vdom/VNode'
 //
-// class VirtualHydrator {
+// class VirtualConverter {
 //   public setElementProperties(
 //     element: Element,
 //     { id, classList, attributes }: VNodeProps

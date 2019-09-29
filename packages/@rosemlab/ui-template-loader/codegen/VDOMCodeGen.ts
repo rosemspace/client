@@ -1,5 +1,5 @@
 import { NodeType } from '@rosemlab/dom-api'
-import { encodeAttrEntities } from '@rosemlab/xml-parser'
+import { encodeBaseEntities } from '@rosemlab/xml-parser'
 import BlankModule from '@rosemlab/xml-parser/BlankModule'
 import { Attr, Content, EndTag, StartTag } from '@rosemlab/xml-parser/nodes'
 import { isSyntaxAttr } from '../index'
@@ -17,7 +17,7 @@ export default class VDOMCodeGen extends BlankModule {
   attribute<T extends Attr>(attr: T): void {
     this.code += isSyntaxAttr(attr, 'bind')
       ? `${stringify(attr.localName)}:${attr.value},`
-      : `${stringify(attr.name)}:${stringify(encodeAttrEntities(attr.value))},`
+      : `${stringify(attr.name)}:${stringify(encodeBaseEntities(attr.value))},`
   }
 
   cDataSection<T extends Content>(cDATASection: T): void {}

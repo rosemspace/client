@@ -1,5 +1,5 @@
 import forEach from 'lodash/forEach'
-import { DOMHydrator, DOMRenderer, NodeType } from '@rosemlab/dom-api'
+import { DOMConverter, DOMRenderer, NodeType } from '@rosemlab/dom-api'
 import {
   VirtualContentNode,
   VirtualElement,
@@ -9,9 +9,9 @@ import {
   VirtualParentNode,
 } from '.'
 
-export default class VDOMHydrator<OutputNode>
-  implements DOMHydrator<VirtualNode, OutputNode> {
-  public hydrate<
+export default class VDOMConverter<OutputNode>
+  implements DOMConverter<VirtualNode, OutputNode> {
+  public convert<
     ParentNode extends OutputNode,
     DocumentFragment extends ParentNode,
     Element extends ParentNode,
@@ -114,7 +114,7 @@ export default class VDOMHydrator<OutputNode>
     if (nodeList) {
       for (const child of nodeList) {
         if (null != child) {
-          renderer.appendChild(parent, this.hydrate(child, renderer))
+          renderer.appendChild(parent, this.convert(child, renderer))
         }
       }
     }

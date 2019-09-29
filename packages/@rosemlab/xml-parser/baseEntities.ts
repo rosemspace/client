@@ -6,10 +6,10 @@ const newLineChar = '\n'
 const quoteChar = '"'
 const tabChar = '\t'
 
-type AttrEntities = { [codeOrChar: string]: string }
+type BaseEntityMap = { [codeOrChar: string]: string }
 
 // https://www.w3.org/TR/REC-xml/#sec-predefined-ent
-export const ATTRIBUTE_ENTITY_ENCODING_MAP: AttrEntities = {
+export const BASE_ENTITY_ENCODING_MAP: BaseEntityMap = {
   [ampersandChar]: '&amp;',
   [apostropheChar]: '&apos;',
   [greaterThanChar]: '&gt;',
@@ -19,7 +19,7 @@ export const ATTRIBUTE_ENTITY_ENCODING_MAP: AttrEntities = {
   [tabChar]: '&#9;',
 }
 
-export const ATTRIBUTE_ENTITY_DECODING_MAP: AttrEntities = {
+export const BASE_ENTITY_DECODING_MAP: BaseEntityMap = {
   '&#9;': tabChar,
   '&#x00009;': tabChar,
   '&Tab;': tabChar,
@@ -47,46 +47,46 @@ export const ATTRIBUTE_ENTITY_DECODING_MAP: AttrEntities = {
   '&GT;': greaterThanChar,
 }
 
-const decodedAttrCommonRegExpPart: string = `${ampersandChar}${apostropheChar}${greaterThanChar}${lessThanChar}${quoteChar}`
-const decodedAttrRegExp: RegExp = new RegExp(
-  `[${decodedAttrCommonRegExpPart}]`,
+const decodedBaseEntityCommonRegExpPart: string = `${ampersandChar}${apostropheChar}${greaterThanChar}${lessThanChar}${quoteChar}`
+const decodedBaseEntityRegExp: RegExp = new RegExp(
+  `[${decodedBaseEntityCommonRegExpPart}]`,
   'g'
 )
-const decodedAttrWithTabAndNewLineRegExp: RegExp = new RegExp(
-  `[${decodedAttrCommonRegExpPart}${newLineChar}${tabChar}]`,
+const decodedBaseEntityAndTabAndNewLineRegExp: RegExp = new RegExp(
+  `[${decodedBaseEntityCommonRegExpPart}${newLineChar}${tabChar}]`,
   'g'
 )
-const encodedAttrCommonAliasRegExpPart: string =
+const encodedSpecialCharCommonAliasRegExpPart: string =
   'a(?:pos|mp)|AMP|(?:[lg]|quo)?t|(?:[LG]|QUO)?T'
-const encodedAttrRegExp: RegExp = new RegExp(
-  `^&(?:${encodedAttrCommonAliasRegExpPart}|#(?:3[489]|6[02]));$`,
+const encodedSpecialCharRegExp: RegExp = new RegExp(
+  `^&(?:${encodedSpecialCharCommonAliasRegExpPart}|#(?:3[489]|6[02]));$`,
   'g'
 )
-const encodedAttrWithTabAndNewLineRegExp: RegExp = new RegExp(
-  `^&(?:${encodedAttrCommonAliasRegExpPart}|NewLine|Tab|#(?:9|10|3[489]|6[02]));$`,
+const encodedSpecialCharAndTabAndNewLineRegExp: RegExp = new RegExp(
+  `^&(?:${encodedSpecialCharCommonAliasRegExpPart}|NewLine|Tab|#(?:9|10|3[489]|6[02]));$`,
   'g'
 )
 
-export function encodeAttrEntities(
+export function encodeBaseEntities(
   value: string,
   shouldDecodeTabsAndNewlines: boolean = false
 ): string {
   return value.replace(
     shouldDecodeTabsAndNewlines
-      ? decodedAttrWithTabAndNewLineRegExp
-      : decodedAttrRegExp,
-    (match: string): string => ATTRIBUTE_ENTITY_ENCODING_MAP[match]
+      ? decodedBaseEntityAndTabAndNewLineRegExp
+      : decodedBaseEntityRegExp,
+    (match: string): string => BASE_ENTITY_ENCODING_MAP[match]
   )
 }
 
-export function decodeAttrEntities(
+export function decodeBaseEntities(
   value: string,
   shouldDecodeTabsAndNewlines: boolean = false
 ): string {
   return value.replace(
     shouldDecodeTabsAndNewlines
-      ? encodedAttrWithTabAndNewLineRegExp
-      : encodedAttrRegExp,
-    (match: string): string => ATTRIBUTE_ENTITY_DECODING_MAP[match]
+      ? encodedSpecialCharAndTabAndNewLineRegExp
+      : encodedSpecialCharRegExp,
+    (match: string): string => BASE_ENTITY_DECODING_MAP[match]
   )
 }

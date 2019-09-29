@@ -1,7 +1,7 @@
 import DOMRenderer from './DOMRenderer'
 
-export default interface DOMHydrator<InputNode, OutputNode> {
-  hydrate<
+export default interface DOMConverter<InputNode, OutputNode> {
+  convert<
     ParentNode extends OutputNode,
     DocumentFragment extends ParentNode,
     Element extends ParentNode,

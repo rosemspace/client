@@ -39,7 +39,7 @@ export interface Binding extends ObservableObject {
   value: any
 }
 
-export function binding(
+export function ref(
   value: Primitive | ObservablePropertyDescriptor
 ): Binding {
   if (isObject(value)) {

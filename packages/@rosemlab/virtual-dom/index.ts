@@ -1,6 +1,6 @@
 import { NodeName, NodeType } from '@rosemlab/dom-api'
 
-export { default as VDOMHydrator } from './VDOMHydrator'
+export { default as VDOMConverter } from './VDOMConverter'
 export { default as VDOMHyperRenderer } from './VDOMHyperRenderer'
 export { default as VDOMRenderer } from './VDOMRenderer'
 

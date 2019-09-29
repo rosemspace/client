@@ -1,3 +1,3 @@
-import { binding } from '../index'
+import { ref } from '../index'
 
-const a = binding('a')
+const a = ref('a')

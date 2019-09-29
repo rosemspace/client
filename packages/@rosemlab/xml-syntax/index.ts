@@ -19,8 +19,9 @@ export const declarationRegExp = RE(
 )
 
 /**
- * Unicode characters used for parsing html tags, component names and property paths.
- * Using https://www.w3.org/TR/html53/semantics-scripting.html#potentialcustomelementname
+ * Unicode characters used for parsing html tags, component names and property
+ * paths. Using
+ * https://www.w3.org/TR/html53/semantics-scripting.html#potentialcustomelementname
  * skipping \u10000-\uEFFFF (emoji) due to it freezing up PhantomJS
  *
  * avoid compression of unicode sequences by using regexp instead of string

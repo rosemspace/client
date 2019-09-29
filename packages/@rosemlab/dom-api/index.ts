@@ -1,5 +1,5 @@
 export { default as DOMRenderer } from './DOMRenderer'
-export { default as DOMHydrator } from './DOMHydrator'
+export { default as DOMConverter } from './DOMConverter'
 
 export const enum NodeType {
   ELEMENT_NODE = 1,
@@ -13,6 +13,7 @@ export const enum NodeType {
   DOCUMENT_NODE = 9,
   DOCUMENT_TYPE_NODE = 10,
   DOCUMENT_FRAGMENT_NODE = 11,
+  XML_DECLARATION_NODE = 17,
 }
 
 export const enum NodeName {

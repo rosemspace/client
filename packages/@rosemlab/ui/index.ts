@@ -1,10 +1,10 @@
 import ObservableObject from '@rosemlab/observable/ObservableObject'
-import { VDOMHydrator, VDOMHyperRenderer, VirtualInstance } from '@rosemlab/virtual-dom'
+import { VDOMConverter, VDOMHyperRenderer, VirtualInstance } from '@rosemlab/virtual-dom'
 import WebDOMRenderer from '@rosemlab/web-ui/WebRenderer'
 
-const vdomHyperRenderer = new VDOMHyperRenderer()
+const vDOMHyperRenderer = new VDOMHyperRenderer()
 const webRenderer = new WebDOMRenderer()
-const vdomHydrator = new VDOMHydrator<Node>()
+const vDOMConverter = new VDOMConverter<Node>()
 
 const vm = {
   template: '<div class="title">Hello, {{ this.name }}!</div>',
@@ -13,7 +13,7 @@ const vm = {
     const vnode = h('div', { attrs: { class: 'title' } }, `Hello, ${this.name}!`)
     console.log(vnode)
     // @ts-ignore
-    document.body.firstElementChild.replaceWith(vdomHydrator.hydrate(vnode, webRenderer))
+    document.body.firstElementChild.replaceWith(vDOMConverter.convert(vnode, webRenderer))
     return vnode
   },
   data() {
@@ -24,7 +24,7 @@ const vm = {
 }
 
 const $data = ObservableObject.create(vm.data())
-vm.render = vm.render.bind($data, vdomHyperRenderer.createInstance)
+vm.render = vm.render.bind($data, vDOMHyperRenderer.createInstance)
 // @ts-ignore
 vm.render()
 ObservableObject.observeProperty($data, 'name', vm.render)

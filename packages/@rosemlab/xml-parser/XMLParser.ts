@@ -27,7 +27,7 @@ import {
 import HookList from './HookList'
 import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
 import { Attr, AttrList, Content, EndTag, MatchRange, StartTag } from './nodes'
-import { decodeAttrEntities } from './attrEntities'
+import { decodeBaseEntities } from './baseEntities'
 import { NamespaceMap, TypeMap } from '.'
 
 export const defaultNamespaceMap: NamespaceMap = {
@@ -242,17 +242,19 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
   protected parseSection(regExp: RegExp): Content | void {
     const contentMatch: RegExpMatchArray | null = this.source.match(regExp)
 
-    if (contentMatch) {
-      const content: Content = {
-        content: contentMatch[1],
-        start: this.sourceCursor,
-        end: this.sourceCursor + contentMatch[0].length,
-      }
-
-      this.moveSourceCursor(contentMatch[0].length)
-
-      return content
+    if (!contentMatch) {
+      return
     }
+
+    const content: Content = {
+      content: contentMatch[1],
+      start: this.sourceCursor,
+      end: this.sourceCursor + contentMatch[0].length,
+    }
+
+    this.moveSourceCursor(contentMatch[0].length)
+
+    return content
   }
 
   parseProcessingInstruction(): Content | void {
@@ -316,7 +318,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         namespaceURI: undefined,
         ownerElement: startTag,
         prefix: attrPrefix,
-        value: decodeAttrEntities(
+        value: decodeBaseEntities(
           attrMatch[3] || attrMatch[4] || attrMatch[5] || '',
           'a' === tagNameLowerCased && 'href' === attrNameLowerCased
             ? this.options.decodeNewlinesForHref
@@ -524,7 +526,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       let rest = this.source.slice(textEndTokenIndex)
       let ignoreCharIndex
 
-      // Do not treat character "<" in plain text as parser instruction
+      // Do not treat character "<" in plain text as a parser instruction
       while (
         !this.activeProcessor.startsWithInstruction.call(this, rest) &&
         (ignoreCharIndex = rest.indexOf('<', 1)) >= 0

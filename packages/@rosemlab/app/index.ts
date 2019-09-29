@@ -1,35 +1,35 @@
 // import Style from './style.css' //mtc - multi-type container
 import { OBSERVABLE_KEY, ObservableObject } from '@rosemlab/observable'
 import App from './App.sfc' //mtc - multi-type container
-import { VDOMHydrator, VDOMHyperRenderer } from '@rosemlab/virtual-dom'
+import { VDOMConverter, VDOMHyperRenderer } from '@rosemlab/virtual-dom'
 import WebDOMRenderer from '@rosemlab/web-ui/WebRenderer'
 import { isValidHTMLElementAttr } from '@rosemlab/html-syntax/attr'
 
 //@ts-ignore
 window.isValidHTMLElementAttr = isValidHTMLElementAttr
 
-const vdomHyperRenderer = new VDOMHyperRenderer()
+const vDOMHyperRenderer = new VDOMHyperRenderer()
 const webDOMRenderer = new WebDOMRenderer()
-const vdomHydrator = new VDOMHydrator<Node>()
+const vDOMConverter = new VDOMConverter<Node>()
 
 //@ts-ignore
 const data: ObservableObject = App.script[0].output.setup()
 //@ts-ignore
 const render: Function = App.template[0].output
-const vNode = render.call(data, vdomHyperRenderer, data)
+const vNode = render.call(data, vDOMHyperRenderer, data)
 
 console.log(App)
 console.log(data)
 console.log(vNode)
 const el = document.querySelector('#app')!
 
-el.appendChild(vdomHydrator.hydrate(vNode, webDOMRenderer))
+el.appendChild(vDOMConverter.convert(vNode, webDOMRenderer))
 
 data[OBSERVABLE_KEY].observe(function() {
-  const vNode = render.call(data, vdomHyperRenderer, data)
+  const vNode = render.call(data, vDOMHyperRenderer, data)
 
   el.innerHTML = ''
-  el.appendChild(vdomHydrator.hydrate(vNode, webDOMRenderer))
+  el.appendChild(vDOMConverter.convert(vNode, webDOMRenderer))
 })
 
 //@ts-ignore
