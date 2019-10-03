@@ -1,25 +1,29 @@
-import { storage } from '.'
 import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
 import Observer from './Observer'
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
-export default class Observable {
-  private readonly target: ObservableObject
-  private readonly observers: Array<Observer> = []
+export default class Observable<T extends ObservableObject> {
+  private readonly target: T
+  private readonly observers: Observer<T>[] = []
   private readonly propertyObservers: {
-    [property: string]: Array<Observer>
+    [property: string]: Observer<T>[]
   } = {}
 
-  constructor(target: ObservableObject) {
+  constructor(target: T) {
     this.target = target
   }
 
-  observe(observer: Observer): void {
-    this.observers.push(observer)
+  observe(observer: Observer<T>): void {
+    if (-1 === this.observers.indexOf(observer)) {
+      this.observers.push(observer)
+    }
   }
 
-  observeProperty(property: ObservablePropertyKey, observer: Observer): void {
+  observeProperty(
+    property: ObservablePropertyKey,
+    observer: Observer<T>
+  ): void {
     if (!this.propertyObservers[property]) {
       this.propertyObservers[property] = [observer]
     } else if (-1 === this.propertyObservers[property].indexOf(observer)) {
@@ -27,26 +31,32 @@ export default class Observable {
     }
   }
 
-  dependOnProperty(property: ObservablePropertyKey): void {
-    if (storage.observer) {
-      this.observeProperty(property, storage.observer)
-    }
+  notify(newValue: any, oldValue: any, property?: ObservablePropertyKey): void {
+    this.observers.forEach((observer: Observer<T>): void => {
+      observer.call(this.target, newValue, oldValue, property, this.target)
+    })
   }
 
-  notifyPropertyObserver(
-    property: ObservablePropertyKey,
+  notifyProperty(
     newValue: any,
-    oldValue: any
+    oldValue: any,
+    property: ObservablePropertyKey
   ): void {
     if (hasOwnProperty.call(this.target, property)) {
-      this.observers.forEach((observer: Observer): void => {
-        observer.call(this.target, newValue, oldValue, property, this.target)
-      })
+      this.notify(newValue, oldValue, property)
 
       if (this.propertyObservers[property]) {
-        this.propertyObservers[property].forEach((observer: Observer): void => {
-          observer.call(this.target, newValue, oldValue, property, this.target)
-        })
+        this.propertyObservers[property].forEach(
+          (observer: Observer<T>): void => {
+            observer.call(
+              this.target,
+              newValue,
+              oldValue,
+              property,
+              this.target
+            )
+          }
+        )
       }
     }
   }

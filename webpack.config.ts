@@ -31,9 +31,9 @@ export default {
   // node: {
   //   console: true,
   // },
-  context: resolve(__dirname),
+  context: resolve(__dirname, 'packages'),
   entry: {
-    main: './packages/@rosemlab/app/index.ts',
+    main: resolve(__dirname, 'packages/@rosemlab/app/index.ts'),
   },
   // entry: './packages/@rosemlab/vue-app/main.ts',
   output: {

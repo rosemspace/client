@@ -1,22 +1,28 @@
-import { computed, reactive, ref, watch } from '.'
-import ObservableObject, { ObservablePropertyKey } from './ObservableObject'
+import { ObservablePropertyKey } from '@rosemlab/observable/ObservableObject'
+import ReactiveObject from './ReactiveObject'
+import { computed, reactive, ref, watch } from './index'
 
-export default class {
+export default class O {
   static test4() {
     // reactive state
     const count = ref(0)
     // computed state
     const plusOne = computed(() => count.value + 1)
     // method
-    const increment = () => { count.value++ }
+    const increment = () => {
+      count.value++
+    }
     // watch
-    watch(() => count.value * 2, (value) => {
-      console.log(`count * 2 is ${value}`)
-    })
+    watch(
+      () => count.value * 2,
+      (value) => {
+        console.log(`count * 2 is ${value}`)
+      }
+    )
     Object.assign(window, {
       count,
       plusOne,
-      increment
+      increment,
     })
   }
 
@@ -24,7 +30,7 @@ export default class {
     const data = reactive({ count: 1 })
     const plusOne = computed(() => data.count + 1)
 
-    watch(plusOne, value => {
+    watch(plusOne, (value) => {
       console.log(`count + 1 is ${value}`)
     })
     Object.assign(window, {
@@ -34,20 +40,20 @@ export default class {
   }
 
   static test2() {
-    let o1 = ObservableObject.create({
+    let o1 = ReactiveObject.create({
       value: 'rosem',
     })
-    let o2 = ObservableObject.create({
+    let o2 = ReactiveObject.create({
       value: 'roshe',
     })
-    let o3 = ObservableObject.create({})
+    let o3 = ReactiveObject.create({})
 
-    ObservableObject.defineComputedProperty(o3, 'value', {
+    o3.defineComputedProperty('value', {
       get(
         newVal: any,
         oldVal: any,
         prop: ObservablePropertyKey,
-        obj: ObservableObject
+        obj: ReactiveObject
       ): string {
         console.log(o1.value + '+' + o2.value)
         return o1.value + '+' + o2.value
@@ -85,7 +91,7 @@ export default class {
         this._c = value
       },
     }
-    let oo = ObservableObject.create(data)
+    let oo = ReactiveObject.create(data)
     // window.ReactiveObject = ReactiveObject
 
     const inputFirstNameElement = document.createElement('input')
@@ -107,22 +113,18 @@ export default class {
     document.body.append(lastNameElement)
     document.body.append(fullNameElement)
 
-    ObservableObject.observeProperty(oo, 'firstName', function(
-      newValue: string
-    ) {
+    oo.observeProperty('firstName', function(newValue: string) {
       firstNameElement.textContent = newValue
     })
-    ObservableObject.observeProperty(oo, 'lastName', function(
-      newValue: string
-    ) {
+    oo.observeProperty('lastName', function(newValue: string) {
       lastNameElement.textContent = newValue
     })
-    ObservableObject.defineComputedProperty(oo, 'fullName', {
+    oo.defineComputedProperty('fullName', {
       get(
         newVal: any,
         oldVal: any,
         prop: ObservablePropertyKey,
-        obj: ObservableObject
+        obj: ReactiveObject
       ): string {
         console.log('GET: ', newVal)
         return this.firstName + ' ' + this.lastName
@@ -131,14 +133,12 @@ export default class {
         value: any,
         oldValue: any,
         prop: ObservablePropertyKey,
-        obj: ObservableObject
+        obj: ReactiveObject
       ) {
         console.log('SET: ', value)
       },
     })
-    ObservableObject.observeProperty(oo, 'fullName', function(
-      newValue: string
-    ) {
+    oo.observeProperty('fullName', function(newValue: string) {
       fullNameElement.textContent = newValue
     })
 
@@ -161,6 +161,8 @@ export default class {
     return oo
   }
 }
+//@ts-ignore
+window.O = O
 
 // var arrayProto = Array.prototype;
 // var arrayMethods = Object.create(arrayProto);

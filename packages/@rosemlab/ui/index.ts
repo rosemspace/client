@@ -27,7 +27,7 @@ const $data = ObservableObject.create(vm.data())
 vm.render = vm.render.bind($data, vDOMHyperRenderer.createInstance)
 // @ts-ignore
 vm.render()
-ObservableObject.observeProperty($data, 'name', vm.render)
+$data.observeProperty('name', vm.render)
 
 // @ts-ignore
 window.$data = $data
