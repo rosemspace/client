@@ -1,4 +1,4 @@
-import { plugin, Transformer, Root, Rule } from 'postcss'
+import { plugin, Transformer, Root } from 'postcss'
 import selectorParser from 'postcss-selector-parser'
 
 const PLUGIN_NAME: string = '@rosemlabs/postcss-scoped-css'
@@ -8,7 +8,7 @@ type ScopedCSSPluginOptions = {
   useAttr?: boolean
 }
 
-export = plugin(PLUGIN_NAME, function scopedCSS(
+export default plugin(PLUGIN_NAME, function scopedCSS(
   options?: ScopedCSSPluginOptions
 ): Transformer {
   if (!options || !options.scopeId) {
@@ -53,10 +53,7 @@ export = plugin(PLUGIN_NAME, function scopedCSS(
           selector.each((n: any) => {
             // ">>>" combinator
             // and /deep/ alias for >>>, since >>> doesn't work in SASS
-            if (
-              n.type === 'combinator' &&
-              (n.value === '>>>')
-            ) {
+            if (n.type === 'combinator' && n.value === '>>>') {
               n.value = ' '
               n.spaces.before = n.spaces.after = ''
               return false
