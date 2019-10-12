@@ -2,10 +2,10 @@
   "compilerOptions": {
 //    "rootDir": "./packages",
     "outDir": "./dist",
-    "target": "esnext", // esnext - with babel, es5 - otherwise
-    "module": "commonjs", // commonjs - for custom loaders
-//    "module": "es2015",
-//    "module": "esnext",
+    // esnext if babel is used, es5 otherwise
+    "target": "esnext",
+    // commonjs is set to use custom Node.js modules during runtime
+    "module": "commonjs",
     "strict": true,
 //    "composite": true,
     "jsx": "preserve",

@@ -3,25 +3,12 @@
 //cross-env TS_NODE_FILES=true webpack
 
 import { resolve } from 'path'
-import moduleAlias from 'module-alias'
-
-const packages: string = resolve(__dirname, 'packages/@rosemlab')
-moduleAlias.addAlias('@rosemlab', packages)
-
-import SFCLoaderPlugin from '@rosemlab/sfc-loader/SFCLoaderPlugin'
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import { Configuration } from 'webpack'
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
+import SFCLoaderPlugin from '@rosemlab/sfc-loader/SFCLoaderPlugin'
 
-// declare global {
-//   interface ImportMeta {
-//     url: string
-//   }
-// }
-// const __dirname = import.meta.url
-declare var __dirname: string
-
-const tsconfigPathsPlugin = new TsconfigPathsPlugin()
-
+const path: (path: string) => string = (path: string): string =>
+  resolve(__dirname, path)
 
 export default {
   // mode: 'development',
@@ -31,28 +18,32 @@ export default {
   // node: {
   //   console: true,
   // },
-  context: resolve(__dirname, 'packages'),
-  entry: {
-    main: resolve(__dirname, 'packages/@rosemlab/app/index.ts'),
-  },
-  // entry: './packages/@rosemlab/vue-app/main.ts',
+  context: path('packages'),
+  entry: '@rosemlab/app/index.ts',
   output: {
     filename: 'main.js',
-    path: resolve(__dirname, 'dist'),
+    path: path('dist'),
   },
   resolve: {
     // mainFiles: ['index'],
-    modules: ['node_modules', packages],
-    // alias: {
-    //   '@rosemlab': packages,
-    // },
-    extensions: ['.es', '.es6', '.js', '.json', '.jsx', '.mjs', '.sfc', '.ts', '.tsx'],
-    plugins: [tsconfigPathsPlugin],
+    extensions: [
+      '.es',
+      '.es6',
+      '.js',
+      '.json',
+      '.jsx',
+      '.mjs',
+      '.sfc',
+      '.ts',
+      '.tsx',
+    ],
+    // Needed for Webpack to resolve modules on client side
+    plugins: [new TsconfigPathsPlugin()],
   },
   resolveLoader: {
-    modules: ['node_modules', packages],
     extensions: ['.es', '.es6', '.js', '.mjs', '.ts'],
-    plugins: [tsconfigPathsPlugin],
+    // No need to use TsconfigPathsPlugin as TypeScript resolves loaders itself
+    // based on tsconfig.json
   },
   module: {
     rules: [
@@ -72,9 +63,9 @@ export default {
           //   }
           // },
           {
-            loader: 'babel-loader'
-          }
-        ]
+            loader: 'babel-loader',
+          },
+        ],
       },
       {
         test: /\.m?tsx?$/,
@@ -98,13 +89,11 @@ export default {
             loader: 'ts-loader',
             options: {
               // transpileOnly: true, // false by default
-              appendTsSuffixTo: [
-                '\\.sfc$',
-              ],
+              appendTsSuffixTo: ['\\.sfc$'],
               // happyPackMode: false // false by default
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
       {
         test: /\.sfc\.html$/,
@@ -112,7 +101,7 @@ export default {
         exclude: /node_modules/,
         use: [
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
           },
           {
             loader: '@rosemlab/ui-template-loader',
@@ -149,7 +138,7 @@ export default {
             options: {
               sourceMap: true,
               importLoaders: 1,
-            }
+            },
           },
           // {
           //   loader: '@rosemlab/scoped-css-loader',
@@ -160,8 +149,8 @@ export default {
           {
             loader: 'postcss-loader',
             options: {
-              sourceMap: true
-            }
+              sourceMap: true,
+            },
           },
         ],
       },
@@ -170,13 +159,12 @@ export default {
         use: [
           {
             loader: '@rosemlab/sfc-loader',
-            // loader: path.resolve(__dirname, './packages/@rosemlab/sfc-loader/index.ts'),
             options: {
               sourceMap: true,
               // noPad: true,
               // exportName: 'descriptor',
             },
-          }
+          },
         ],
         // oneOf: [
         //   {}
@@ -200,12 +188,12 @@ export default {
               fallback: {
                 loader: 'file-loader',
                 options: {
-                  name: 'img/[name].[hash:8].[ext]'
-                }
-              }
-            }
-          }
-        ]
+                  name: 'img/[name].[hash:8].[ext]',
+                },
+              },
+            },
+          },
+        ],
       },
     ],
   },
@@ -215,6 +203,6 @@ export default {
       // blockLangMap: {
       //   i18n: 'json',
       // }
-    })
+    }),
   ],
 } as Configuration

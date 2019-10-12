@@ -67,7 +67,7 @@ export default (function scopedCSSloader(
   // request for this loader.
   const options: ScopedCSSLoaderOptions = {
     scopePrefix: SCOPE_PREFIX,
-    ...(getOptions(this) || {})
+    ...(getOptions(this) || {}),
   }
   const useSourceMap: boolean | undefined = options.sourceMap
 
@@ -109,8 +109,8 @@ export default (function scopedCSSloader(
         : undefined,
     })
     .then((result: PostCSSResult): void => {
-      result.warnings().forEach((warning: ResultMessage) => {
-        this.emitWarning(new Warning((warning as unknown) as PostCSSWarning))
+      result.warnings().forEach((warning: PostCSSWarning): void => {
+        this.emitWarning(new Warning(warning))
       })
 
       if (this.loaderIndex === 0) {

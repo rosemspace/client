@@ -1,7 +1,7 @@
 import { RuleSetRule } from 'webpack'
 import querystring, { ParsedUrlQuery } from 'querystring'
 import { NormalizedRuleSetRule } from './normalizedRuleSet'
-import { SFC_KEYWORD } from './'
+import { SFC_KEYWORD } from './index'
 
 export default function cloneRule(
   rule: NormalizedRuleSetRule,

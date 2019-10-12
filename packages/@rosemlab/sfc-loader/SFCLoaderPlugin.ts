@@ -3,7 +3,7 @@ import LoaderContext = loader.LoaderContext
 import Compilation = compilation.Compilation
 import Compiler = compiler.Compiler
 const RuleSet = require('webpack/lib/RuleSet')
-import querystring from 'querystring'
+import { parse } from 'querystring'
 import {
   NormalizedRuleSetRule,
   NormalizedRuleSetUseItem,
@@ -173,9 +173,7 @@ export default class SFCLoaderPlugin {
       loader: require.resolve('./pitcher'),
       resourceQuery: (query: string): boolean => {
         // `.slice(1)` - remove "?" character
-        return (
-          null != querystring.parse(query.slice(1))[this.options.fileExtension]
-        )
+        return null != parse(query.slice(1))[this.options.fileExtension]
       },
       options: sfcLoaderUse.options,
     }
