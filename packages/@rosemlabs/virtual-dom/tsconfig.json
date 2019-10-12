@@ -1,0 +1,14 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+//    "composite": true
+    //    "outDir": "./dist/@rosemlabs/virtual-dom",
+    //    "outFile": "../../../dist/@rosemlabs/virtual-dom/index.js",
+    //    "target": "es3"//,
+    //    "module": "amd"//,
+    //    "rootDir": "."//,
+    //    "sourceRoot": "."
+  },
+  "include": ["index.ts"]//,
+//  "references": [{ "path": "../common-util" }, { "path": "../dom-api" }]
+}

@@ -3,6 +3,6 @@
   "useWorkspaces": true,
   "version": "independent",
   "packages": [
-    "packages/@rosemlab/*"
+    "packages/@rosemlabs/*"
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "rosemlab",
+  "name": "rosemlabs",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -120,7 +120,7 @@
   },
   "workspaces": {
     "packages": [
-      "packages/@rosemlab/*"
+      "packages/@rosemlabs/*"
     ]
   },
   "engines": {

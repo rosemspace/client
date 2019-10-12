@@ -5,7 +5,7 @@ function resolveSrc(_path) {
 }
 
 const aliases = {
-  '@rosemlab': 'packages/@rosemlab',
+  '@rosemlabs': 'packages/@rosemlabs',
 }
 
 module.exports = {

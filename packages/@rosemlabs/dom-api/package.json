@@ -1,0 +1,19 @@
+{
+  "name": "@rosemlabs/dom-api",
+  "version": "0.0.1",
+  "description": "DOM API library",
+  "keywords": [
+    "dom",
+    "api"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

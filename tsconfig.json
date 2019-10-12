@@ -29,8 +29,8 @@
 //      "webpack-env"
 //    ],
 //    "paths": {
-//      "@rosemlab/*": [
-//        "packages/@rosemlab/*"
+//      "@rosemlabs/*": [
+//        "packages/@rosemlabs/*"
 //      ]
 //    },
     "lib": [
@@ -41,7 +41,7 @@
     ]
   },
 //  "references": [],
-//  "typeRoots": ["node_modules/@types", "packages/@rosemlab" ],
+//  "typeRoots": ["node_modules/@types", "packages/@rosemlabs" ],
   "include": [
 //    "webpack.config.ts",
     "packages/**/*.ts",

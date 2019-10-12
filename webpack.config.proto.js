@@ -19,18 +19,18 @@ exports.default = WebpackPresetManager({})
 
 // Concept
 module.exports = webpackConfig({
-  presets: ['@rosemlab/webpack-config-preset-app'],
+  presets: ['@rosemlabs/webpack-config-preset-app'],
   config: [
     [
-      '@rosemlab/webpack-config-io',
+      '@rosemlabs/webpack-config-io',
       {
-        entry: './packages/@rosemlab/app/index.ts',
+        entry: './packages/@rosemlabs/app/index.ts',
       },
     ],
-    '@rosemlab/webpack-config-dev',
-    '@rosemlab/webpack-config-babel',
+    '@rosemlabs/webpack-config-dev',
+    '@rosemlabs/webpack-config-babel',
     [
-      '@rosemlab/webpack-config-typescript',
+      '@rosemlabs/webpack-config-typescript',
       {
         appendTsSuffixTo: [
           '\\.sfc$',

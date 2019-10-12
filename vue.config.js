@@ -10,9 +10,9 @@ module.exports = {
     // Output filename is inferred to be `admin.html`.
     index: {
       // entry for the page
-      entry: 'packages/@rosemlab/vue-app/main.ts',
+      entry: 'packages/@rosemlabs/vue-app/main.ts',
       // the source template
-      template: 'packages/@rosemlab/app/index.html',
+      template: 'packages/@rosemlabs/app/index.html',
       // output as dist/index.html
       // filename: 'index.html',
       // when using title option,
@@ -23,8 +23,8 @@ module.exports = {
       // chunks: ['chunk-vendors', 'chunk-common', 'index']
     },
     // admin: {
-    //   entry: 'packages/@rosemlab/admin/index.ts',
-    //   template: 'packages/@rosemlab/app/index.html',
+    //   entry: 'packages/@rosemlabs/admin/index.ts',
+    //   template: 'packages/@rosemlabs/app/index.html',
     //   title: 'Rosem | Admin Page',
     // },
   },
@@ -42,8 +42,8 @@ module.exports = {
   },
   configureWebpack: {
     entry: {
-    // transition: './packages/@rosemlab/ui-transition/Transition.ts',
-    // htmlParser: './packages/@rosemlab/html-parser/index.ts',
+    // transition: './packages/@rosemlabs/ui-transition/Transition.ts',
+    // htmlParser: './packages/@rosemlabs/html-parser/index.ts',
     },
     // Set up all the aliases we use in our app.
     resolve: {

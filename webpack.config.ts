@@ -5,7 +5,7 @@
 import { resolve } from 'path'
 import { Configuration } from 'webpack'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
-import SFCLoaderPlugin from '@rosemlab/sfc-loader/SFCLoaderPlugin'
+import SFCLoaderPlugin from '@rosemlabs/sfc-loader/SFCLoaderPlugin'
 
 const path: (path: string) => string = (path: string): string =>
   resolve(__dirname, path)
@@ -19,7 +19,7 @@ export default {
   //   console: true,
   // },
   context: path('packages'),
-  entry: '@rosemlab/app/index.ts',
+  entry: '@rosemlabs/app/index.ts',
   output: {
     filename: 'main.js',
     path: path('dist'),
@@ -58,7 +58,7 @@ export default {
           // {
           //   loader: 'cache-loader',
           //   options: {
-          //     cacheDirectory: 'D:\\Code\\rosemlab\\client\\node_modules\\.cache\\babel-loader',
+          //     cacheDirectory: 'D:\\Code\\rosemlabs\\client\\node_modules\\.cache\\babel-loader',
           //     cacheIdentifier: '14be64da'
           //   }
           // },
@@ -75,7 +75,7 @@ export default {
           // {
           //   loader: 'cache-loader',
           //   options: {
-          //     cacheDirectory: 'D:\\Code\\rosemlab\\client\\node_modules\\.cache\\ts-loader',
+          //     cacheDirectory: 'D:\\Code\\rosemlabs\\client\\node_modules\\.cache\\ts-loader',
           //     cacheIdentifier: 'fa2c5396'
           //   }
           // },
@@ -104,7 +104,7 @@ export default {
             loader: 'babel-loader',
           },
           {
-            loader: '@rosemlab/ui-template-loader',
+            loader: '@rosemlabs/ui-template-loader',
           },
           // {
           //   loader: 'html-loader',
@@ -141,7 +141,7 @@ export default {
             },
           },
           // {
-          //   loader: '@rosemlab/scoped-css-loader',
+          //   loader: '@rosemlabs/scoped-css-loader',
           //   options: {
           //     sourceMap: true,
           //   },
@@ -158,7 +158,7 @@ export default {
         test: /\.sfc$/,
         use: [
           {
-            loader: '@rosemlab/sfc-loader',
+            loader: '@rosemlabs/sfc-loader',
             options: {
               sourceMap: true,
               // noPad: true,

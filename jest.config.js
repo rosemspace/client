@@ -17,7 +17,7 @@ module.exports = {
       'jest-transform-stub',
   },
   moduleNameMapper: {
-    '^(@rosemlab.*)$': '<rootDir>/packages/$1',
+    '^(@rosemlabs.*)$': '<rootDir>/packages/$1',
     // we'll use commonjs version of lodash for tests
     // because we don't need to use any kind of tree shaking
     '^lodash-es$': '<rootDir>/node_modules/lodash/index.js',

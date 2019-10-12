@@ -1,0 +1,25 @@
+<template>
+  <div>
+    <img src="@rosemlabs/vue-app/assets/logo.png" alt=${this.logoAlt}>
+    Count is ${ this.count }, count * 2 is ${ this.double }
+    <button onclick="increment[2].test['good']().ok">+</button>
+  </div>
+</template>
+
+<script>
+import { ref, computed } from '@rosemlabs/observable'
+
+export default {
+  setup() {
+    const count = ref(0)
+    const double = computed(() => count.value * 2)
+    const increment = () => { ++count.value }
+
+    return {
+      count,
+      double,
+      increment
+    }
+  }
+}
+</script>

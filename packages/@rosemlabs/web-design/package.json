@@ -1,0 +1,25 @@
+{
+  "name": "@rosemlabs/web-design",
+  "version": "0.0.1",
+  "description": "Rosem CSS design library",
+  "keywords": [
+    "design",
+    "css",
+    "postcss"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.pcss",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "devDependencies": {
+    "postcss-extend-rule": "^3.0.0",
+    "postcss-preset-env": "^6.7.0"
+  }
+}
