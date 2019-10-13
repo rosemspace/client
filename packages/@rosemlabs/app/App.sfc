@@ -6,7 +6,7 @@
 <!--  <template &src="../Home.sfc#logo" />-->
 <!--  <template use="line" />-->
   <h1 class="greeting">Text: <span style="font-weight: bold">{{ this.msg }}</span></h1>
-  <img class="raw:logo" srcset="@rosemlabs/vue-app/assets/logo.png?query#hash 320w" alt="Logo">
+  <img class="logo" srcset="@rosemlabs/vue-app/assets/logo.png?query#hash 320w" alt="Logo">
 <!--  <img class="logo" src="import:@rosemlabs/vue-app/assets/logo.png" alt="Logo">-->
   <img class="logo" x-bind:src="require('@rosemlabs/vue-app/assets/logo.png')" alt="Logo">
   <h2 class="ident">My name is <span :data-name="this.name" class="name">{{ this.name }}</span></h2>
@@ -19,7 +19,7 @@
 
 <script lang="ts">
 // import inlineStyle from './App.sfc?sfc&block=template&lang=html&selector=h1:nth-child(1)>span:nth-child(1)'
-import { reactive } from '@rosemlabs/observable'
+import { reactive } from '@rosemlabs/observable-reactive'
 
 const msg = 'Hello, Universe!'
 
@@ -29,7 +29,7 @@ export default {
     return reactive({
       msg: 'Hello, world!!!',
       name: 'Rosem',
-    }).propertyIsEnumerable()
+    })
   }
 }
 </script>

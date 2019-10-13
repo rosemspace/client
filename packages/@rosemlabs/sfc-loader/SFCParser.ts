@@ -3,6 +3,7 @@ import forEach from 'lodash/forEach'
 import LRUCache from 'lru-cache'
 import hashSum from 'hash-sum'
 import { isProduction } from '@rosemlabs/env'
+import { getLineIndex, unifyPath } from '@rosemlabs/common-util'
 import HTMLParser from '@rosemlabs/html-parser'
 import { qualifiedNameRegExp } from '@rosemlabs/xml-syntax'
 import { MatchRange, StartTag, Content } from '@rosemlabs/xml-parser/nodes'
@@ -11,6 +12,7 @@ import SFCDescriptor from './SFCDescriptor'
 import SFCBlock from './SFCBlock'
 import generateSourceMap from './generateSourceMap'
 
+const stringify = JSON.stringify
 const cache = new LRUCache<string, SFCDescriptor>(100)
 
 export type SFCParserOptions = {
@@ -44,20 +46,7 @@ export default class SFCParser extends HTMLParser {
 
     const [filepath, query] = filepathWithQuery.split('?', 2)
     const filename: string = basename(filepath)
-    const sourceRoot: string = dirname(filepath)
     const cacheKey: string = hashSum(filename + source)
-    const rawShortFilePath: string = filepath.replace(/^(\.\.[/\\])+/, '')
-    const shortFilePathWithQuery: string =
-      rawShortFilePath.replace(/\\/g, '/') + `?${query}`
-    const id: string = hashSum(
-      isProduction
-        ? `${shortFilePathWithQuery}\n${source}`
-        : shortFilePathWithQuery
-    )
-    //todo expose on descriptor
-    const file: string = JSON.stringify(
-      isProduction ? filename : rawShortFilePath.replace(/\\/g, '/')
-    )
 
     if (!options.noCache) {
       const sfcDescriptor: SFCDescriptor | undefined = cache.get(cacheKey)
@@ -67,6 +56,22 @@ export default class SFCParser extends HTMLParser {
       }
     }
 
+    const sourceRoot: string = dirname(filepath)
+    const rawShortFilePath: string = filepath.replace(/^(\.\.[/\\])+/, '')
+    const shortFilePathWithQuery: string =
+      unifyPath(rawShortFilePath) + `?${query}`
+    const id: string = hashSum(
+      isProduction
+        ? `${shortFilePathWithQuery}\n${source}`
+        : shortFilePathWithQuery
+    )
+    //todo expose on descriptor
+    const file: string = stringify(
+      isProduction ? filename : unifyPath(rawShortFilePath)
+    )
+
+    // Important to clear the descriptor here to avoid memory leak
+    this.descriptor = {}
     super.parseFromString(source)
 
     const sfcDescriptor = this.descriptor
@@ -77,18 +82,15 @@ export default class SFCParser extends HTMLParser {
           //todo expose on descriptor
           block.scopeId = id
 
-          let offset: number = 0
+          // Use this offset to generate correct source map
+          let offsetLineIndex: number = getLineIndex(source, block.start)
 
           // Pad content so that linters and pre-processors can output
           // correct line numbers in errors and warnings
           if (!options.noPad) {
-            const contentBefore: string = this.originalSource.substr(
-              0,
-              block.start
-            )
-
-            offset = (contentBefore.match(/\r?\n/g) || []).length
-            block.output = ''.padStart(offset, '\n') + block.output
+            block.output = ''.padStart(offsetLineIndex, '\n') + block.output
+            // Don't add offset in source map of padded content
+            offsetLineIndex = 0
           }
 
           if (!block.attrs.src) {
@@ -97,7 +99,7 @@ export default class SFCParser extends HTMLParser {
               source,
               block.output,
               sourceRoot,
-              offset
+              offsetLineIndex
             )
           }
         })

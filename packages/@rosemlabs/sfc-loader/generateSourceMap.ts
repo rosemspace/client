@@ -1,28 +1,31 @@
 import { RawSourceMap, SourceMapGenerator } from 'source-map'
+import { newlineRegExp, unifyPath } from '@rosemlabs/common-util'
 
-const splitRE = /\r?\n/g
-const emptyRE = /^(?:\/\/)?\s*$/
+const parse = JSON.parse
+const emptyLineRegExp: RegExp = /^(?:\/\/)?\s*$/
 
 export default function generateSourceMap(
   filename: string,
   source: string,
   generated: string,
   sourceRoot: string,
-  offset: number = 0
+  offsetLineIndex: number = 0
 ): RawSourceMap {
   const map: SourceMapGenerator = new SourceMapGenerator({
-    file: filename.replace(/\\/g, '/'),
-    sourceRoot: sourceRoot.replace(/\\/g, '/'),
+    file: unifyPath(filename),
+    sourceRoot: unifyPath(sourceRoot),
   })
 
   map.setSourceContent(filename, source)
-  generated.split(splitRE).forEach(
-    (line: string, index: number): void => {
-      if (!emptyRE.test(line)) {
+  generated
+    .split(newlineRegExp)
+    .forEach((line: string, index: number): void => {
+      // todo: why do we need this empty line regexp?
+      if (!emptyLineRegExp.test(line)) {
         map.addMapping({
           source: filename,
           original: {
-            line: index + 1 + offset,
+            line: index + 1 + offsetLineIndex,
             column: 0,
           },
           generated: {
@@ -31,8 +34,7 @@ export default function generateSourceMap(
           },
         })
       }
-    }
-  )
+    })
 
-  return JSON.parse(map.toString())
+  return parse(map.toString())
 }

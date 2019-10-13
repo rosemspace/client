@@ -13,13 +13,12 @@ import postcss, {
   Result as PostCSSResult,
   Warning as PostCSSWarning,
   CssSyntaxError as PostCSSSyntaxError,
-  ResultMessage,
 } from 'postcss'
 import { version } from 'postcss/package.json'
 import { isProduction } from '@rosemlabs/env'
-import postCSSScopedCSSPlugin from './postCSSScopedCSSPlugin'
 import Warning from './Warning'
 import CSSSyntaxError from './CSSSyntaxError'
+import postCSSScopedCSSPlugin from './postCSSScopedCSSPlugin'
 
 const isArray = Array.isArray
 
