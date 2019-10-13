@@ -54,7 +54,12 @@ export default function sfcLoader(
       ? parseInt(isArray(query.index) ? query.index[0] : query.index)
       : 0 || 0
 
-    return processBlock(this, sfcDescriptor[blockName][index], query, options)
+    return processBlock(
+      this,
+      sfcDescriptor.blocks[blockName][index],
+      query,
+      options
+    )
   }
 
   return generateBlocksCode(this, sfcDescriptor, options.exportName)

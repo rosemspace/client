@@ -1,5 +1,7 @@
 import SFCBlock from './SFCBlock'
 
 export default interface SFCDescriptor {
-  [block: string]: SFCBlock[],
+  id: string
+  file: string
+  blocks: { [block: string]: SFCBlock[] }
 }

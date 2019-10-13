@@ -3,7 +3,7 @@ import { RawSourceMap } from 'source-map'
 
 // name, lang, index, src, meta, output
 export default interface SFCBlock extends StartTag {
-  scopeId: string
+  id: string
   map?: RawSourceMap
   output: any
   // type?: string // instead of lang

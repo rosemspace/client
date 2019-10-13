@@ -78,11 +78,11 @@ export default function generateBlocksCode(
   }
 
   let importCode = ''
-  let descriptorCode = ''
+  let blocksCode = ''
   let outputCode = ''
 
-  forEach(descriptor, (blocks: SFCBlock[], name: string): void => {
-    descriptorCode += `\n  "${name}": [`
+  forEach(descriptor.blocks, (blocks: SFCBlock[], name: string): void => {
+    blocksCode += `\n  "${name}": [`
     importCode +=
       `/* ${name} blocks */\n` +
       blocks
@@ -106,7 +106,7 @@ export default function generateBlocksCode(
           internalAttrMap.index = escape(String(index))
 
           if (attrMap.scoped) {
-            internalAttrMap.scopeId = escape(block.scopeId)
+            internalAttrMap.scopeId = escape(descriptor.id)
           }
 
           // No need `lang` attribute if we have an external resource
@@ -129,8 +129,8 @@ export default function generateBlocksCode(
           const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
           const blockName: string = `${name}${index}`
 
-          descriptorCode += `\n    ${stringify(block, ['output', 'map'])},`
-          outputCode += `\n${exportName}[${jsonStringify(
+          blocksCode += `\n    ${stringify(block, ['output', 'map'])},`
+          outputCode += `\n${exportName}.blocks[${jsonStringify(
             name
           )}][${jsonStringify(index)}].output = ${blockName}`
 
@@ -142,10 +142,12 @@ export default function generateBlocksCode(
         })
         .join(`\n`) +
       '\n'
-    descriptorCode += '\n  ],'
+    blocksCode += '\n  ],'
   })
 
-  return `${importCode}\nconst ${exportName} = {${descriptorCode}\n}\n${outputCode}\n\nexport ${
+  return `${importCode}\nconst ${exportName} = ${stringify(descriptor, [
+    'blocks',
+  ])}\n\n${exportName}.blocks = {${blocksCode}\n}\n${outputCode}\n\nexport ${
     isDefault ? `default` : ''
   } ${exportName}\n`
 }

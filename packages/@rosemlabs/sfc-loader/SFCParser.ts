@@ -21,13 +21,14 @@ export type SFCParserOptions = {
   noCache?: boolean
 }
 
+const defaultDescriptor: SFCDescriptor = { id: '', file: '', blocks: {} }
 const defaultOptions: SFCParserOptions = {
   sourceMap: false,
   noPad: false,
 }
 
 export default class SFCParser extends HTMLParser {
-  protected descriptor: SFCDescriptor = {}
+  protected descriptor: SFCDescriptor = { ...defaultDescriptor }
 
   constructor() {
     super({
@@ -60,28 +61,24 @@ export default class SFCParser extends HTMLParser {
     const rawShortFilePath: string = filepath.replace(/^(\.\.[/\\])+/, '')
     const shortFilePathWithQuery: string =
       unifyPath(rawShortFilePath) + `?${query}`
-    const id: string = hashSum(
-      isProduction
-        ? `${shortFilePathWithQuery}\n${source}`
-        : shortFilePathWithQuery
-    )
-    //todo expose on descriptor
-    const file: string = stringify(
-      isProduction ? filename : unifyPath(rawShortFilePath)
-    )
 
-    // Important to clear the descriptor here to avoid memory leak
-    this.descriptor = {}
+    // Important to reinitialize the descriptor here to avoid memory leak
+    this.descriptor = {
+      id: hashSum(
+        isProduction
+          ? `${shortFilePathWithQuery}\n${source}`
+          : shortFilePathWithQuery
+      ),
+      file: isProduction ? filename : unifyPath(rawShortFilePath),
+      blocks: {},
+    }
     super.parseFromString(source)
 
     const sfcDescriptor = this.descriptor
 
     if (options.sourceMap) {
-      forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
+      forEach(sfcDescriptor.blocks, (blocks: SFCBlock[]): void => {
         blocks.forEach((block: SFCBlock): void => {
-          //todo expose on descriptor
-          block.scopeId = id
-
           // Use this offset to generate correct source map
           let offsetLineIndex: number = getLineIndex(source, block.start)
 
@@ -104,12 +101,6 @@ export default class SFCParser extends HTMLParser {
           }
         })
       })
-    } else {
-      forEach(sfcDescriptor, (blocks: SFCBlock[]): void => {
-        blocks.forEach((block: SFCBlock): void => {
-          block.scopeId = id
-        })
-      })
     }
 
     if (!options.noCache) {
@@ -123,15 +114,15 @@ export default class SFCParser extends HTMLParser {
     super.startTag(startTag)
 
     const nameLowerCased: string = startTag.nameLowerCased
-    const descriptor: SFCDescriptor = this.descriptor
+    const blocks: { [block: string]: SFCBlock[] } = this.descriptor.blocks
 
-    if (!descriptor[nameLowerCased]) {
-      descriptor[nameLowerCased] = []
+    if (!blocks[nameLowerCased]) {
+      blocks[nameLowerCased] = []
     }
 
-    descriptor[nameLowerCased].push(
+    blocks[nameLowerCased].push(
       Object.assign(startTag, {
-        scopeId: '',
+        id: '',
         output: undefined,
         end: startTag.end,
         start: startTag.end,
@@ -143,11 +134,14 @@ export default class SFCParser extends HTMLParser {
     super.text(text)
 
     if (this.tagStack.length) {
-      const blockList: SFCBlock[] = this.descriptor[
-        this.tagStack[this.tagStack.length - 1].nameLowerCased
-      ]
-      const lastBlock: SFCBlock = blockList[blockList.length - 1]
+      const lastTag: StartTag = this.tagStack[this.tagStack.length - 1]
+      const blocks: SFCBlock[] = this.descriptor.blocks[lastTag.nameLowerCased]
+      const lastBlock: SFCBlock = blocks[blocks.length - 1]
 
+      lastBlock.id = hashSum(
+        `${this.descriptor.id}\n${lastBlock.nameLowerCased}\n${blocks.length -
+          1}${isProduction ? '\n' + text.content : ''}`
+      )
       lastBlock.output = text.content
       lastBlock.start = text.start
       lastBlock.end = text.end
