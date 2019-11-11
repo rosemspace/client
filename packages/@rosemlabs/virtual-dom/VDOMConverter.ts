@@ -1,20 +1,18 @@
-import forEach from 'lodash/forEach'
 import { DOMConverter, DOMRenderer, NodeType } from '@rosemlabs/dom-api'
+import forEach from 'lodash/forEach'
 import {
-  VirtualContentNode,
+  VirtualAttr,
+  VirtualCharacterData,
   VirtualElement,
   VirtualInstance,
   VirtualNode,
-  VirtualAttr,
-  VirtualParentNode,
-} from '.'
+} from './index'
 
 export default class VDOMConverter<OutputNode>
   implements DOMConverter<VirtualNode, OutputNode> {
   public convert<
-    ParentNode extends OutputNode,
-    DocumentFragment extends ParentNode,
-    Element extends ParentNode,
+    DocumentFragment extends OutputNode,
+    Element extends OutputNode,
     Text extends OutputNode,
     Comment extends OutputNode = OutputNode,
     CDATASection extends OutputNode = OutputNode
@@ -22,7 +20,6 @@ export default class VDOMConverter<OutputNode>
     inputNode: VirtualInstance,
     renderer: DOMRenderer<
       OutputNode,
-      ParentNode,
       DocumentFragment,
       Element,
       Text,
@@ -36,7 +33,7 @@ export default class VDOMConverter<OutputNode>
 
         this.appendVirtualNodeList(
           documentFragment,
-          (inputNode as VirtualParentNode).children as VirtualInstance[],
+          inputNode.childNodes as VirtualInstance[],
           renderer
         )
 
@@ -68,23 +65,23 @@ export default class VDOMConverter<OutputNode>
 
         this.appendVirtualNodeList(
           element,
-          (inputNode as VirtualParentNode).children as VirtualInstance[],
+          inputNode.childNodes as VirtualInstance[],
           renderer
         )
 
         return element
       }
       case NodeType.TEXT_NODE:
-        return renderer.createText(
-          String((inputNode as VirtualContentNode).text)
+        return renderer.createTextNode(
+          String((inputNode as VirtualCharacterData).text)
         )
       case NodeType.COMMENT_NODE:
         return renderer.createComment(
-          String((inputNode as VirtualContentNode).text)
+          String((inputNode as VirtualCharacterData).text)
         )
       case NodeType.CDATA_SECTION_NODE:
         return renderer.createCDATASection(
-          String((inputNode as VirtualContentNode).text)
+          String((inputNode as VirtualCharacterData).text)
         )
     }
 
@@ -92,9 +89,9 @@ export default class VDOMConverter<OutputNode>
   }
 
   protected appendVirtualNodeList<
-    ParentNode extends OutputNode,
-    DocumentFragment extends ParentNode,
-    Element extends ParentNode,
+    ParentNode,
+    DocumentFragment extends OutputNode & ParentNode,
+    Element extends OutputNode & ParentNode,
     Text extends OutputNode,
     Comment extends OutputNode = OutputNode,
     CDATASection extends OutputNode = OutputNode
@@ -103,7 +100,6 @@ export default class VDOMConverter<OutputNode>
     nodeList: VirtualInstance[],
     renderer: DOMRenderer<
       OutputNode,
-      ParentNode,
       DocumentFragment,
       Element,
       Text,

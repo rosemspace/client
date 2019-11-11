@@ -1,5 +1,5 @@
 ```javascript
-import { createAsyncComponent } from '@rosemlab/ui'
+import { createAsyncComponent } from '@rosemlabs/ui'
 
 const AsyncComp = createAsyncComponent({
   factory: () => import('./Foo.vue'),

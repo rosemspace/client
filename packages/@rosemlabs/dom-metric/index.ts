@@ -23,7 +23,7 @@
 // - marginBox   -               DOMSizeBox & DOMEdgeBox
 // - transformBox -
 
-import { getGlobalOf } from '@rosemlabs/env'
+import { getGlobalOf } from '@rosemlabs/env-util'
 import { getStyleNumericValue } from '@rosemlabs/dom-util'
 
 export const TOP = 'top'

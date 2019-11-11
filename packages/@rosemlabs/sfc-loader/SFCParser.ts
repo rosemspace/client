@@ -2,17 +2,16 @@ import { basename, dirname } from 'path'
 import forEach from 'lodash/forEach'
 import LRUCache from 'lru-cache'
 import hashSum from 'hash-sum'
-import { isProduction } from '@rosemlabs/env'
+import { isProduction } from '@rosemlabs/env-util'
 import { getLineIndex, unifyPath } from '@rosemlabs/common-util'
 import HTMLParser from '@rosemlabs/html-parser'
-import { qualifiedNameRegExp } from '@rosemlabs/xml-syntax'
+import { qualifiedNameRegExp } from '@rosemlabs/xml-util'
 import { MatchRange, StartTag, Content } from '@rosemlabs/xml-parser/nodes'
 import AttrMapModule from '@rosemlabs/xml-parser/modules/AttrMapModule'
 import SFCDescriptor from './SFCDescriptor'
 import SFCBlock from './SFCBlock'
 import generateSourceMap from './generateSourceMap'
 
-const stringify = JSON.stringify
 const cache = new LRUCache<string, SFCDescriptor>(100)
 
 export type SFCParserOptions = {

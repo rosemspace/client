@@ -1,4 +1,4 @@
-import { getGlobalOf } from '@rosemlabs/env'
+import { getGlobalOf } from '@rosemlabs/env-util'
 
 /**
  * Checks whether provided element is a document element (<html>).

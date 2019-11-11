@@ -1,4 +1,4 @@
-import { inBrowser, isIE } from '@rosemlabs/env'
+import { inBrowser, isIE } from '@rosemlabs/env-util'
 // Async edge case #6566 requires saving the timestamp when event listeners are
 // attached. However, calling performance.now() has a perf overhead especially
 // if the page has thousands of event listeners. Instead, we take a timestamp

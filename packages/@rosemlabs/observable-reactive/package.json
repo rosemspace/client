@@ -1,0 +1,25 @@
+{
+  "name": "@rosemlabs/observable-reactive",
+  "version": "0.0.1",
+  "description": "Reactivity library",
+  "keywords": [
+    "react",
+    "reactive",
+    "reactive-object",
+    "reactivity"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "devDependencies": {
+    "type-fest": "^0.8.1"
+  }
+}

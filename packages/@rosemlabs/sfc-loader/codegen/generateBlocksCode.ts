@@ -1,4 +1,4 @@
-import camelCase from 'lodash/camelCase'
+import camelCase from 'camelcase'
 import forEach from 'lodash/forEach'
 import { loader } from 'webpack'
 import LoaderContext = loader.LoaderContext
@@ -38,7 +38,7 @@ const stringify = (value: any, ignoreRootKeyList: string[] = []): string => {
 
       return innerValue
     },
-    2 //todo: remove
+    2
   )
 
   // Enable garbage collection
@@ -145,7 +145,7 @@ export default function generateBlocksCode(
     blocksCode += '\n  ],'
   })
 
-  return `${importCode}\nconst ${exportName} = ${stringify(descriptor, [
+  return `${importCode}\nvar ${exportName} = ${stringify(descriptor, [
     'blocks',
   ])}\n\n${exportName}.blocks = {${blocksCode}\n}\n${outputCode}\n\nexport ${
     isDefault ? `default` : ''

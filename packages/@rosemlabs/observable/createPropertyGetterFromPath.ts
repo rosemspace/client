@@ -1,10 +1,10 @@
 /**
  * Parse simple path.
  */
-import unicodeLetters from '@rosemlabs/dom-util/potentialCustomElementNameCharRegExp'
+import {pcenCharRegExp} from '@rosemlabs/html-util/customElement'
 
-// const bailRE = /^[\w$](?:(?:[\w.]|\.\$)*?\w)?$/
-const bailRE = new RegExp(`[^${unicodeLetters.source}.$]`)
+const bailRE = /^[\w$](?:(?:[\w.]|\.\$)*?\w)?$/
+// const bailRE = new RegExp(`[^${pcenCharRegExp.source}.$]`)
 
 export default function createPropertyGetterFromPath(
   path: string,

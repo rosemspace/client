@@ -1,4 +1,4 @@
-import { Content, EndTag, StartTag } from './nodes'
+import { EndTag, StartTag } from './nodes'
 
 export type XMLProcessorMap = { [mimeType: string]: XMLProcessor }
 

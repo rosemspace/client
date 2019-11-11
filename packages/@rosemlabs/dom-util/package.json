@@ -1,0 +1,26 @@
+{
+  "name": "@rosemlabs/dom-util",
+  "version": "0.0.1",
+  "description": "DOM utilities library",
+  "keywords": [
+    "rosem",
+    "util",
+    "utils",
+    "dom",
+    "dom-util",
+    "dom-utils",
+    "dom-syntax",
+    "dom-parser"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

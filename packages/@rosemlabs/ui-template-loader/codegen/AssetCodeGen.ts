@@ -39,8 +39,8 @@ export default class AssetCodeGen extends BlankModule {
     }
 
     attr.prefix = ATTR_SYNTAX_KEYWORDS.bind.fullName
-    attr.name = `${attr.prefix}:${attr.localName}`
-    attr.nameLowerCased = attr.name.toLowerCase()
+    attr.name = `${attr.prefix}:${attr.localName}`//.toLowerCase()
+    attr.nameLowerCased = attr.name.toLowerCase()//remove
     attr.value =
       'srcset' === attr.localName
         ? attrValue

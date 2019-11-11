@@ -1,10 +1,10 @@
-import { VirtualNodeList, VirtualParentNode } from '.'
+import { VirtualNode } from './index'
 
 export default function concatChildren(
-  parentNode: VirtualParentNode,
-  children: VirtualNodeList,
-  tailChildren: VirtualNodeList
-): VirtualNodeList {
+  parentNode: VirtualNode,
+  children: VirtualNode[],
+  tailChildren: VirtualNode[]
+): VirtualNode[] {
   children[children.length - 1].nextSibling = tailChildren[0]
 
   let childNode

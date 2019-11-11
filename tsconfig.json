@@ -1,17 +1,22 @@
 {
   "compilerOptions": {
 //    "rootDir": "./packages",
-    "outDir": "./dist",
+    "outDir": "dist",
+    "jsx": "preserve",
     // esnext if babel is used, es5 otherwise
     "target": "esnext",
     // commonjs is set to use custom Node.js modules during runtime
     "module": "commonjs",
     "strict": true,
 //    "composite": true,
-    "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
 //    "noImplicitThis": true, // for vue
+    "noImplicitAny": true,
+//    "noUnusedLocals": true,
+//    "noUnusedParameters": true,
+//    "strictNullChecks": true,
+    "preserveConstEnums": true,
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -23,11 +28,12 @@
 //    "declarationMap": true,
     "sourceMap": true,
     "baseUrl": "./packages",
-//    "types": [
-//      "jest",
+    "types": [
+      "jest",
+      "node"
 //      "lodash-es",
 //      "webpack-env"
-//    ],
+    ],
 //    "paths": {
 //      "@rosemlabs/*": [
 //        "packages/@rosemlabs/*"
@@ -35,9 +41,9 @@
 //    },
     "lib": [
       "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
+      "dom"
+//      "dom.iterable",
+//      "scripthost"
     ]
   },
 //  "references": [],
@@ -46,11 +52,7 @@
 //    "webpack.config.ts",
     "packages/**/*.ts",
     "packages/**/*.tsx",
-    "packages/**/*.sfc",
-    "__mocks__/**/*.ts",
-    "__mocks__/**/*.tsx",
-    "__tests__/**/*.ts",
-    "__tests__/**/*.tsx"
+    "packages/**/*.sfc"
   ],
   "exclude": [
     "node_modules"

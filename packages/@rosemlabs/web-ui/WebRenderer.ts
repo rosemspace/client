@@ -6,33 +6,25 @@ const createElementNS = document.createElementNS.bind(document)
 const createTextNode = document.createTextNode.bind(document)
 const createComment = document.createComment.bind(document)
 
-export default class WebRenderer
+export default class WebRenderer // extends Document
   implements
-    DOMRenderer<
-      Node,
-      Node & ParentNode,
-      DocumentFragment,
-      Element,
-      Text,
-      Comment,
-      CDATASection
-    > {
+    DOMRenderer<Node, DocumentFragment, Element, Text, Comment, CDATASection> {
   createDocumentFragment = createDocumentFragment
 
   createElement = createElement
 
   createElementNS = createElementNS
 
-  createText(text: string | number | boolean): Text {
+  createTextNode(text: string): Text {
     return createTextNode(String(text))
   }
 
-  createComment(comment: string | number | boolean): Comment {
-    return createComment(String(comment))
+  createComment(comment: string): Comment {
+    return createComment(comment)
   }
 
-  createCDATASection(data: string | number | boolean): CDATASection {
-    return createTextNode(String(data))
+  createCDATASection(data: string): CDATASection {
+    return createTextNode(data)
   }
 
   setAttribute<T extends Element>(
@@ -56,29 +48,23 @@ export default class WebRenderer
     node.textContent = text
   }
 
-  insertBefore<T extends Node & ParentNode, U extends Node>(
+  insertBefore<T extends Node, U extends Node>(
     parentNode: T,
     newNode: U,
-    referenceNode: Node
+    referenceNode?: Node
   ): U {
-    return parentNode.insertBefore(newNode, referenceNode)
+    return parentNode.insertBefore(newNode, referenceNode || null)
   }
 
-  appendChild<T extends Node & ParentNode, U extends Node>(
-    node: T,
-    childNode: U
-  ): U {
+  appendChild<T extends Node, U extends Node>(node: T, childNode: U): U {
     return node.appendChild(childNode)
   }
 
-  removeChild<T extends Node & ParentNode, U extends Node>(
-    node: T,
-    childNode: U
-  ): U {
+  removeChild<T extends Node, U extends Node>(node: T, childNode: U): U {
     return node.removeChild(childNode)
   }
 
-  parentNode(node: Node): Node & ParentNode | null {
+  parentNode(node: Node): Node | null {
     return node.parentNode
   }
 
@@ -86,7 +72,7 @@ export default class WebRenderer
   //   return node.nextSibling
   // }
 
-  tagName<T extends Element>(node: T): string {
-    return node.tagName
+  getTagName<T extends Element>(element: T): string {
+    return element.tagName
   }
 }

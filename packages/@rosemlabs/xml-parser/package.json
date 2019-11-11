@@ -1,0 +1,37 @@
+{
+  "name": "@rosemlabs/xml-parser",
+  "version": "0.0.1",
+  "description": "XML parser library",
+  "keywords": [
+    "rosem",
+    "xml",
+    "parser",
+    "xml-parser",
+    "dom",
+    "vdom",
+    "virtual-dom"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "@rosemlabs/dom-api": "^0.0.1",
+    "@rosemlabs/regexp-util": "^0.0.1",
+    "@rosemlabs/std": "^0.0.1",
+    "@rosemlabs/w3-util": "^0.0.1",
+    "@rosemlabs/wai-aria-util": "^0.0.1",
+    "@rosemlabs/xml-util": "^0.0.1",
+    "camelcase": "^5.3.1"
+  },
+  "devDependencies": {
+    "type-fest": "^0.8.1"
+  }
+}

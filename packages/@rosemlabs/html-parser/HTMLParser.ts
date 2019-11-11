@@ -1,29 +1,29 @@
 import {
-  conditionalCommentStartRegExp,
   conditionalCommentRegExp,
+  conditionalCommentStartRegExp,
+  escapableRawTextElementRegExp,
   foreignElementRegExp,
   nonPhrasingElementRegExp,
   optionalClosingElementRegExp,
-  voidElementRegExp,
-  shouldIgnoreFirstNewline,
   rawTextElementRegExp,
-  escapableRawTextElementRegExp,
-} from '@rosemlabs/html-syntax'
-import { reservedAttrRegExp } from '@rosemlabs/html-syntax/attr'
-import {
-  APPLICATION_MATHML_XML_MIME_TYPE,
-  TEXT_HTML_MIME_TYPE,
-  HTML_NAMESPACE,
-  MATHML_NAMESPACE,
-} from '@rosemlabs/w3-util'
-import XMLParser, { NamespaceMap, XMLProcessorMap } from '@rosemlabs/xml-parser'
-import { Attr, StartTag, EndTag, Content } from '@rosemlabs/xml-parser/nodes'
+  reservedAttributeRegExp,
+  shouldIgnoreFirstNewline,
+  voidElementRegExp,
+} from '@rosemlabs/html-util'
 import SVGParser, {
   convertElementArrayToRegExp,
   SVGParserOptions,
 } from '@rosemlabs/svg-parser/SVGParser'
-import HTMLProcessor from './HTMLProcessor'
+import {
+  APPLICATION_MATHML_XML_MIME_TYPE,
+  HTML_NAMESPACE,
+  MATHML_NAMESPACE,
+  TEXT_HTML_MIME_TYPE,
+} from '@rosemlabs/w3-util'
+import XMLParser, { NamespaceMap, XMLProcessorMap } from '@rosemlabs/xml-parser'
+import { Attr, Content, EndTag, StartTag } from '@rosemlabs/xml-parser/nodes'
 import getStackedTagRegExp from './getStackedTagRegExp'
+import HTMLProcessor from './HTMLProcessor'
 
 export type SourceSupportedType =
   | 'application/mathml+xml'
@@ -311,7 +311,10 @@ export default class HTMLParser<T extends HTMLParserOptions = HTMLParserOptions>
   }
 
   attribute<T extends Attr>(attr: T): void {
-    if (!this.options.suppressWarnings && reservedAttrRegExp.test(attr.name)) {
+    if (
+      !this.options.suppressWarnings &&
+      reservedAttributeRegExp.test(attr.name)
+    ) {
       this.warn(`Attribute name reserved: ${attr.name}`, {
         start: attr.start,
         end: attr.end,

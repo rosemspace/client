@@ -1,0 +1,25 @@
+{
+  "name": "@rosemlabs/env-util",
+  "version": "0.0.1",
+  "description": "Environment utilities library",
+  "keywords": [
+    "rosem",
+    "util",
+    "utils",
+    "env",
+    "environment",
+    "env-util",
+    "env-utils"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

@@ -3,4 +3,6 @@ import ReactiveObject from './ReactiveObject'
 
 export default interface ReactivePropertyDescriptor<
   T extends ReactiveObject = ReactiveObject
-> extends ObservablePropertyDescriptor<T> {}
+> extends ObservablePropertyDescriptor<T> {
+  primitiveConversion?: boolean
+}

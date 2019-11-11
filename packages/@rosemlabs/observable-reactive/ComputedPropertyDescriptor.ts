@@ -9,4 +9,5 @@ export default interface ComputedPropertyDescriptor<
   get?: Observer<T>
   set?: Observer<T>
   noCache?: boolean
+  primitiveConversion?: boolean
 }

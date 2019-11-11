@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "description": "Rosem virtual dom library",
   "keywords": [
-    "virtual",
-    "dom"
+    "dom",
+    "vdom",
+    "virtual-dom"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",
@@ -21,6 +22,6 @@
     "@rosemlabs/dom-api": "^0.0.1"
   },
   "devDependencies": {
-    "@rosemlabs/types": "^0.0.1"
+    "type-fest": "^0.8.1"
   }
 }

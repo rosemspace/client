@@ -1,14 +1,12 @@
-import { plugin, Transformer, Root } from 'postcss'
+import { Declaration, plugin, Transformer, Root } from 'postcss'
 import selectorParser from 'postcss-selector-parser'
-
-const PLUGIN_NAME: string = '@rosemlabs/postcss-scoped-css'
 
 type ScopedCSSPluginOptions = {
   scopeId: string
-  useAttr?: boolean
+  scopeType?: 'class' | 'attr'
 }
 
-export default plugin(PLUGIN_NAME, function scopedCSS(
+export default plugin('scoped-css', function scopedCSS(
   options?: ScopedCSSPluginOptions
 ): Transformer {
   if (!options || !options.scopeId) {
@@ -18,7 +16,7 @@ export default plugin(PLUGIN_NAME, function scopedCSS(
   const scopeId: string = options.scopeId
   const keyframes = Object.create(null)
 
-  return function(root: Root): void {
+  return (root: Root): void => {
     // root.walkRules(function(rule: Rule) {
     //   // console.log(rule);
     //   // rule.selectors.forEach((selector: string): void => {
@@ -39,7 +37,7 @@ export default plugin(PLUGIN_NAME, function scopedCSS(
           if (node.name === 'media' || node.name === 'supports') {
             node.each(rewriteSelector)
           } else if (/-?keyframes$/.test(node.name)) {
-            // register keyframes
+            // Register keyframes
             keyframes[node.params] = node.params = node.params + '-' + scopeId
           }
         }
@@ -49,19 +47,20 @@ export default plugin(PLUGIN_NAME, function scopedCSS(
         selectors.each((selector: any) => {
           let node: any = null
 
-          // find the last child node to insert attribute selector
+          // Find the last child node to insert attribute selector
           selector.each((n: any) => {
             // ">>>" combinator
-            // and /deep/ alias for >>>, since >>> doesn't work in SASS
             if (n.type === 'combinator' && n.value === '>>>') {
               n.value = ' '
               n.spaces.before = n.spaces.after = ''
+
               return false
             }
 
-            // add a ::unscopables alias
+            // add a ::unscopables alias, since >>> doesn't work in SASS
             if (n.type === 'pseudo' && n.value === '::unscopables') {
               n.value = n.spaces.before = n.spaces.after = ''
+
               return false
             }
 
@@ -81,14 +80,14 @@ export default plugin(PLUGIN_NAME, function scopedCSS(
 
           selector.insertAfter(
             node,
-            options.useAttr
-              ? selectorParser.attribute({
+            'class' === options.scopeType
+              ? selectorParser.className({
+                  value: scopeId,
+                })
+              : selectorParser.attribute({
                   attribute: scopeId,
                   raws: {},
                   value: undefined,
-                })
-              : selectorParser.className({
-                  value: scopeId,
                 })
           )
         })
@@ -100,26 +99,33 @@ export default plugin(PLUGIN_NAME, function scopedCSS(
     // Caveat: this only works for keyframes and animation rules in the same
     // <style> element.
     if (Object.keys(keyframes).length) {
-      root.walkDecls((decl) => {
-        // individual animation-name declaration
+      root.walkDecls((decl: Declaration): void => {
+        // Individual animation-name declaration
         if (/^(-\w+-)?animation-name$/.test(decl.prop)) {
           decl.value = decl.value
             .split(',')
-            .map((v) => keyframes[v.trim()] || v.trim())
+            .map(
+              (value: string): string => keyframes[value.trim()] || value.trim()
+            )
             .join(',')
         }
-        // shorthand
+
+        // Shorthand
         if (/^(-\w+-)?animation$/.test(decl.prop)) {
           decl.value = decl.value
             .split(',')
-            .map((v) => {
-              const vals = v.trim().split(/\s+/)
-              const i = vals.findIndex((val) => keyframes[val])
-              if (i !== -1) {
-                vals.splice(i, 1, keyframes[vals[i]])
-                return vals.join(' ')
+            .map((value: string): string => {
+              const values: string[] = value.trim().split(/\s+/)
+              const index: number = values.findIndex(
+                (value: string): string => keyframes[value]
+              )
+
+              if (index !== -1) {
+                values.splice(index, 1, keyframes[values[index]])
+
+                return values.join(' ')
               } else {
-                return v
+                return value
               }
             })
             .join(',')

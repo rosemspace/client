@@ -1,0 +1,31 @@
+{
+  "name": "@rosemlabs/wai-aria-util",
+  "version": "0.0.1",
+  "description": "WAI-ARIA utilities library",
+  "keywords": [
+    "rosem",
+    "util",
+    "utils",
+    "aria",
+    "aria-util",
+    "aria-utils",
+    "aria-syntax",
+    "aria-parser",
+    "wai-aria",
+    "wai-aria-util",
+    "wai-aria-utils",
+    "wai-aria-syntax",
+    "wai-aria-parser"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

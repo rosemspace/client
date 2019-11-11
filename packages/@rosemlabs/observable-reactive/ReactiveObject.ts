@@ -8,7 +8,6 @@ import Observable from '@rosemlabs/observable/Observable'
 import Observer from '@rosemlabs/observable/Observer'
 import ObservableObject from '@rosemlabs/observable/ObservableObject'
 import defineReactiveProperty from './defineReactiveProperty'
-import defineComputedProperty from './defineComputedProperty'
 
 const getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
 const nativeDefineProperty = Object.defineProperty
@@ -42,12 +41,4 @@ export default class ReactiveObject extends ObservableObject {
       }
     })
   }
-
-  static create(object: object | null): ReactiveObject {
-    return new ReactiveObject(object)
-  }
-
-  static defineReactiveProperty = defineReactiveProperty
-
-  static defineComputedProperty = defineComputedProperty
 }

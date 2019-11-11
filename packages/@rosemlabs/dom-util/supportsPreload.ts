@@ -1,4 +1,4 @@
-import { inBrowser } from '@rosemlabs/env'
+import { inBrowser } from '@rosemlabs/env-util'
 
 let supportsPreload: boolean = false
 

@@ -2,7 +2,7 @@ import forEach from 'lodash/forEach'
 import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import isString from 'lodash/isString'
-import isPrimitive from '@rosemlabs/common-util/isPrimitive'
+import { isPrimitive } from '@rosemlabs/std'
 import { NodeType } from '@rosemlabs/dom-api'
 import VDOMRenderer from './VDOMRenderer'
 import {
@@ -11,9 +11,8 @@ import {
   VirtualNode,
   VirtualAttr,
   VirtualNodeKey,
-  VirtualParentNode,
   VirtualContent,
-} from '.'
+} from './index'
 
 export let key = 0
 
@@ -176,20 +175,18 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
         return virtualElement
       }
       case NodeType.TEXT_NODE:
-        return this.createText((childListOrText[0] as VirtualContent) || '')
+        return this.createTextNode(childListOrText[0] as string)
       case NodeType.COMMENT_NODE:
-        return this.createComment((childListOrText[0] as VirtualContent) || '')
+        return this.createComment(childListOrText[0] as string)
       case NodeType.CDATA_SECTION_NODE:
-        return this.createCDATASection(
-          (childListOrText[0] as VirtualContent) || ''
-        )
+        return this.createCDATASection(childListOrText[0] as string)
     }
 
     throw TypeError(`Unsupported virtual node type "${typeOrChildListOrName}"`)
   }
 
   protected appendChildNodeList(
-    parent: VirtualParentNode,
+    parent: VirtualNode,
     childNodeList: VirtualChildNodeList
   ): void {
     // Convert VirtualChildNodeList to VirtualNodeList
@@ -197,7 +194,7 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
       this.appendChild(
         parent,
         isPrimitive(child)
-          ? this.createText(child as VirtualContent)
+          ? this.createTextNode(String(child))
           : (child as VirtualNode)
       )
     }

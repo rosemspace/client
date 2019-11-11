@@ -1,5 +1,5 @@
 import { NodeType } from '@rosemlabs/dom-api'
-import { encodeBaseEntities } from '@rosemlabs/xml-parser'
+import { encodeBaseEntities } from '@rosemlabs/xml-parser/baseEntities'
 import BlankModule from '@rosemlabs/xml-parser/BlankModule'
 import { Attr, Content, EndTag, StartTag } from '@rosemlabs/xml-parser/nodes'
 import { isSyntaxAttr } from '../index'
@@ -20,7 +20,7 @@ export default class VDOMCodeGen extends BlankModule {
       : `${stringify(attr.name)}:${stringify(encodeBaseEntities(attr.value))},`
   }
 
-  cDataSection<T extends Content>(cDATASection: T): void {}
+  // cDataSection<T extends CDATASection>(cDATASection: T): void {}
 
   comment<T extends Content>(comment: T): void {
     this.code += `${this.depthCode}h(${NodeType.COMMENT_NODE}, ${stringify(
@@ -33,7 +33,7 @@ export default class VDOMCodeGen extends BlankModule {
     this.code += `]);`
   }
 
-  endTag<T extends EndTag>(endTag: T): void {
+  endTag<T extends EndTag>(element: T): void {
     if (this.depthLevel) {
       this.code += `${this.depthCode}]`
     } else {
@@ -57,7 +57,7 @@ export default class VDOMCodeGen extends BlankModule {
   startTag<T extends StartTag>(startTag: T): void {
     const namespaceURI: string | undefined = startTag.namespaceURI
 
-    this.code += `${this.depthCode}h(${stringify(startTag.nameLowerCased)},{`
+    this.code += `${this.depthCode}h(${stringify(startTag.name)},{`
 
     if (namespaceURI) {
       const nsIndex = this.namespaces.indexOf(namespaceURI)
@@ -100,14 +100,7 @@ export default class VDOMCodeGen extends BlankModule {
     this.depthCode = ''
   }
 
-  getCode(prettify: boolean = false): string {
-    try {
-      return prettify ? require('prettier').format(this.code) : this.code
-    } catch {
-      throw new Error(
-        'You need "prettier" module to be installed to prettify generated ' +
-          'javascript code of virtual DOM'
-      )
-    }
+  getCode(): string {
+    return this.code
   }
 }

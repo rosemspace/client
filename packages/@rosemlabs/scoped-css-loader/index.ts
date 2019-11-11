@@ -15,10 +15,11 @@ import postcss, {
   CssSyntaxError as PostCSSSyntaxError,
 } from 'postcss'
 import { version } from 'postcss/package.json'
-import { isProduction } from '@rosemlabs/env'
+import { isProduction } from '@rosemlabs/env-util'
 import Warning from './Warning'
 import CSSSyntaxError from './CSSSyntaxError'
 import postCSSScopedCSSPlugin from './postCSSScopedCSSPlugin'
+import postCSSTrimPlugin from './postCSSTrimPlugin'
 
 const isArray = Array.isArray
 
@@ -32,13 +33,14 @@ type loaderCallbackWithMeta = ((
 
 export type ScopedCSSLoaderOptions = {
   scopePrefix?: string
+  scopeType?: 'class' | 'attr'
   sourceMap?: boolean
   useStrictPostCSSVersion?: boolean
 }
 
 export const SCOPE_PREFIX = isProduction ? '_' : '_scope-'
 
-export default (function scopedCSSloader(
+export default (function scopedCSSLoader(
   this: LoaderContext,
   source: string | Buffer,
   sourceMap?: RawSourceMap,
@@ -90,7 +92,8 @@ export default (function scopedCSSloader(
   }
 
   postcss([
-    postCSSScopedCSSPlugin({ scopeId: `${options.scopePrefix}${scopeId}` }),
+    postCSSTrimPlugin(),
+    postCSSScopedCSSPlugin({ scopeId: `${options.scopePrefix}${scopeId}`, scopeType: options.scopeType }),
   ])
     .process(source, {
       from: getRemainingRequest(this)
@@ -115,7 +118,7 @@ export default (function scopedCSSloader(
       if (this.loaderIndex === 0) {
         callback(
           null,
-          `module.exports = ${JSON.stringify(result.css)}`,
+          `export default ${JSON.stringify(result.css)}`,
           sourceMap
         )
 

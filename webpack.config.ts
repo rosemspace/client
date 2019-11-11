@@ -5,24 +5,35 @@
 import { resolve } from 'path'
 import { Configuration } from 'webpack'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
+// import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+// import { isProduction } from '@rosemlabs/env-util'
 import SFCLoaderPlugin from '@rosemlabs/sfc-loader/SFCLoaderPlugin'
 
-const path: (path: string) => string = (path: string): string =>
+const dir: (path: string) => string = (path: string): string =>
   resolve(__dirname, path)
 
+const babelLoader = {
+  loader: 'babel-loader',
+  // options: {
+    // configFile: path('babel.config.ts'),
+  // },
+}
+
 export default {
+  // mode: isProduction ? 'production' : 'development',
   // mode: 'development',
   // cache: true,
+  // `cheap-module-eval-source-map` is bad for `sfc` files
   devtool: 'cheap-module-eval-source-map',
   // devtool: 'eval-source-map',
   // node: {
   //   console: true,
   // },
-  context: path('packages'),
+  context: dir('.'),
   entry: '@rosemlabs/app/index.ts',
   output: {
     filename: 'main.js',
-    path: path('dist'),
+    path: dir('dist'),
   },
   resolve: {
     // mainFiles: ['index'],
@@ -62,9 +73,7 @@ export default {
           //     cacheIdentifier: '14be64da'
           //   }
           // },
-          {
-            loader: 'babel-loader',
-          },
+          babelLoader,
         ],
       },
       {
@@ -79,15 +88,11 @@ export default {
           //     cacheIdentifier: 'fa2c5396'
           //   }
           // },
-          {
-            loader: 'babel-loader',
-            //   options: {
-            //     cacheDirectory: true,
-            //   }
-          },
+          babelLoader,
           {
             loader: 'ts-loader',
             options: {
+              // todo use isProduction instead of true
               // transpileOnly: true, // false by default
               appendTsSuffixTo: ['\\.sfc$'],
               // happyPackMode: false // false by default
@@ -100,9 +105,7 @@ export default {
         // resourceQuery: /^\?sfc&.*?&lang=html&/,
         exclude: /node_modules/,
         use: [
-          {
-            loader: 'babel-loader',
-          },
+          babelLoader,
           {
             loader: '@rosemlabs/ui-template-loader',
           },
@@ -160,6 +163,7 @@ export default {
           {
             loader: '@rosemlabs/sfc-loader',
             options: {
+              scopeType: 'class',
               sourceMap: true,
               // noPad: true,
               // exportName: 'descriptor',
@@ -204,5 +208,12 @@ export default {
       //   i18n: 'json',
       // }
     }),
+    // new ForkTsCheckerWebpackPlugin(
+    //   {
+    //     vue: true,
+    //     formatter: 'codeframe',
+    //     checkSyntacticErrors: false
+    //   }
+    // ),
   ],
 } as Configuration

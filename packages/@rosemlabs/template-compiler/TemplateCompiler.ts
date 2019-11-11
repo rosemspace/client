@@ -1,25 +1,24 @@
+import { DOMRenderer } from '@rosemlabs/dom-api'
 import { HookList } from '@rosemlabs/xml-parser'
 import {
-  MatchRange,
   Attr,
-  EndTag,
-  StartTag,
   Content,
+  EndTag,
+  MatchRange,
+  StartTag,
 } from '@rosemlabs/xml-parser/nodes'
-import { DOMRenderer } from '@rosemlabs/dom-api'
 
 export default class TemplateCompiler<
   Node,
-  ParentNode extends Node,
-  DocumentFragment extends ParentNode,
-  Element extends ParentNode,
+  ParentNode,
+  DocumentFragment extends Node & ParentNode,
+  Element extends Node & ParentNode,
   Text extends Node,
   Comment extends Node = Node,
   CDATASection extends Node = Node
 > implements HookList {
   protected renderer: DOMRenderer<
     Node,
-    ParentNode,
     DocumentFragment,
     Element,
     Text,
@@ -28,13 +27,13 @@ export default class TemplateCompiler<
   >
   private type!: string
   protected rootNode: DocumentFragment
-  protected cursorNode!: ParentNode
+  protected cursorParentNode!: Node
+  protected cursorNode!: Node
   protected element!: Element
 
   constructor(
     renderer: DOMRenderer<
       Node,
-      ParentNode,
       DocumentFragment,
       Element,
       Text,
@@ -74,6 +73,7 @@ export default class TemplateCompiler<
     this.renderer.appendChild(this.cursorNode, this.element)
 
     if (!parsedTag.void) {
+      this.cursorParentNode = this.cursorNode
       this.cursorNode = this.element
     }
   }
@@ -90,13 +90,14 @@ export default class TemplateCompiler<
   }
 
   endTag(parsedEndTag: EndTag): void {
-    this.cursorNode = this.renderer.parentNode(this.cursorNode) || this.cursorNode
+    this.cursorNode =
+      this.renderer.parentNode(this.cursorNode) || this.cursorNode
   }
 
   text(parsedText: Content): void {
     this.renderer.appendChild(
       this.cursorNode,
-      this.renderer.createText(parsedText.content)
+      this.renderer.createTextNode(parsedText.content)
     )
   }
 

@@ -1,13 +1,14 @@
-import querystring, { ParsedUrlQuery } from 'querystring'
-import { loader } from 'webpack'
-import LoaderContext = loader.LoaderContext
-import { getOptions } from 'loader-utils'
-import { isProduction } from '@rosemlabs/env'
+import { isProduction } from '@rosemlabs/env-util'
 import HTMLParser from '@rosemlabs/html-parser'
 import { Attr } from '@rosemlabs/xml-parser/nodes'
+import { getOptions } from 'loader-utils'
+import { format } from 'prettier'
+import querystring, { ParsedUrlQuery } from 'querystring'
+import { loader } from 'webpack'
 import AssetCodeGen from './codegen/AssetCodeGen'
 import ScopeCodeGen from './codegen/ScopeCodeGen'
 import VDOMCodeGen from './codegen/VDOMCodeGen'
+import LoaderContext = loader.LoaderContext
 
 export const SCOPE_PREFIX = isProduction ? '_' : '_scope-'
 
@@ -24,13 +25,13 @@ export const ATTR_SYNTAX_KEYWORDS = {
 
 export function isSyntaxAttr<T extends Attr>(attr: T, syntax: 'bind'): boolean {
   return (
-    attr.nameLowerCased.startsWith(ATTR_SYNTAX_KEYWORDS[syntax].shorthand) ||
+    attr.name.startsWith(ATTR_SYNTAX_KEYWORDS[syntax].shorthand) ||
     ATTR_SYNTAX_KEYWORDS[syntax].fullName === attr.prefix
   )
 }
 export type UITemplateLoaderOptions = {
   scopePrefix: string
-  prettify?: boolean
+  keepCodeUgly?: boolean
 }
 
 const htmlParser: HTMLParser = new HTMLParser()
@@ -59,8 +60,15 @@ export default function(this: LoaderContext, source: string): string | void {
 
   htmlParser.parseFromString(source)
 
-  return `module.exports = function render({ createInstance: h }) {
-${virtualDOMCodeGen.getCode(options.prettify)}
-}
-`
+  const code: string = `export default function render({ createInstance: h }) {
+${virtualDOMCodeGen.getCode()}}`
+
+  try {
+    return options.keepCodeUgly || isProduction ? code : format(code)
+  } catch {
+    throw new Error(
+      'You need "prettier" module to be installed to prettify generated ' +
+        'javascript code of virtual DOM'
+    )
+  }
 }

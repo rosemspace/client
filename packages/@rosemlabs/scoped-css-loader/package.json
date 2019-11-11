@@ -3,10 +3,12 @@
   "version": "0.0.1",
   "description": "PostCSS loader for scoped CSS",
   "keywords": [
+    "css",
     "postcss",
     "plugin",
+    "postcss-plugin",
     "scoped",
-    "css"
+    "scoped-css"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",

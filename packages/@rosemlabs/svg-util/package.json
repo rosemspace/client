@@ -1,0 +1,26 @@
+{
+  "name": "@rosemlabs/svg-util",
+  "version": "0.0.1",
+  "description": "SVG utilities library",
+  "keywords": [
+    "rosem",
+    "util",
+    "utils",
+    "svg",
+    "svg-util",
+    "svg-utils",
+    "svg-syntax",
+    "svg-parser"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

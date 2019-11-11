@@ -1,0 +1,33 @@
+{
+  "name": "@rosemlabs/html-util",
+  "version": "0.0.1",
+  "description": "HTML utilities library",
+  "keywords": [
+    "rosem",
+    "util",
+    "utils",
+    "html",
+    "html-util",
+    "html-utils",
+    "hyml-syntax",
+    "hyml-parser"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "@rosemlabs/std": "^0.0.1",
+    "@rosemlabs/wai-aria-util": "^0.0.1"
+  },
+  "devDependencies": {
+    "type-fest": "^0.8.1"
+  }
+}

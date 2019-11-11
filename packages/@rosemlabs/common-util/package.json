@@ -1,11 +1,16 @@
 {
   "name": "@rosemlabs/common-util",
   "version": "0.0.1",
-  "description": "Common util functions",
+  "description": "Common utility functions",
   "keywords": [
-    "common",
+    "util",
+    "utils",
     "shared",
-    "util"
+    "shared-util",
+    "shared-utils",
+    "common",
+    "common-util",
+    "common-utils"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",

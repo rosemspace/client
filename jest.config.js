@@ -9,9 +9,9 @@ module.exports = {
   // globalSetup: '<rootDir>/tests/unit/global-setup',
   // globalTeardown: '<rootDir>/tests/unit/global-teardown',
   // setupTestFrameworkScriptFile: '<rootDir>/tests/unit/matchers',
-  moduleFileExtensions: ['js', 'jsx', 'json', 'vue', 'ts', 'tsx'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'sfc'],
   transform: {
-    '^.+\\.vue$': 'vue-jest',
+    // '^.+\\.sfc': 'sfc-jest',
     '^.+\\.tsx?$': 'ts-jest',
     '.+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$':
       'jest-transform-stub',
@@ -38,6 +38,7 @@ module.exports = {
     },
   },
   coverageDirectory: '<rootDir>/__tests__/coverage',
+  coverageReporters: ['html', 'lcov', 'text'],
   collectCoverageFrom: [
     'packages/**/*.{js,vue,ts}',
     '!packages/**/router/index.js',

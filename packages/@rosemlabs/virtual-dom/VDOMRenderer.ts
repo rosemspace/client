@@ -1,15 +1,14 @@
-import { NodeName, NodeType, DOMRenderer } from '@rosemlabs/dom-api'
+import { DOMRenderer, NodeName, NodeType } from '@rosemlabs/dom-api'
 import concatChildren from './concatChildren'
 import {
   VirtualCDATASection,
+  VirtualCharacterData,
   VirtualComment,
-  VirtualContentNode,
   VirtualDocumentFragment,
   VirtualElement,
   VirtualNode,
-  VirtualParentNode,
   VirtualText,
-} from '.'
+} from './index'
 
 let key = 0
 
@@ -17,7 +16,6 @@ export default class VDOMRenderer
   implements
     DOMRenderer<
       VirtualNode,
-      VirtualParentNode,
       VirtualDocumentFragment,
       VirtualElement,
       VirtualText,
@@ -34,7 +32,7 @@ export default class VDOMRenderer
     return {
       nodeName: NodeName.DOCUMENT_FRAGMENT_NODE,
       type: NodeType.DOCUMENT_FRAGMENT_NODE,
-      children: [],
+      childNodes: [],
     }
   }
 
@@ -59,28 +57,31 @@ export default class VDOMRenderer
       namespaceURI: namespaceURI,
       key: ++key,
       attrs: {},
-      children: [],
+      childNodes: [],
     }
   }
 
-  createText(text: string | number | boolean): VirtualText {
+  createTextNode(text: string): VirtualText {
     return {
+      childNodes: [],
       nodeName: NodeName.TEXT_NODE,
       type: NodeType.TEXT_NODE,
       text,
     }
   }
 
-  createComment(comment: string | number | boolean): VirtualComment {
+  createComment(comment: string): VirtualComment {
     return {
+      childNodes: [],
       nodeName: NodeName.COMMENT_NODE,
       type: NodeType.COMMENT_NODE,
       text: comment,
     }
   }
 
-  createCDATASection(cdata: string | number | boolean): VirtualCDATASection {
+  createCDATASection(cdata: string): VirtualCDATASection {
     return {
+      childNodes: [],
       nodeName: NodeName.CDATA_SECTION_NODE,
       type: NodeType.CDATA_SECTION_NODE,
       text: cdata,
@@ -117,49 +118,47 @@ export default class VDOMRenderer
     }
   }
 
-  setTextContent(
-    node: VirtualParentNode | VirtualContentNode,
-    text: string
-  ): void {
+  setTextContent(node: VirtualNode | VirtualCharacterData, text: string): void {
     if (
       NodeType.ELEMENT_NODE === node.type ||
       NodeType.DOCUMENT_FRAGMENT_NODE === node.type
     ) {
-      ;(node as VirtualParentNode).children = [
+      node.childNodes = [
         {
           type: NodeType.TEXT_NODE,
           text,
         } as VirtualText,
       ]
     } else {
-      ;(node as VirtualContentNode).text = text
+      ;(node as VirtualCharacterData).text = text
     }
   }
 
   insertBefore<
-    T extends VirtualParentNode,
-    U extends VirtualParentNode | VirtualNode
-  >(parentNode: T, childNode: U, referenceNode: VirtualNode): U {
-    const children = parentNode.children
-    let referenceNodeIndex = children.indexOf(referenceNode)
+    T extends VirtualNode /* & VirtualParentNode*/,
+    U extends VirtualNode
+  >(parentNode: T, childNode: U, referenceNode?: VirtualNode): U {
+    const childNodes = parentNode.childNodes
+    //todo to handle referenceNode undefined case
+    let referenceNodeIndex = childNodes.indexOf(referenceNode!)
 
     if (referenceNodeIndex < 0) {
       throw new Error('Virtual reference instance is not a child of a parent')
     }
 
     if (NodeType.DOCUMENT_FRAGMENT_NODE === childNode.type) {
-      const restChildren = children.splice(
+      const restChildren = childNodes.splice(
         referenceNodeIndex,
-        children.length - 1
+        childNodes.length - 1
       )
 
       concatChildren(
         parentNode,
-        children,
-        (childNode as VirtualDocumentFragment).children
+        childNodes,
+        (childNode as VirtualDocumentFragment).childNodes
       )
-      children[children.length - 1].nextSibling = restChildren[0]
-      parentNode.children = children.concat(restChildren)
+      childNodes[childNodes.length - 1].nextSibling = restChildren[0]
+      parentNode.childNodes = childNodes.concat(restChildren)
 
       return childNode
     }
@@ -168,26 +167,22 @@ export default class VDOMRenderer
     childNode.nextSibling = referenceNode
 
     if (referenceNodeIndex >= 1) {
-      children[referenceNodeIndex - 1].nextSibling = childNode
+      childNodes[referenceNodeIndex - 1].nextSibling = childNode
     }
 
-    children.splice(referenceNodeIndex, 0, childNode)
+    childNodes.splice(referenceNodeIndex, 0, childNode)
 
     return childNode
   }
 
   appendChild<
-    T extends VirtualParentNode,
-    U extends VirtualParentNode | VirtualNode
+    T extends VirtualNode /* & VirtualParentNode*/,
+    U extends VirtualNode
   >(parentNode: T, childNode: U): U {
-    const children = parentNode.children
+    const children = parentNode.childNodes
 
     if (NodeType.DOCUMENT_FRAGMENT_NODE === childNode.type) {
-      concatChildren(
-        parentNode,
-        children,
-        (childNode as VirtualDocumentFragment).children
-      )
+      concatChildren(parentNode, children, childNode.childNodes)
 
       return childNode
     }
@@ -202,11 +197,11 @@ export default class VDOMRenderer
     return childNode
   }
 
-  removeChild<T extends VirtualParentNode, U extends VirtualNode>(
-    parentNode: T,
-    childNode: U
-  ): U {
-    const children = parentNode.children
+  removeChild<
+    T extends VirtualNode /* & VirtualParentNode*/,
+    U extends VirtualNode
+  >(parentNode: T, childNode: U): U {
+    const children = parentNode.childNodes
     let childInstanceIndex = children.indexOf(childNode)
 
     if (childInstanceIndex < 0) {
@@ -225,7 +220,7 @@ export default class VDOMRenderer
     return childNode
   }
 
-  parentNode(node: VirtualNode): VirtualParentNode | null {
+  parentNode(node: VirtualNode): VirtualNode | null {
     return node.parent || null
   }
 
@@ -233,7 +228,7 @@ export default class VDOMRenderer
   //   return node.nextSibling || null
   // }
 
-  tagName<T extends VirtualElement>(element: T): string {
+  getTagName<T extends VirtualElement>(element: T): string {
     return element.tagName
   }
 }

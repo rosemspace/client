@@ -18,7 +18,7 @@ import {
   cDataSectionRegExp,
   declarationStartRegExp,
   declarationRegExp,
-} from '@rosemlabs/xml-syntax'
+} from '@rosemlabs/xml-util'
 import {
   APPLICATION_XML_MIME_TYPE,
   XLINK_NAMESPACE,

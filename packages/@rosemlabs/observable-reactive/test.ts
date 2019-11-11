@@ -1,6 +1,9 @@
-import ObservableObject, { ObservablePropertyKey } from '@rosemlabs/observable/ObservableObject'
-import ReactiveObject from './ReactiveObject'
+import ObservableObject, {
+  ObservablePropertyKey,
+} from '@rosemlabs/observable/ObservableObject'
+import defineComputedProperty from './defineComputedProperty'
 import { computed, reactive, ref, watch } from './index'
+import ReactiveObject from './ReactiveObject'
 
 export default class O {
   static test4() {
@@ -48,7 +51,7 @@ export default class O {
     })
     let o3 = ReactiveObject.create({})
 
-    ReactiveObject.defineComputedProperty(o3, 'value', {
+    defineComputedProperty(o3, 'value', {
       get(
         newVal: any,
         oldVal: any,
@@ -113,13 +116,17 @@ export default class O {
     document.body.append(lastNameElement)
     document.body.append(fullNameElement)
 
-    ObservableObject.observeProperty(oo, 'firstName', function(newValue: string) {
+    ObservableObject.observeProperty(oo, 'firstName', function(
+      newValue: string
+    ) {
       firstNameElement.textContent = newValue
     })
-    ObservableObject.observeProperty(oo, 'lastName', function(newValue: string) {
+    ObservableObject.observeProperty(oo, 'lastName', function(
+      newValue: string
+    ) {
       lastNameElement.textContent = newValue
     })
-    ReactiveObject.defineComputedProperty(oo, 'fullName', {
+    defineComputedProperty(oo, 'fullName', {
       get(
         newVal: any,
         oldVal: any,
@@ -138,7 +145,9 @@ export default class O {
         console.log('SET: ', value)
       },
     })
-    ObservableObject.observeProperty(oo, 'fullName', function(newValue: string) {
+    ObservableObject.observeProperty(oo, 'fullName', function(
+      newValue: string
+    ) {
       fullNameElement.textContent = newValue
     })
 

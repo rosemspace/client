@@ -1,4 +1,4 @@
-import { inBrowser } from '@rosemlabs/env'
+import { inBrowser } from '@rosemlabs/env-util'
 
 export default function supportsEventListenerOption(
   option: keyof AddEventListenerOptions

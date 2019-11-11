@@ -3,8 +3,13 @@
   "version": "0.0.1",
   "description": "DOM API library",
   "keywords": [
+    "api",
     "dom",
-    "api"
+    "dom-api",
+    "vdom",
+    "virtual-dom",
+    "vdom-api",
+    "virtual-dom-api"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",

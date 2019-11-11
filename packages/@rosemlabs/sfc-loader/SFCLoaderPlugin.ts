@@ -1,7 +1,6 @@
-import { RuleSetRule, loader, compilation, compiler } from 'webpack'
+import { RuleSetRule, loader, compilation, Plugin, Compiler } from 'webpack'
 import LoaderContext = loader.LoaderContext
 import Compilation = compilation.Compilation
-import Compiler = compiler.Compiler
 const RuleSet = require('webpack/lib/RuleSet')
 import { parse } from 'querystring'
 import {
@@ -32,7 +31,7 @@ export const defaultBlockLangMap: BlockLangMap = {
   style: 'css',
 }
 
-export default class SFCLoaderPlugin {
+export default class SFCLoaderPlugin implements Plugin {
   static IDENT = SFC_LOADER_IDENT
 
   readonly options: SFCLoaderPluginOptions
@@ -48,7 +47,7 @@ export default class SFCLoaderPlugin {
     }
   }
 
-  apply(compiler: Compiler) {
+  apply(compiler: Compiler): void {
     if (!compiler.options.module) {
       return
     }
