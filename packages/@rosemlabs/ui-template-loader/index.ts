@@ -1,6 +1,6 @@
 import { isProduction } from '@rosemlabs/env-util'
 import HTMLParser from '@rosemlabs/html-parser'
-import { Attr } from '@rosemlabs/xml-parser/nodes'
+import { Attr } from '@rosemlabs/html-parser/nodes'
 import { getOptions } from 'loader-utils'
 import { format } from 'prettier'
 import querystring, { ParsedUrlQuery } from 'querystring'

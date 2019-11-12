@@ -1,4 +1,4 @@
-import { StartTag } from '@rosemlabs/xml-parser/nodes'
+import { StartTag } from '@rosemlabs/html-parser/nodes'
 import { RawSourceMap } from 'source-map'
 
 // name, lang, index, src, meta, output

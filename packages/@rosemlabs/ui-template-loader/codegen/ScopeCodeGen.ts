@@ -1,5 +1,5 @@
-import { BlankModule } from '@rosemlabs/xml-parser'
-import { Attr, AttrList, StartTag } from '@rosemlabs/xml-parser/nodes'
+import { BlankModule } from '@rosemlabs/html-parser'
+import { Attr, AttrList, StartTag } from '@rosemlabs/html-parser/nodes'
 import { ScopeType } from '../index'
 
 const CLASS_ATTR_NAME: string = 'class'

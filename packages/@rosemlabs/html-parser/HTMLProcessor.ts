@@ -1,5 +1,5 @@
-import SVGProcessor from '@rosemlabs/svg-parser/SVGProcessor'
-import { Content } from '@rosemlabs/xml-parser/nodes'
+import SVGProcessor from './SVGProcessor'
+import { Content } from './nodes'
 
 export default interface HTMLProcessor extends SVGProcessor {
   // documentType(type: string): void

@@ -1,15 +1,15 @@
 import isArray from 'lodash/isArray'
 import { getExactDisjunctionRegExpFromArray } from '@rosemlabs/regexp-util'
-import { foreignElementRegExp } from './index'
+import { foreignElementRegExp } from '@rosemlabs/svg-util'
 import {
   IMAGE_SVG_XML_MIME_TYPE,
   SVG_NAMESPACE,
 } from '@rosemlabs/w3-util'
 import XMLParser, {
-  XMLParserOptions,
-  XMLProcessorMap,
-} from '@rosemlabs/xml-parser'
-import { StartTag } from '@rosemlabs/xml-parser/nodes'
+  XMLParserOptions
+} from './XMLParser'
+import { XMLProcessorMap } from './index'
+import { StartTag } from './nodes'
 import SVGProcessor from './SVGProcessor'
 
 export function convertElementArrayToRegExp(list: RegExp | string[]): RegExp {

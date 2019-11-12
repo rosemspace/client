@@ -13,15 +13,16 @@ import {
 import SVGParser, {
   convertElementArrayToRegExp,
   SVGParserOptions,
-} from '@rosemlabs/svg-parser/SVGParser'
+} from './SVGParser'
 import {
   APPLICATION_MATHML_XML_MIME_TYPE,
   HTML_NAMESPACE,
   MATHML_NAMESPACE,
   TEXT_HTML_MIME_TYPE,
 } from '@rosemlabs/w3-util'
-import XMLParser, { NamespaceMap, XMLProcessorMap } from '@rosemlabs/xml-parser'
-import { Attr, Content, EndTag, StartTag } from '@rosemlabs/xml-parser/nodes'
+import XMLParser from './XMLParser'
+import { NamespaceMap, XMLProcessorMap } from './index'
+import { Attr, Content, EndTag, StartTag } from './nodes'
 import getStackedTagRegExp from './getStackedTagRegExp'
 import HTMLProcessor from './HTMLProcessor'
 

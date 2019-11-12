@@ -1,7 +1,7 @@
 import { NodeType } from '@rosemlabs/dom-api'
-import { encodeBaseEntities } from '@rosemlabs/xml-parser/baseEntities'
-import BlankModule from '@rosemlabs/xml-parser/BlankModule'
-import { Attr, Content, EndTag, StartTag } from '@rosemlabs/xml-parser/nodes'
+import { encodeBaseEntities } from '@rosemlabs/html-parser/baseEntities'
+import BlankModule from '@rosemlabs/html-parser/BlankModule'
+import { Attr, Content, EndTag, StartTag } from '@rosemlabs/html-parser/nodes'
 import { isSyntaxAttr } from '../index'
 
 const stringify = JSON.stringify

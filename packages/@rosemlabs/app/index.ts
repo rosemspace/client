@@ -1,4 +1,3 @@
-// require('@rosemlabs/xml-parsera/test')
 // require('@rosemlabs/observable-reactive/test')
 
 // // import Style from './style.css' //mtc - multi-type container

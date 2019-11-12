@@ -1,12 +1,12 @@
 import { DOMRenderer } from '@rosemlabs/dom-api'
-import { HookList } from '@rosemlabs/xml-parser'
+import { HookList } from '@rosemlabs/html-parser'
 import {
   Attr,
   Content,
   EndTag,
   MatchRange,
   StartTag,
-} from '@rosemlabs/xml-parser/nodes'
+} from '@rosemlabs/html-parser/nodes'
 
 export default class TemplateCompiler<
   Node,
