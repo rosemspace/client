@@ -33,10 +33,12 @@ type loaderCallbackWithMeta = ((
 
 export type ScopedCSSLoaderOptions = {
   scopePrefix?: string
-  scopeType?: 'class' | 'attr'
+  scopeType?: ScopeType
   sourceMap?: boolean
   useStrictPostCSSVersion?: boolean
 }
+
+export type ScopeType = 'class' | 'attr'
 
 export const SCOPE_PREFIX = isProduction ? '_' : '_scope-'
 

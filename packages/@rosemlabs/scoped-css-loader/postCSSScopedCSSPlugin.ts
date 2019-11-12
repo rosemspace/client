@@ -1,9 +1,10 @@
-import { Declaration, plugin, Transformer, Root } from 'postcss'
+import { Declaration, plugin, Root, Transformer } from 'postcss'
 import selectorParser from 'postcss-selector-parser'
+import { ScopeType } from './index'
 
 type ScopedCSSPluginOptions = {
   scopeId: string
-  scopeType?: 'class' | 'attr'
+  scopeType?: ScopeType
 }
 
 export default plugin('scoped-css', function scopedCSS(

@@ -163,7 +163,6 @@ export default {
           {
             loader: '@rosemlabs/sfc-loader',
             options: {
-              scopeType: 'class',
               sourceMap: true,
               // noPad: true,
               // exportName: 'descriptor',

@@ -29,10 +29,14 @@ export function isSyntaxAttr<T extends Attr>(attr: T, syntax: 'bind'): boolean {
     ATTR_SYNTAX_KEYWORDS[syntax].fullName === attr.prefix
   )
 }
+
 export type UITemplateLoaderOptions = {
   scopePrefix: string
+  scopeType?: ScopeType
   keepCodeUgly?: boolean
 }
+
+export type ScopeType = 'class' | 'attr'
 
 const htmlParser: HTMLParser = new HTMLParser()
 const scopeCodeGen: ScopeCodeGen = new ScopeCodeGen()
@@ -55,7 +59,7 @@ export default function(this: LoaderContext, source: string): string | void {
     : query.scopeId
 
   if (null != scopeId) {
-    scopeCodeGen.setScopeId(`${options.scopePrefix}${scopeId}`)
+    scopeCodeGen.setScope(`${options.scopePrefix}${scopeId}`, options.scopeType)
   }
 
   htmlParser.parseFromString(source)
