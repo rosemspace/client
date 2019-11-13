@@ -6,9 +6,16 @@ const createElementNS = document.createElementNS.bind(document)
 const createTextNode = document.createTextNode.bind(document)
 const createComment = document.createComment.bind(document)
 
-export default class WebRenderer // extends Document
+export default class WebDOMRenderer // extends Document
   implements
-    DOMRenderer<Node, DocumentFragment, Element, Text, Comment, CDATASection> {
+    DOMRenderer<
+      Node,
+      DocumentFragment,
+      Element,
+      Text,
+      Comment,
+      CDATASection
+    > {
   createDocumentFragment = createDocumentFragment
 
   createElement = createElement

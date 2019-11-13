@@ -20,11 +20,11 @@
 <script lang="ts">
 import isObject from 'lodash/isObject'
 import { Vue, Component } from 'vue-property-decorator'
-import { qualifiedNameRegExp } from '@rosemlabs/xml-syntax'
+import { qualifiedNameRegExp } from '@rosemlabs/xml-util'
 import HTMLParser from '@rosemlabs/html-parser'
 import TemplateCompiler from '@rosemlabs/template-compiler/TemplateCompiler'
 import { VDOMRenderer } from '@rosemlabs/virtual-dom'
-import WebRenderer from '@rosemlabs/web-ui/WebRenderer'
+import WebDOMRenderer from '@rosemlabs/web-ui/WebDOMRenderer'
 
 const htmlParser = new HTMLParser({
   rawTextElement: new RegExp(qualifiedNameRegExp.source, 'i'),

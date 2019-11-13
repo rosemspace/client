@@ -3,7 +3,7 @@
 import HTMLParser from '@rosemlabs/html-parser/HTMLParser'
 import TemplateCompiler from '@rosemlabs/template-compiler/TemplateCompiler'
 import { VDOMConverter, VDOMRenderer } from '@rosemlabs/virtual-dom'
-import WebRenderer from '@rosemlabs/web-ui/WebRenderer'
+import { WebDOMRenderer } from '@rosemlabs/web-ui'
 import testHTML from './testHTML'
 
 document.querySelector('#app')!.innerHTML = testHTML
@@ -14,7 +14,7 @@ const vDOMRenderer = new VDOMRenderer()
 export default function() {
   const htmlParser = new HTMLParser()
   const virtualTemplateCompiler = new TemplateCompiler(vDOMRenderer)
-  // const webTemplateCompiler = new TemplateCompiler(new WebRenderer())
+  // const webTemplateCompiler = new TemplateCompiler(new WebDOMRenderer())
 
   htmlParser.addModule(virtualTemplateCompiler)
   // domParser.addModule(webTemplateCompiler)
@@ -24,7 +24,7 @@ export default function() {
 
   return vDOMConverter.convert(
     virtualTemplateCompiler.getCompiledResult(),
-    new WebRenderer()
+    new WebDOMRenderer()
   )
   // console.log(virtualTemplateCompiler.getCompiledResult());
   // console.log(webTemplateCompiler.getCompiledResult());

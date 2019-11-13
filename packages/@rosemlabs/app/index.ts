@@ -4,7 +4,7 @@
 import { OBSERVATION_KEY, ObservableObject } from '@rosemlabs/observable'
 import App from './App.sfc' //mtc - multi-type container
 import { VDOMConverter, VDOMHyperRenderer } from '@rosemlabs/virtual-dom'
-import WebDOMRenderer from '@rosemlabs/web-ui/WebRenderer'
+import { WebDOMRenderer } from '@rosemlabs/web-ui'
 import { isHTMLElementAttribute } from '@rosemlabs/html-util/attr'
 //@ts-ignore
 console.log(App)//.script[0].output.setup());
