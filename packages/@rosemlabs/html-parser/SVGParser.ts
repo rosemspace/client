@@ -1,16 +1,12 @@
-import isArray from 'lodash/isArray'
 import { getExactDisjunctionRegExpFromArray } from '@rosemlabs/regexp-util'
+import { isExisty } from '@rosemlabs/std'
 import { foreignElementRegExp } from '@rosemlabs/svg-util'
-import {
-  IMAGE_SVG_XML_MIME_TYPE,
-  SVG_NAMESPACE,
-} from '@rosemlabs/w3-util'
-import XMLParser, {
-  XMLParserOptions
-} from './XMLParser'
+import { IMAGE_SVG_XML_MIME_TYPE, SVG_NAMESPACE } from '@rosemlabs/w3-util'
+import isArray from 'lodash/isArray'
 import { XMLProcessorMap } from './index'
 import { StartTag } from './nodes'
 import SVGProcessor from './SVGProcessor'
+import XMLParser, { XMLParserOptions } from './XMLParser'
 
 export function convertElementArrayToRegExp(list: RegExp | string[]): RegExp {
   if (isArray(list)) {
@@ -88,10 +84,11 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
       this.rootTagStack.push(startTag)
 
       if (
-        null !=
-        (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
-          startTag.nameLowerCased
-        ])
+        isExisty(
+          (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
+            startTag.nameLowerCased
+          ])
+        )
       ) {
         this.useProcessor(this.namespaceURI)
       }

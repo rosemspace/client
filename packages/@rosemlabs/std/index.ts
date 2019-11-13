@@ -4,6 +4,8 @@ export const defineProperties = Object.defineProperties
 
 export const isArray = Array.isArray
 
+export const isExisty = <T>(value: T): value is NonNullable<T> => null != value
+
 // NaN is number :) Also it is the only value which does not equal itself
 export const isNaN =
   Number.isNaN || ((value: any): value is typeof NaN => value !== value)

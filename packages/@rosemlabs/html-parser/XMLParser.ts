@@ -5,31 +5,32 @@
 // - add middleware functionality
 // - migrate extension from mime types to namespaces
 
-import {
-  commentStartRegExp,
-  cDataSectionStartRegExp,
-  endTagRegExp,
-  startTagOpenRegExp,
-  startTagCloseRegExp,
-  attributeRegExp,
-  processingInstructionRegExp,
-  processingInstructionStartRegExp,
-  commentRegExp,
-  cDataSectionRegExp,
-  declarationStartRegExp,
-  declarationRegExp,
-} from '@rosemlabs/xml-util'
+import { isExisty } from '@rosemlabs/std'
 import {
   APPLICATION_XML_MIME_TYPE,
   XLINK_NAMESPACE,
   XML_NAMESPACE,
   XMLNS_NAMESPACE,
 } from '@rosemlabs/w3-util'
-import HookList from './HookList'
-import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
-import { Attr, AttrList, Content, EndTag, MatchRange, StartTag } from './nodes'
+import {
+  attributeRegExp,
+  cDataSectionRegExp,
+  cDataSectionStartRegExp,
+  commentRegExp,
+  commentStartRegExp,
+  declarationRegExp,
+  declarationStartRegExp,
+  endTagRegExp,
+  processingInstructionRegExp,
+  processingInstructionStartRegExp,
+  startTagCloseRegExp,
+  startTagOpenRegExp,
+} from '@rosemlabs/xml-util'
 import { decodeBaseEntities } from './baseEntities'
+import HookList from './HookList'
 import { NamespaceMap, TypeMap } from './index'
+import { Attr, AttrList, Content, EndTag, MatchRange, StartTag } from './nodes'
+import XMLProcessor, { XMLProcessorMap } from './XMLProcessor'
 
 export const defaultNamespaceMap: NamespaceMap = {
   xml: XML_NAMESPACE,
@@ -109,7 +110,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         this.rootTagStack.length - 1
       ].namespaceURI
 
-      if (null != rootTagNamespaceURI) {
+      if (isExisty(rootTagNamespaceURI)) {
         return rootTagNamespaceURI
       }
     }
@@ -381,7 +382,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       if (tagPrefix) {
         const namespaceURI: string = this.namespaceMap[tagPrefix]
 
-        if (null != namespaceURI) {
+        if (isExisty(namespaceURI)) {
           this.namespaceURI = startTag.namespaceURI = namespaceURI
         } else if (!this.options.suppressWarnings) {
           this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
@@ -399,7 +400,9 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       ) {
         if (!this.options.suppressWarnings) {
           this.warn(
-            `<${startTag.name}> element is not allowed in context of <${this.rootTagStack[this.rootTagStack.length - 1].name}> element without namespace.`,
+            `<${startTag.name}> element is not allowed in context of <${
+              this.rootTagStack[this.rootTagStack.length - 1].name
+            }> element without namespace.`,
             {
               start: startTag.start,
               end: startTag.end,
@@ -472,7 +475,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         ) {
           this.rootTagStack.pop()
 
-          if (null != (this.namespaceURI = this.rootNamespaceURI)) {
+          if (isExisty((this.namespaceURI = this.rootNamespaceURI))) {
             this.useProcessor(this.namespaceURI)
           }
         }
