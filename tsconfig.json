@@ -4,7 +4,7 @@
     "outDir": "dist",
     "jsx": "preserve",
     // esnext if babel is used, es5 otherwise
-    "target": "esnext",
+    "target": "es2019",
     // commonjs is set to use custom Node.js modules during runtime
     "module": "commonjs",
     "strict": true,

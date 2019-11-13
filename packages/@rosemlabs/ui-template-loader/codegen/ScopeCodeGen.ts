@@ -1,6 +1,6 @@
 import { BlankModule } from '@rosemlabs/html-parser'
 import { Attr, AttrList, StartTag } from '@rosemlabs/html-parser/nodes'
-import { ScopeType } from '../index'
+import { ScopeType } from '@rosemlabs/scoped-css-loader'
 
 const CLASS_ATTR_NAME: string = 'class'
 
@@ -13,7 +13,7 @@ export default class ScopeCodeGen extends BlankModule {
   private scopeId?: string
   private scopeType?: ScopeType
 
-  setScope(scopeId: string, scopeType?: 'class' | 'attr'): void {
+  setScope(scopeId: string, scopeType?: ScopeType): void {
     this.scopeId = scopeId
     this.scopeType = scopeType
   }

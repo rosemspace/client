@@ -2,7 +2,7 @@
 <!--  <title>Rosem App</title>-->
 <!--</head>-->
 
-<template lang="html" scoped xmlns:rosem="http://www.w3.org/1999/xhtml">
+<template lang="html" scoped scope-type="class" xmlns:rosem="http://www.w3.org/1999/xhtml">
 <!--  <template &src="../Home.sfc#logo" />-->
 <!--  <template use="line" />-->
   <h1 class="greeting">Text: <span style="font-weight: bold">{{ this.msg }}</span></h1>
@@ -45,7 +45,7 @@ export default {
 <!--<style src="./style.css"></style>-->
 <!--<style src="@rosemlabs/web-design/index.pcss"></style>-->
 
-<style lang="postcss" scoped>
+<style lang="postcss" scoped scope-type="class">
 :host {
   --color: red;
 }

@@ -1,27 +1,27 @@
-import querystring, { ParsedUrlQuery } from 'querystring'
-import { RawSourceMap } from 'source-map'
-import { loader } from 'webpack'
-import Loader = loader.Loader
-import LoaderContext = loader.LoaderContext
-import loaderCallback = loader.loaderCallback
+import { isProduction } from '@rosemlabs/env-util'
 import {
+  getCurrentRequest,
   getOptions,
   getRemainingRequest,
-  getCurrentRequest,
 } from 'loader-utils'
 import postcss, {
+  CssSyntaxError as PostCSSSyntaxError,
   Result as PostCSSResult,
   Warning as PostCSSWarning,
-  CssSyntaxError as PostCSSSyntaxError,
 } from 'postcss'
 import { version } from 'postcss/package.json'
-import { isProduction } from '@rosemlabs/env-util'
-import Warning from './Warning'
+import { RawSourceMap } from 'source-map'
+import { loader } from 'webpack'
 import CSSSyntaxError from './CSSSyntaxError'
 import postCSSScopedCSSPlugin from './postCSSScopedCSSPlugin'
 import postCSSTrimPlugin from './postCSSTrimPlugin'
+import { getScopeInfo, ScopeOptions } from './scope'
+import Warning from './Warning'
+import Loader = loader.Loader
+import loaderCallback = loader.loaderCallback
+import LoaderContext = loader.LoaderContext
 
-const isArray = Array.isArray
+export * from './scope'
 
 type loaderCallbackWithMeta = ((
   err: Error | undefined | null,
@@ -32,13 +32,9 @@ type loaderCallbackWithMeta = ((
   loaderCallback
 
 export type ScopedCSSLoaderOptions = {
-  scopePrefix?: string
-  scopeType?: ScopeType
   sourceMap?: boolean
   useStrictPostCSSVersion?: boolean
-}
-
-export type ScopeType = 'class' | 'attr'
+} & ScopeOptions
 
 export const SCOPE_PREFIX = isProduction ? '_' : '_scope-'
 
@@ -53,25 +49,24 @@ export default (function scopedCSSLoader(
   if (!callback) {
     return
   }
-
-  // `.slice(1)` - remove "?" character
-  const query: ParsedUrlQuery = querystring.parse(this.resourceQuery.slice(1))
-  const scopeId: string | undefined = isArray(query.scopeId)
-    ? undefined
-    : query.scopeId
-
-  if (null == scopeId) {
-    callback(null, source, sourceMap, meta)
-
-    return
-  }
-
   // we can get access to another loader options by using an ident set in the
   // request for this loader.
   const options: ScopedCSSLoaderOptions = {
     scopePrefix: SCOPE_PREFIX,
     ...(getOptions(this) || {}),
   }
+
+  const { id: scopeId, type: scopeType } = getScopeInfo(
+    this.resourceQuery,
+    options
+  )
+
+  if (scopeId === '') {
+    callback(null, source, sourceMap, meta)
+
+    return
+  }
+
   const useSourceMap: boolean | undefined = options.sourceMap
 
   // Some loaders (example `"postcss-loader": "1.x.x"`) always generates source
@@ -95,7 +90,10 @@ export default (function scopedCSSLoader(
 
   postcss([
     postCSSTrimPlugin(),
-    postCSSScopedCSSPlugin({ scopeId: `${options.scopePrefix}${scopeId}`, scopeType: options.scopeType }),
+    postCSSScopedCSSPlugin({
+      scopeId: `${options.scopePrefix}${scopeId}`,
+      scopeType: scopeType,
+    }),
   ])
     .process(source, {
       from: getRemainingRequest(this)
