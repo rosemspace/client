@@ -1,3 +1,6 @@
+export * from './array'
+export * from './iterable'
+
 // Newline can be one of
 // - Carriage Return (CR, \r, on older Macs)
 // - Line Feed (LF, \n, on Unices incl. Linux)

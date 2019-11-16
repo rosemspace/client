@@ -1,19 +1,18 @@
+import { getAttrMap } from '@rosemlabs/html-parser/modules/AttrMapModule'
+import { AttrMap } from '@rosemlabs/html-parser/nodes'
 import camelCase from 'camelcase'
-import forEach from 'lodash/forEach'
-import { loader } from 'webpack'
-import LoaderContext = loader.LoaderContext
 import { stringifyRequest } from 'loader-utils'
 import { escape } from 'querystring'
-import { AttrMap } from '@rosemlabs/html-parser/nodes'
-import { getAttrMap } from '@rosemlabs/html-parser/modules/AttrMapModule'
+import { loader } from 'webpack'
 import { SFC_LOADER_IDENT } from '../index'
 import SFCBlock from '../SFCBlock'
 import SFCDescriptor from '../SFCDescriptor'
-import attrsToQuery from './attrsToQuery'
 import SFCLoaderPlugin, {
   getOptions,
   SFCLoaderPluginOptions,
 } from '../SFCLoaderPlugin'
+import attrsToQuery from './attrsToQuery'
+import LoaderContext = loader.LoaderContext
 
 const jsonStringify = JSON.stringify
 const stringify = (value: any, ignoreRootKeyList: string[] = []): string => {
@@ -59,7 +58,7 @@ const ignoredAttrs = ['block', 'index', 'lang', 'src', 'scopeId', 'issuerPath']
 
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
-  descriptor: SFCDescriptor,
+  sfcDescriptor: SFCDescriptor,
   exportName: string = 'default'
 ): string {
   const pluginOptions: SFCLoaderPluginOptions = getOptions(loaderContext)
@@ -80,12 +79,17 @@ export default function generateBlocksCode(
   let importCode = ''
   let blocksCode = ''
   let outputCode = ''
+  const { blocks } = sfcDescriptor
 
-  forEach(descriptor.blocks, (blocks: SFCBlock[], name: string): void => {
+  for (const name in blocks) {
+    if (!blocks.hasOwnProperty(name)) {
+      continue
+    }
+
     blocksCode += `\n  "${name}": [`
     importCode +=
       `/* ${name} blocks */\n` +
-      blocks
+      blocks[name]
         .map((block: SFCBlock, index: number) => {
           // todo: improve getAttrMap
           const attrMap: AttrMap = getAttrMap(block.attrs)
@@ -106,7 +110,7 @@ export default function generateBlocksCode(
           internalAttrMap.index = escape(String(index))
 
           if (attrMap.scoped) {
-            internalAttrMap.scopeId = escape(descriptor.id)
+            internalAttrMap.scopeId = escape(sfcDescriptor.id)
           }
 
           // No need `lang` attribute if we have an external resource
@@ -143,9 +147,9 @@ export default function generateBlocksCode(
         .join(`\n`) +
       '\n'
     blocksCode += '\n  ],'
-  })
+  }
 
-  return `${importCode}\nvar ${exportName} = ${stringify(descriptor, [
+  return `${importCode}\nvar ${exportName} = ${stringify(sfcDescriptor, [
     'blocks',
   ])}\n\n${exportName}.blocks = {${blocksCode}\n}\n${outputCode}\n\nexport ${
     isDefault ? `default` : ''

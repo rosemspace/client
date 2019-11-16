@@ -1,16 +1,15 @@
-import { basename, dirname } from 'path'
-import forEach from 'lodash/forEach'
-import LRUCache from 'lru-cache'
-import hashSum from 'hash-sum'
-import { isProduction } from '@rosemlabs/env-util'
 import { getLineIndex, unifyPath } from '@rosemlabs/common-util'
+import { isProduction } from '@rosemlabs/env-util'
 import HTMLParser from '@rosemlabs/html-parser'
-import { qualifiedNameRegExp } from '@rosemlabs/xml-util'
-import { MatchRange, StartTag, Content } from '@rosemlabs/html-parser/nodes'
 import AttrMapModule from '@rosemlabs/html-parser/modules/AttrMapModule'
-import SFCDescriptor from './SFCDescriptor'
-import SFCBlock from './SFCBlock'
+import { Content, MatchRange, StartTag } from '@rosemlabs/html-parser/nodes'
+import { qualifiedNameRegExp } from '@rosemlabs/xml-util'
+import hashSum from 'hash-sum'
+import LRUCache from 'lru-cache'
+import { basename, dirname } from 'path'
 import generateSourceMap from './generateSourceMap'
+import SFCBlock from './SFCBlock'
+import SFCDescriptor from './SFCDescriptor'
 
 const cache = new LRUCache<string, SFCDescriptor>(100)
 
@@ -20,7 +19,11 @@ export type SFCParserOptions = {
   noCache?: boolean
 }
 
-const defaultDescriptor: SFCDescriptor = { id: '', file: '', blocks: {} }
+const defaultDescriptor: SFCDescriptor = {
+  id: '',
+  file: '',
+  blocks: {},
+}
 const defaultOptions: SFCParserOptions = {
   sourceMap: false,
   noPad: false,
@@ -74,10 +77,15 @@ export default class SFCParser extends HTMLParser {
     super.parseFromString(source)
 
     const sfcDescriptor = this.descriptor
+    const { blocks } = sfcDescriptor
 
     if (options.sourceMap) {
-      forEach(sfcDescriptor.blocks, (blocks: SFCBlock[]): void => {
-        blocks.forEach((block: SFCBlock): void => {
+      for (const name in blocks) {
+        if (!blocks.hasOwnProperty(name)) {
+          continue
+        }
+
+        blocks[name].forEach((block: SFCBlock): void => {
           // Use this offset to generate correct source map
           let offsetLineIndex: number = getLineIndex(source, block.start)
 
@@ -99,7 +107,7 @@ export default class SFCParser extends HTMLParser {
             )
           }
         })
-      })
+      }
     }
 
     if (!options.noCache) {

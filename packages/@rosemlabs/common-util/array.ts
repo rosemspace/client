@@ -1,7 +1,10 @@
+const arrayIncludesValues = <T>(array: Array<T>, values: any[]): boolean =>
+  ![...new Set(values)].some((item) => !array.includes(item))
+
 /**
  * Remove an item from an array.
  */
-export default function removeArrayItem<T>(
+export function removeArrayItem<T>(
   array: Array<T>,
   item: T
 ): Array<T> | void {

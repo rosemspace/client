@@ -1,14 +1,9 @@
-import isString from 'lodash/isString'
-import { loader } from 'webpack'
-import LoaderContext = loader.LoaderContext
+import scopedCSSLoader from '@rosemlabs/scoped-css-loader'
+import { SFC_LOADER_IDENT, SFCLoaderOptions } from '@rosemlabs/sfc-loader/index'
 import { getOptions, stringifyRequest } from 'loader-utils'
 import querystring, { ParsedUrlQuery } from 'querystring'
-import { SFC_LOADER_IDENT, SFCLoaderOptions } from '@rosemlabs/sfc-loader/index'
-import scopedCSSLoader from '@rosemlabs/scoped-css-loader'
-import {
-  getOptions as getPluginOptions,
-  SFCLoaderPluginOptions,
-} from './SFCLoaderPlugin'
+import { loader } from 'webpack'
+import LoaderContext = loader.LoaderContext
 
 type ResolvedLoader = {
   request: string
