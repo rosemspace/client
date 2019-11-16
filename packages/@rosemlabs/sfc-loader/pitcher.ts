@@ -31,8 +31,9 @@ const shouldIgnoreCustomBlock = (loaders: ResolvedLoader[]) => {
 
   return 0 === actualLoaders.length
 }
+// pcss, postcss, css, less, sass, scss, styl, stylus
 const isStyleLang = (lang: string): boolean =>
-  /^((post)?c|le|s[a|c])ss|styl$/.test(lang)
+  /^(?:(?:(?:p(?:ost)?)?c|le|s[a|c])ss|styl(?:us)?)$/.test(lang)
 
 export default function(source: string): string {
   return source
@@ -70,6 +71,8 @@ export function pitch(this: LoaderContext): string | void {
   // Inject scoped-css-loader before css-loader for scoped CSS // todo trimming
   if (
     'style' === query.block ||
+    // Identify other blocks than style block associated with styles by "lang"
+    // attribute (duplicated in resource query)
     (query.lang && isStyleLang(query.lang.toString()))
   ) {
     const cssLoaderIndex: number = loaders.findIndex(isCSSLoader)
