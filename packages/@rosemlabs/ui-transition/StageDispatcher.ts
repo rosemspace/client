@@ -1,11 +1,13 @@
 import {
-  cancelAnimationFrame,
-  requestNextAnimationFrame,
   getComputedTransition,
   getComputedAnimation,
   isTransitionMaxTimeout,
   isAnimationMaxTimeout,
 } from '@rosemlabs/dom-easing'
+import {
+  cancelAnimationFrame,
+  requestNextAnimationFrame,
+} from '@rosemlabs/std'
 import CSSTransitionDeclaration from '@rosemlabs/dom-easing/CSSTransitionDeclaration'
 import CSSAnimationDeclaration from '@rosemlabs/dom-easing/CSSAnimationDeclaration'
 import { Detail, Phase, PhaseEnum } from './Module'

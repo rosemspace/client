@@ -1,4 +1,3 @@
-export * from './frame'
 export { default as CSSEasingDeclaration } from './CSSEasingDeclaration'
 export * from './CSSEasingDeclaration'
 export { default as CSSAnimationDeclaration } from './CSSAnimationDeclaration'

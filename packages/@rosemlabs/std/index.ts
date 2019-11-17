@@ -1,5 +1,8 @@
 import { Primitive } from 'type-fest'
 
+export * from './frame'
+export { default as queueMicrotask } from './queueMicrotask'
+
 export const defineProperties = Object.defineProperties
 
 export const isArray = Array.isArray

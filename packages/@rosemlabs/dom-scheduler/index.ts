@@ -1,4 +1,4 @@
-import { requestAnimationFrame } from '@rosemlabs/dom-easing'
+import { requestAnimationFrame } from '@rosemlabs/std'
 
 function remove<T>(array: T[], item: T): boolean {
   const index = array.indexOf(item)

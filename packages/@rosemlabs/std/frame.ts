@@ -1,4 +1,4 @@
-export const FPS: number = Math.floor(1_000 / 60)
+export const MS_PER_FRAME: number = Math.floor(1_000 / 60)
 
 /**
  * A shim for the requestAnimationFrame which falls back to the setTimeout if
@@ -24,8 +24,8 @@ if (
   raf = (callback: FrameRequestCallback): number =>
     Number(
       setTimeout(() => {
-        callback(Date.now())
-      }, FPS)
+        callback(performance.now())
+      }, MS_PER_FRAME)
     )
   caf = globalThis.clearTimeout
 }
