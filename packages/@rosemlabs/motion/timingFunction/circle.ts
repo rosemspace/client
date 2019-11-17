@@ -1,13 +1,13 @@
-import { TimingFunction } from './index'
+import { reflect, reverse, TimingFunction } from './index'
+
+const sqrt = Math.sqrt
 
 export const circleIn: TimingFunction = (timeFraction: number): number =>
-  1 - Math.sqrt(1 - timeFraction * timeFraction)
+  1 - sqrt(1 - timeFraction * timeFraction)
 
 export const circleOut: TimingFunction = (timeFraction: number): number =>
-  Math.sqrt(1 - --timeFraction * timeFraction)
+  sqrt(1 - --timeFraction * timeFraction)
 
-export const circleInOut: TimingFunction = (timeFraction: number): number =>
-  0.5 *
-  (timeFraction <= 0.5
-    ? 1 - Math.sqrt(1 - 4 * timeFraction * timeFraction)
-    : 1 + Math.sqrt(1 - 4 * --timeFraction * timeFraction))
+export const circleInOut: TimingFunction = reflect(circleIn)
+
+export const circleOutIn: TimingFunction = reflect(circleOut)

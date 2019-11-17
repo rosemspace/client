@@ -1,16 +1,32 @@
 export interface TimingFunction extends Function {
-  (timeFraction: number, ...params: any[]): number
+  (timeFraction: number, ...args: any[]): number
 }
 
 export interface TimingFunction2D extends Function {
-  (timeFraction: number, ...params: any[]): number[]
+  (timeFraction: number, ...args: any[]): number[]
 }
+
+export const reverse = (timingFunction: TimingFunction): TimingFunction => (
+  timeFraction: number,
+  ...args: any[]
+): number => 1 - timingFunction(1 - timeFraction, ...args)
+
+export const reflect = (timingFunction: TimingFunction): TimingFunction => (
+  timeFraction: number,
+  ...args: any[]
+): number =>
+  0.5 *
+  (timeFraction < 0.5
+    ? timingFunction(2 * timeFraction, ...args)
+    : 2 - timingFunction(2 - 2 * timeFraction, ...args))
 
 export const linear = (timeFraction: number): number => timeFraction
 
-export { default as bezier2D, quardBezier2D, cubicBezier2D } from './bezier'
-export { bounceIn, bounceOut } from './bounce'
-export { circleIn, circleOut, circleInOut } from './circle'
-export { default as ease, easeIn2D, easeOut2D, easeInOut2D } from './ease'
-export { easeInElastic, easeOutElastic } from './elastic'
+export { default as bezier2D } from './bezier'
+export * from './bezier'
+export * from './bounce'
+export * from './circle'
+export { default as ease } from './ease'
+export * from './ease'
+export * from './elastic'
 export { default as easeOutExpo } from './easeOutExpo'

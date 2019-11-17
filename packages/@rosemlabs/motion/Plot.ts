@@ -2,7 +2,8 @@ export type PlotOptions = Partial<{
   width: number
   height: number
   rotate: boolean
-  swap: boolean
+  // swap: boolean
+  reflectY: boolean
   boundaryOffsetX: number
   boundaryOffsetY: number
   axisThickness: number
@@ -14,118 +15,182 @@ export type PlotOptions = Partial<{
   curveColor: string
 }>
 
+const PlotSymbol = Symbol('Plot')
+
 export const defaultPlotOptions: Required<PlotOptions> = {
-  width: 300,
-  height: 300,
+  width: 400,
+  height: 400,
   rotate: false,
-  swap: true,
-  boundaryOffsetX: 250,
-  boundaryOffsetY: 250,
+  // swap: false,
+  reflectY: false,
+  boundaryOffsetX: 100,
+  boundaryOffsetY: 100,
   axisThickness: 1,
-  xAxisColor: '#bfd9df',
-  yAxisColor: '#bfd9df',
+  // xAxisColor: '#bfd9df',
+  // yAxisColor: '#bfd9df',
+  xAxisColor: 'gray',
+  yAxisColor: 'gray',
   gridThickness: 1,
-  gridColor: '#b9cce0',
-  curveThickness: 3,
-  curveColor: '#99b2c9',
+  // gridColor: '#b9cce0',
+  gridColor: 'lightgray',
+  curveThickness: 2,
+  // curveColor: '#99b2c9',
+  curveColor: 'black',
 }
 
 export default class Plot {
-  private canvas: HTMLCanvasElement
-  private context: CanvasRenderingContext2D
-  private readonly options: Required<PlotOptions>
-  private readonly width: number
-  private readonly height: number
-  private readonly drawAreaWidth: number
-  private readonly drawAreaHeight: number
-  private readonly gridCellWidth: number
-  private readonly gridCellHeight: number
+  private readonly canvas: HTMLCanvasElement
+  private readonly context2D: CanvasRenderingContext2D
+  private options: Required<PlotOptions>
+  private readonly width: number = 0
+  private readonly height: number = 0
+  private readonly drawAreaWidth: number = 0
+  private readonly drawAreaHeight: number = 0
+  private readonly gridCellWidth: number = 0
+  private readonly gridCellHeight: number = 0
 
-  constructor(options: PlotOptions = {}) {
+  constructor(canvas: HTMLCanvasElement | string, options: PlotOptions = {}) {
+    this.canvas = resolveCanvas(canvas)
+    this.context2D = this.canvas.getContext('2d') as CanvasRenderingContext2D
     this.options = { ...defaultPlotOptions, ...options }
-    this.canvas = document.createElement('canvas')
-    this.canvas.setAttribute('width', String(options.width))
-    this.canvas.setAttribute('height', String(options.height))
-    this.context = this.canvas.getContext('2d') as CanvasRenderingContext2D
-    this.width = this.canvas.width
-    this.height = this.canvas.height
+
+    if (null != this.options.width) {
+      this.width = this.options.width
+
+      if (this.canvas.width !== this.width) {
+        this.canvas.setAttribute('width', String(this.width))
+      }
+    } else {
+      this.width = this.canvas.width
+    }
+
+    if (null != this.options.height) {
+      this.height = this.options.height
+
+      if (this.canvas.height !== this.height) {
+        this.canvas.setAttribute('height', String(this.height))
+      }
+    } else {
+      this.height = this.canvas.height
+    }
+
     this.drawAreaWidth = this.width - 2 * this.options.boundaryOffsetX
     this.drawAreaHeight = this.height - 2 * this.options.boundaryOffsetY
-    this.gridCellWidth = this.width / 20
-    this.gridCellHeight = this.height / 20
+    this.gridCellWidth = this.width * 0.05
+    this.gridCellHeight = this.height * 0.05
     this.clear()
-  }
-
-  clear(): void {
-    this.context.beginPath()
-    this.flush()
+    this.drawField()
     this.drawCenter()
     this.drawAxes(this.options.boundaryOffsetX, this.options.boundaryOffsetY)
   }
 
-  flush(): void {
-    this.context.clearRect(0, 0, this.width, this.height)
-    this.context.lineWidth = this.options.gridThickness
-    this.context.strokeStyle = this.options.gridColor
-    this.context.strokeRect(
-      this.options.boundaryOffsetX,
-      this.options.boundaryOffsetY,
-      this.drawAreaWidth,
-      this.drawAreaHeight
-    )
-    this.context.lineWidth = this.options.curveThickness
-    this.context.strokeStyle = this.options.curveColor
+  clear(): void {
+    this.flush()
+    this.context2D.beginPath()
   }
 
-  drawAxes(x: number, y: number): void {
-    const {
-      axisThickness,
-      boundaryOffsetX,
-      boundaryOffsetY,
-      xAxisColor,
-      yAxisColor,
-    } = this.options
+  flush(): void {
+    // Clear previous axes
+    this.context2D.clearRect(0, 0, this.width, this.height)
+  }
 
-    this.context.fillStyle = xAxisColor
-    this.context.fillRect(
-      x,
-      boundaryOffsetY - this.gridCellHeight / 2,
-      axisThickness,
-      this.drawAreaWidth + this.gridCellWidth
-    )
-    this.context.fillStyle = yAxisColor
-    this.context.fillRect(
-      boundaryOffsetX - this.gridCellWidth / 2,
-      y,
-      this.drawAreaHeight + this.gridCellHeight,
-      axisThickness
+  drawField(): void {
+    const ctx: CanvasRenderingContext2D = this.context2D
+
+    ctx.lineWidth = this.options.gridThickness
+    ctx.strokeStyle = this.options.gridColor
+    ctx.strokeRect(
+      this.options.boundaryOffsetX + 0.5,
+      this.options.boundaryOffsetY + 0.5,
+      this.drawAreaWidth,
+      this.drawAreaHeight
     )
   }
 
   drawCenter(): void {
-    this.context.fillStyle = this.options.gridColor
-    this.context.fillRect(
+    const ctx: CanvasRenderingContext2D = this.context2D
+
+    ctx.fillStyle = this.options.gridColor
+    ctx.fillRect(
       this.width / 2,
-      this.width / 2 - this.gridCellWidth / 2,
-      1,
-      this.gridCellWidth
-    )
-    this.context.fillRect(
       this.height / 2 - this.gridCellHeight / 2,
-      this.height / 2,
-      this.gridCellHeight,
-      1
+      this.options.gridThickness,
+      this.gridCellHeight
     )
+    ctx.fillRect(
+      this.width / 2 - this.gridCellWidth / 2,
+      this.height / 2,
+      this.gridCellWidth,
+      this.options.gridThickness
+    )
+  }
+
+  drawAxes(x: number, y: number): void {
+    const ctx: CanvasRenderingContext2D = this.context2D
+    const axisThickness = this.options.axisThickness
+
+    ctx.lineWidth = axisThickness
+    ctx.setLineDash([4])
+    ctx.strokeStyle = this.options.xAxisColor
+    ctx.strokeRect(
+      x + 0.5,
+      -axisThickness,
+      this.width,
+      this.height + 2 * axisThickness
+    )
+    ctx.strokeStyle = this.options.yAxisColor
+    ctx.strokeRect(
+      -axisThickness,
+      y + 0.5,
+      this.width + 2 * axisThickness,
+      this.height
+    )
+    ctx.setLineDash([])
+  }
+
+  drawCurve(x: number, y: number): void {
+    const ctx: CanvasRenderingContext2D = this.context2D
+
+    ctx.lineWidth = this.options.curveThickness
+    ctx.strokeStyle = this.options.curveColor
+    ctx.lineTo(x, y)
+    ctx.stroke()
+    ctx.moveTo(x, y)
   }
 
   draw(x: number, y: number): void {
     let X = this.options.boundaryOffsetX + this.drawAreaWidth * x,
       Y = this.options.boundaryOffsetY + this.drawAreaHeight * y
+
     this.flush()
+    this.drawField()
     this.drawCenter()
     this.drawAxes(X, Y)
-    this.context.lineTo(X, Y)
-    this.context.stroke()
-    this.context.moveTo(X, Y)
+    this.drawCurve(X, Y)
+  }
+}
+
+const createResolveCanvasError: () => TypeError = () =>
+  new TypeError('Canvas element or selector is required')
+
+export function resolveCanvas(
+  canvas: HTMLCanvasElement | string
+): HTMLCanvasElement {
+  if (!canvas) {
+    throw createResolveCanvasError()
+  }
+
+  if (canvas instanceof HTMLCanvasElement) {
+    return canvas
+  } else {
+    const canvasOrNull: HTMLCanvasElement | null = document.querySelector(
+      canvas
+    )
+
+    if (!canvasOrNull || !(canvasOrNull instanceof HTMLCanvasElement)) {
+      throw createResolveCanvasError()
+    }
+
+    return canvasOrNull
   }
 }

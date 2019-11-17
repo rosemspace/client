@@ -1,3 +1,5 @@
+import { reflect, TimingFunction } from './index'
+
 export type BounceParams = Partial<{
   restitution: number
 }>
@@ -41,6 +43,8 @@ export function bounceIn(
 ): number {
   return 1 - bounceOut(1 - timeFraction, { restitution })
 }
+
+export const bounceOutIn: TimingFunction = reflect(bounceOut)
 
 // export default timeFraction =>
 //   [

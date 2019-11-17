@@ -26,7 +26,7 @@ const bezier2D: TimingFunction2D = (
   return bezier2D(timeFraction, nextPoints)
 }
 
-export default bezier
+export default bezier2D
 
 export const quardBezier2D: TimingFunction2D = (
   timeFraction: number,

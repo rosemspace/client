@@ -2,8 +2,17 @@
 //cross-env TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack
 //cross-env TS_NODE_FILES=true webpack
 
+import { isProduction } from '@rosemlabs/env-util'
+import CaseSensitivePathsPlugin from 'case-sensitive-paths-webpack-plugin'
+import FriendlyErrorsWebpackPlugin from 'friendly-errors-webpack-plugin'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
 import { resolve } from 'path'
-import { Configuration } from 'webpack'
+import {
+  Configuration,
+  DefinePlugin,
+  HotModuleReplacementPlugin,
+  ProgressPlugin,
+} from 'webpack'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 // import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 // import { isProduction } from '@rosemlabs/env-util'
@@ -15,17 +24,17 @@ const dir: (path: string) => string = (path: string): string =>
 const babelLoader = {
   loader: 'babel-loader',
   // options: {
-    // configFile: path('babel.config.ts'),
+  //   configFile: path('babel.config.ts'),
   // },
 }
 
 export default {
-  // mode: isProduction ? 'production' : 'development',
+  mode: isProduction ? 'production' : 'development',
   // mode: 'development',
   // cache: true,
   // `cheap-module-eval-source-map` is bad for `sfc` files
-  devtool: 'cheap-module-eval-source-map',
-  // devtool: 'eval-source-map',
+  // devtool: 'cheap-module-eval-source-map',
+  devtool: 'eval-source-map',
   // node: {
   //   console: true,
   // },
@@ -200,12 +209,55 @@ export default {
       },
     ],
   },
+  devServer: {
+    contentBase: dir('dist'),
+    publicPath: dir('/'),
+    hot: !isProduction,
+    compress: isProduction,
+    port: 8080,
+  },
   plugins: [
     new SFCLoaderPlugin({
       fileExtension: 'sfc',
       // blockLangMap: {
       //   i18n: 'json',
       // }
+    }),
+    /* config.plugin('define') */
+    new DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"development"',
+        BASE_URL: '"/"',
+      },
+    }),
+    /* config.plugin('case-sensitive-paths') */
+    new CaseSensitivePathsPlugin(),
+    /* config.plugin('friendly-errors') */
+    new FriendlyErrorsWebpackPlugin({
+      // additionalTransformers: [
+      //   /* omitted long function */
+      //   (): string[] => [],
+      // ],
+      // additionalFormatters: [
+      //   /* omitted long function */
+      //   (): string[] => [],
+      // ],
+    }),
+    /* config.plugin('hmr') */
+    new HotModuleReplacementPlugin(),
+    /* config.plugin('progress') */
+    new ProgressPlugin(),
+    /* config.plugin('html-index') */
+    new HtmlWebpackPlugin({
+      // templateParameters: function () { /* omitted long function */ },
+      // chunks: [
+      //   'chunk-vendors',
+      //   'chunk-common',
+      //   'index'
+      // ],
+      template: 'packages/@rosemlabs/app/index.html',
+      filename: 'index.html',
+      title: 'Rosem | Home Page',
     }),
     // new ForkTsCheckerWebpackPlugin(
     //   {

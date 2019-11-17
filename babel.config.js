@@ -4,14 +4,15 @@ module.exports = {
     ['@babel/preset-typescript'/*, {
       allExtensions: true
     }*/],
-    // [
-    //   '@babel/preset-env',
-    //   {
-    //     useBuiltIns: 'usage',
-    //     shippedProposals: true,
-    //     // modules: false,
-    //   },
-    // ]
+    [
+      '@babel/preset-env',
+      {
+        corejs: 3,
+        useBuiltIns: 'usage',
+        shippedProposals: true,
+        modules: 'umd',
+      },
+    ]
   ],
   plugins: [
     // Stage 1
