@@ -1,4 +1,4 @@
-export const MS_PER_FRAME: number = Math.floor(1_000 / 60)
+export const MS_PER_FRAME: number = 1_000 / 60
 
 /**
  * A shim for the requestAnimationFrame which falls back to the setTimeout if

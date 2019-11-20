@@ -5,7 +5,7 @@
 // - add middleware functionality
 // - migrate extension from mime types to namespaces
 
-import { isExisty } from '@rosemlabs/std'
+import { exists } from '@rosemlabs/std'
 import {
   APPLICATION_XML_MIME_TYPE,
   XLINK_NAMESPACE,
@@ -110,7 +110,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         this.rootTagStack.length - 1
       ].namespaceURI
 
-      if (isExisty(rootTagNamespaceURI)) {
+      if (exists(rootTagNamespaceURI)) {
         return rootTagNamespaceURI
       }
     }
@@ -382,7 +382,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       if (tagPrefix) {
         const namespaceURI: string = this.namespaceMap[tagPrefix]
 
-        if (isExisty(namespaceURI)) {
+        if (exists(namespaceURI)) {
           this.namespaceURI = startTag.namespaceURI = namespaceURI
         } else if (!this.options.suppressWarnings) {
           this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
@@ -475,7 +475,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         ) {
           this.rootTagStack.pop()
 
-          if (isExisty((this.namespaceURI = this.rootNamespaceURI))) {
+          if (exists((this.namespaceURI = this.rootNamespaceURI))) {
             this.useProcessor(this.namespaceURI)
           }
         }

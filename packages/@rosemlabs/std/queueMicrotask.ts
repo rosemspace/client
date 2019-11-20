@@ -45,7 +45,7 @@ const queueMicrotask: (microtask: () => void) => void =
   typeof globalThis.queueMicrotask === 'function' &&
   globalThis.queueMicrotask.toString() ===
     'function queueMicrotask() { [native code] }'
-    ? globalThis.queueMicrotask
+    ? globalThis.queueMicrotask.bind(globalThis)
     : typeof Promise === 'function' &&
       Promise.toString() === 'function Promise() { [native code] }'
     ? createQueueMicrotaskViaPromises()

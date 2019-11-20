@@ -10,7 +10,7 @@ module.exports = {
         corejs: 3,
         useBuiltIns: 'usage',
         shippedProposals: true,
-        modules: 'umd',
+        modules: 'amd',
       },
     ]
   ],
