@@ -11,8 +11,15 @@ import ReactivePropertyDescriptor from './ReactivePropertyDescriptor'
 import defineReactiveProperty from './defineReactiveProperty'
 import defineComputedProperty from './defineComputedProperty'
 
+const referenceSymbol: unique symbol = Symbol('reference')
+
 export interface Ref<T extends Primitive = Primitive> extends ReactiveObject {
   value: T
+  [referenceSymbol]: true
+}
+
+export function isRef(value: any): value is Ref {
+  return Boolean(value[referenceSymbol])
 }
 
 export function reactive(target: object): ReactiveObject {
