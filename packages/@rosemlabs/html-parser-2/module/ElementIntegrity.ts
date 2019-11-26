@@ -1,8 +1,8 @@
-import { Element, HTMLParserHooks, Plugin, Tokenizer } from '../index'
+import { Element, HTMLParserHooks, Module, Tokenizer } from '../index'
 
 const assign = Object.assign
 
-export default class ElementIntegrity implements Plugin<HTMLParserHooks> {
+export default class ElementIntegrity implements Module<HTMLParserHooks> {
   private readonly tokenizer: Tokenizer<HTMLParserHooks>
   private readonly elementStack: Element[] = []
 
@@ -79,13 +79,12 @@ export default class ElementIntegrity implements Plugin<HTMLParserHooks> {
   }
 
   protected matchingStartTagMissed(element: Element): void {
-    this.tokenizer.warn(
-      `<${element.tagName}> element has no matching start tag`,
-      {
-        __starts: element.__starts,
-        __ends: element.__ends,
-      }
-    )
+    this.tokenizer.error({
+      code: 0, //todo
+      message: `<${element.tagName}> element has no matching start tag`,
+      __starts: element.__starts,
+      __ends: element.__ends,
+    })
 
     // No need
     // this.tokenizer.advance(element.__ends - element.__starts)
@@ -94,13 +93,12 @@ export default class ElementIntegrity implements Plugin<HTMLParserHooks> {
   }
 
   protected matchingEndTagMissed(element: Element): void {
-    this.tokenizer.warn(
-      `<${element.tagName}> element has no matching end tag`,
-      {
-        __starts: element.__starts,
-        __ends: element.__ends,
-      }
-    )
+    this.tokenizer.error({
+      code: 0, //todo
+      message: `<${element.tagName}> element has no matching end tag`,
+      __starts: element.__starts,
+      __ends: element.__ends,
+    })
 
     this.tokenizer.emit('onEndTag', {
       ...element,

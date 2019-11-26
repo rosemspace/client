@@ -2,11 +2,11 @@ import {
   Attr,
   decodeBaseEntities,
   HTMLParserHooks,
-  Plugin,
+  Module,
   Text,
 } from '../index'
 
-export default class EntityDecoder implements Plugin<HTMLParserHooks> {
+export default class EntityDecoder implements Module<HTMLParserHooks> {
   private readonly decode: (value: string) => string
 
   constructor(decode: (value: string) => string = decodeBaseEntities) {

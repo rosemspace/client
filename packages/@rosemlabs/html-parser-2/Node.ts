@@ -8,14 +8,14 @@ export default interface Node extends Token {
 }
 
 export interface ChildNode extends Node {
-  // AST plugin
+  // AST module
   parentElement?: Element
   nextSibling?: Element | Text | Comment | CDATASection
   previousSibling?: Element | Text | Comment | CDATASection
 }
 
 export interface ParentNode {
-  // AST plugin
+  // AST module
   childNodes?: (Element | Text | Comment | CDATASection)[]
 }
 
@@ -45,25 +45,27 @@ export interface Element extends Node, ChildNode, ParentNode {
   tagName: string
   unarySlash: string
   void: boolean
-  // Attributes map plugin
+  // Attributes map module
   // attrsMap?: { [name: string]: Primitive }
   // rawAttrsMap?: { [name: string]: Attr }
-  // Language plugin
+  // Language module
   lang?: string
-  // xmlns plugin
+  // xmlns module
   namespaceURI?: string
 }
+
+//todo CustomElement and ComponentElement
 
 export interface Attr extends Node {
   // Not transformed
   localName: string
-  // Transformed
+  // Lowercased
   name: string
   ownerElement: Element
   // Not transformed
   prefix?: string
   value: string
-  // xmlns plugin
+  // xmlns module
   namespaceURI?: string
 }
 

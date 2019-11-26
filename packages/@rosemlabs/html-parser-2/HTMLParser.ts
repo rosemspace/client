@@ -1,7 +1,7 @@
 import {
   EndTagParser,
   HTMLParserHooks,
-  Plugin,
+  Module,
   SourceSupportedType,
   StartTagParser,
   TextParser,
@@ -39,24 +39,24 @@ export default class HTMLParser<T extends HTMLParserHooks> extends Tokenizer<
     )
 
     this.textParser = new TextParser(undefined, this.tokenParsers.slice())
-    // this.addTokenParser(this.textParser)
+    // this.addMarkupParser(this.textParser)
 
     if (options.generateAttributeMap) {
-      this.addPlugin(new AttrMapGenerator(options))
+      this.addModule(new AttrMapGenerator(options))
     }
 
     // this.options = options
-    this.addPlugin(new ElementIntegrity(this))
+    this.addModule(new ElementIntegrity(this))
   }
 
   parseFromString(
     source: string,
-    hooks: Plugin<T | HTMLParserHooks> = {
+    hooks: Module<T | HTMLParserHooks> = {
       // todo: remove
       onStartTag: console.log,
       onText: console.log,
       onEndTag: console.log,
-      warn: console.warn,
+      error: console.warn,
     },
     type: SourceSupportedType = 'text/html'
   ): HTMLParser<T> {
@@ -65,7 +65,7 @@ export default class HTMLParser<T extends HTMLParserHooks> extends Tokenizer<
     }
 
     this.tokenParsers.push(this.textParser)
-    this.plugins.push(hooks)
+    this.modules.push(hooks)
     this.start(source, type)
 
     for (const node of this.token()) {
@@ -74,18 +74,18 @@ export default class HTMLParser<T extends HTMLParserHooks> extends Tokenizer<
 
     this.end()
     this.tokenParsers.pop()
-    this.plugins.pop()
+    this.modules.pop()
 
     return this
   }
 
-  addTokenParser(tokenParser: TokenParser<Token, T>): void {
+  addMarkupParser(tokenParser: TokenParser<Token, T>): void {
     this.tokenParsers.unshift(tokenParser)
     this.textParser.addNonTextTokenIdentifier(tokenParser)
   }
 
-  addPlugin(plugin: Plugin<T | HTMLParserHooks>): void {
-    this.plugins.push(plugin)
+  addModule(module: Module<T | HTMLParserHooks>): void {
+    this.modules.push(module)
   }
 
   start(source: string, type: SourceSupportedType = 'text/html'): void {

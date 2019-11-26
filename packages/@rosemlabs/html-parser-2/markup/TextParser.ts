@@ -5,27 +5,26 @@ import {
   TokenHook,
   TokenIdentifier,
   Tokenizer,
-  TokenParser,
-  WithWarningHook,
+  WithErrorHook,
 } from '../index'
+import MarkupParser from './MarkupParser'
 
 export type TextParserHooks = Partial<{
   onText: TokenHook<Text>
 }>
 
-export default class TextParser implements TokenParser<Text, TextParserHooks> {
-  private hooks?: WithWarningHook<TextParserHooks> = {}
+export default class TextParser extends MarkupParser<Text, TextParserHooks> {
   private nonTextTokenIdentifiers: TokenIdentifier[]
 
   constructor(
-    hooks?: WithWarningHook<TextParserHooks>,
+    hooks?: WithErrorHook<TextParserHooks>,
     nonTextTokenIdentifiers: TokenIdentifier[] = [
       // todo: add all identifiers
       endTagRegExp,
       startTagOpenRegExp,
     ]
   ) {
-    this.hooks = hooks
+    super(hooks)
     this.nonTextTokenIdentifiers = nonTextTokenIdentifiers
   }
 

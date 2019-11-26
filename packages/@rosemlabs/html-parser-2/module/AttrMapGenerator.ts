@@ -1,7 +1,7 @@
 import { getAttributeScalarValue } from '@rosemlabs/html-util'
 import { defineProperties } from '@rosemlabs/std'
 import camelCase from 'camelcase'
-import { Attr, Element, HTMLParserHooks, Plugin } from '../index'
+import { Attr, Element, HTMLParserHooks, Module } from '../index'
 
 export type ElementAttrMap = {
   attributeMap?: AttrMap<string | number | boolean>
@@ -17,7 +17,7 @@ export type AttrMapGeneratorOptions = Partial<{
   mixAttributesMap: boolean
 }>
 
-export default class AttrMapGenerator implements Plugin<HTMLParserHooks> {
+export default class AttrMapGenerator implements Module<HTMLParserHooks> {
   private options: AttrMapGeneratorOptions
 
   constructor(options: AttrMapGeneratorOptions) {

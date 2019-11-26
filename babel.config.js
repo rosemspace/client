@@ -4,15 +4,15 @@ module.exports = {
     ['@babel/preset-typescript'/*, {
       allExtensions: true
     }*/],
-    [
-      '@babel/preset-env',
-      {
-        corejs: 3,
-        useBuiltIns: 'usage',
-        shippedProposals: true,
-        modules: 'amd',
-      },
-    ]
+    // [
+    //   '@babel/preset-env',
+    //   {
+    //     corejs: 3,
+    //     useBuiltIns: 'usage',
+    //     shippedProposals: true,
+    //     modules: 'amd',
+    //   },
+    // ]
   ],
   plugins: [
     // Stage 1

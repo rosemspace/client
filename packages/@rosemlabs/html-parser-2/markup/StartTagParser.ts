@@ -10,7 +10,7 @@ import {
   TokenHook,
   Tokenizer,
   TokenParser,
-  WithWarningHook,
+  WithErrorHook,
 } from '../index'
 
 export type StartTagParserHooks = Partial<{
@@ -21,15 +21,15 @@ export type StartTagParserHooks = Partial<{
 
 export default class StartTagParser extends RegExp
   implements TokenParser<Element, StartTagParserHooks> {
-  private hooks?: WithWarningHook<StartTagParserHooks> = {
+  private hooks?: WithErrorHook<StartTagParserHooks> = {
     //todo: remove
     onStartTag: console.dir,
-    warn: console.warn,
+    error: console.warn,
   }
 
   consume: string = '<'
 
-  constructor(hooks?: WithWarningHook<StartTagParserHooks>) {
+  constructor(hooks?: WithErrorHook<StartTagParserHooks>) {
     super(startTagOpenRegExp)
 
     this.hooks = hooks
@@ -129,9 +129,9 @@ export default class StartTagParser extends RegExp
       //   // Add namespace of attribute
       //   if (
       //     null == (attr.namespaceURI = this.namespaceMap[prefix]) &&
-      //     !this.options.suppressWarnings
+      //     !this.options.suppressErrors
       //   ) {
-      //     this.warn(`Namespace not found for attribute prefix: ${prefix}`, {
+      //     this.error(`Namespace not found for attribute prefix: ${prefix}`, {
       //       __starts: attr.__starts,
       //       __ends: attr.__starts + prefix.length,
       //     })
@@ -159,8 +159,8 @@ export default class StartTagParser extends RegExp
       //
       //   if (null != namespaceURI) {
       //     this.namespaceURI = element.namespaceURI = namespaceURI
-      //   } else if (!this.options.suppressWarnings) {
-      //     this.warn(`Namespace not found for tag prefix: ${prefix}`, {
+      //   } else if (!this.options.suppressErrors) {
+      //     this.error(`Namespace not found for tag prefix: ${prefix}`, {
       //       __starts: this.sourceCursor,
       //       __ends: this.sourceCursor + prefix.length,
       //     })
@@ -174,8 +174,8 @@ export default class StartTagParser extends RegExp
       //   this.rootTagStack.length &&
       //   !this.rootTagStack[this.rootTagStack.length - 1].namespaceURI
       // ) {
-      //   if (!this.options.suppressWarnings) {
-      //     this.warn(
+      //   if (!this.options.suppressErrors) {
+      //     this.error(
       //       `<${element.tagName}> element is not allowed in context of
       // <${this.rootTagStack[this.rootTagStack.length - 1].tagName}> element
       // without namespace.`, { __starts: element.__starts, __ends:
@@ -191,7 +191,9 @@ export default class StartTagParser extends RegExp
       // }
     } else {
       // When a tag starts with "<abc<" (just the example)
-      tokenizer.warn(`Mal-formatted tag <${element.tagName}`, {
+      tokenizer.error({
+        code: 0,
+        message: `Mal-formatted tag <${element.tagName}`,
         __starts: element.__starts,
         __ends: tokenizer.cursorPosition,
       })

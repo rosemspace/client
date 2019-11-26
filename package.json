@@ -9,7 +9,13 @@
     "build": "cross-env NODE_ENV=production yarn webpack",
     "build:ci": "yarn build --report",
     "serve": "cross-env NODE_ENV=development yarn node node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "new": "hygen new"
+    "new": "hygen new",
+    "test:unit": "jest",
+    "test:unit:file": "yarn test:unit --bail --findRelatedTests",
+    "test:unit:watch": "yarn test:unit --watch --notify --notifyMode change",
+    "test:unit:ci": "yarn test:unit --coverage --ci",
+    "test": "yarn test:unit",
+    "test:ci": "yarn test:unit:ci"
   },
   "gitHooks": {
     "pre-commit_": "cross-env PRE_COMMIT=true lint-staged"

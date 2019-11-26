@@ -5,7 +5,7 @@ import {
   TokenHook,
   Tokenizer,
   TokenParser,
-  WithWarningHook,
+  WithErrorHook,
 } from '../index'
 
 export type EndTagParserHooks = Partial<{
@@ -14,13 +14,13 @@ export type EndTagParserHooks = Partial<{
 
 export default class EndTagParser extends RegExp
   implements TokenParser<Element, EndTagParserHooks> {
-  private hooks?: WithWarningHook<EndTagParserHooks> = {
+  private hooks?: WithErrorHook<EndTagParserHooks> = {
     //todo: remove
     onEndTag: console.dir,
-    warn: console.warn,
+    error: console.warn,
   }
 
-  constructor(hooks?: WithWarningHook<EndTagParserHooks>) {
+  constructor(hooks?: WithErrorHook<EndTagParserHooks>) {
     super(endTagRegExp)
 
     this.hooks = hooks

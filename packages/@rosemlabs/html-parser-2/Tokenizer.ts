@@ -1,26 +1,18 @@
-const apply = Reflect.apply
+import { ErrorCodes } from './error'
 
-export type Range = {
-  start: number
-  end: number
-}
+const apply = Reflect.apply
 
 export type SourceCodeRange = {
   __starts: number
   __ends: number
 }
 
-export type SourceCodePosition = Partial<{
-  __line: Range
-  __column: Range
-}>
+export type ParseError = {
+  code: ErrorCodes
+  message: string
+} & SourceCodeRange
 
-export type SourceCodeLocation = SourceCodeRange & SourceCodePosition
-
-export type Token = {
-  __starts: number
-  __ends: number
-}
+export type Token = SourceCodeRange
 
 export interface TokenIdentifier {
   test(source: string): boolean
@@ -42,9 +34,8 @@ export type StartHook = (source: string) => any
 
 export type EndHook = () => any
 
-export type WarningHook = <T extends SourceCodeLocation = SourceCodeLocation>(
-  message: string,
-  location: T
+export type ErrorHook = <T extends ParseError = ParseError>(
+  error: ParseError
 ) => any
 
 export type TokenHook<T extends Token> = <U extends T>(
@@ -58,19 +49,19 @@ export type TokenHooks = Partial<Record<string, TokenHook<Token>>>
 export type TokenizerHooks = Partial<{
   start: StartHook
   end: EndHook
-  warn: WarningHook
+  error: ErrorHook
 }>
 
-export type WithWarningHook<T extends TokenHooks> = T &
-  Pick<TokenizerHooks, 'warn'>
+export type WithErrorHook<T extends TokenHooks> = T &
+  Pick<TokenizerHooks, 'error'>
 
-export type Plugin<T extends TokenHooks> = TokenizerHooks & T
+export type Module<T extends TokenHooks> = TokenizerHooks & T
 // export type Plugin<HookName extends string> = TokenizerHooks & Record<HookName, TokenHook<Token>>
 // export type Plugin = TokenizerHooks
 
 export default class Tokenizer<T extends TokenHooks> implements TokenizerHooks {
   protected readonly tokenParsers: TokenParser<Token, T>[]
-  protected readonly plugins: Plugin<T>[] = []
+  protected readonly modules: Module<T>[] = []
   source: string
   remainingSource: string
   cursorPosition: number = 0
@@ -83,11 +74,11 @@ export default class Tokenizer<T extends TokenHooks> implements TokenizerHooks {
 
   constructor(
     tokenParsers: TokenParser<Token, T>[] = [],
-    plugins: Plugin<T>[] = [],
+    modules: Module<T>[] = [],
     source = ''
   ) {
     this.tokenParsers = tokenParsers
-    this.plugins = plugins
+    this.modules = modules
     this.source = this.remainingSource = source
   }
 
@@ -140,35 +131,35 @@ export default class Tokenizer<T extends TokenHooks> implements TokenizerHooks {
   start(source: string): void {
     this.source = this.remainingSource = source
 
-    for (const plugin of this.plugins) {
-      // Some plugins can skip start hook
-      if (!plugin.start) {
+    for (const module of this.modules) {
+      // Some modules can skip start hook
+      if (!module.start) {
         continue
       }
 
-      plugin.start(source)
+      module.start(source)
     }
   }
 
   end(): void {
-    for (const plugin of this.plugins) {
-      // Some plugins can skip end hook
-      if (!plugin.end) {
+    for (const module of this.modules) {
+      // Some modules can skip end hook
+      if (!module.end) {
         continue
       }
 
-      plugin.end()
+      module.end()
     }
   }
 
-  warn(message: string, sourceCodeLocation: SourceCodeLocation): void {
-    for (const plugin of this.plugins) {
-      // Some plugins can skip warn hook
-      if (!plugin.warn) {
+  error(error: ParseError): void {
+    for (const module of this.modules) {
+      // Some modules can skip error hook
+      if (!module.error) {
         continue
       }
 
-      plugin.warn(message, sourceCodeLocation)
+      module.error(error)
     }
   }
 
@@ -180,18 +171,18 @@ export default class Tokenizer<T extends TokenHooks> implements TokenizerHooks {
   ): void {
     this.currentToken = args[0]
 
-    for (const plugin of this.plugins) {
-      // Some plugins can skip some hooks
-      if (!plugin[hook]) {
+    for (const module of this.modules) {
+      // Some modules can skip some hooks
+      if (!module[hook]) {
         continue
       }
 
-      // Some plugins can skip the current token
+      // Some modules can skip the current token
       if (!this.currentToken) {
         break
       }
 
-      apply(plugin[hook]!, plugin, args)
+      apply(module[hook]!, module, args)
     }
   }
 }
