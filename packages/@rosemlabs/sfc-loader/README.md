@@ -90,5 +90,12 @@ export default {
 
 ### TODO
 
+- Add injection functionality
+- Add html loader
+- Add stylelint and eslint handlers
+- Add hot reloading
+- Add minification and autoprefixer for inline styles
+- Add typescript extension for sfc type
 - Use `start` in `generateSourceMap`.
 - Add `afterTranspile` hook.
+- Add caching for template block

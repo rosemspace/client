@@ -1,0 +1,60 @@
+.fade-enter-active, .fade-leave-active {
+  /* display: block; */
+  transition: opacity 1s;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-to, .fade-leave {
+  /* opacity: 1; */
+}
+
+.fade-enter-done {
+  /* display: inline-block; */
+}
+
+.fade-leave-done {
+  display: none;
+
+  /* opacity: 0; */
+}
+
+
+.rotate-180-enter-active, .rotate-180-leave-active {
+  overflow: hidden;
+  //transform-origin: center;
+  transition: transform 1s, height 1s;
+}
+
+.rotate-180-enter, .rotate-180-leave-to {
+  transform: rotate(180deg);
+  height: 0;
+}
+
+.rotate-180-enter-done {
+  overflow: hidden;
+}
+
+
+.expand-height-enter-active, .expand-height-leave-active {
+  overflow: hidden;
+  transition: height 1s;
+}
+
+.expand-height-enter, .expand-height-leave-to {
+  height: 0;
+}
+
+.expand-height-enter-to, .expand-height-leave {
+  /* height: 100px; */
+}
+
+.expand-height-leave-done {
+  display: none;
+}
+
+.expand-height-enter-done {
+  overflow: hidden;
+}

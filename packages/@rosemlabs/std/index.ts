@@ -46,6 +46,8 @@ export const isNaN =
   (Number.isNaN as (value: unknown) => value is typeof NaN) ||
   ((value: unknown): value is typeof NaN => value !== value)
 
+// export const isNative = (value: unknown): boolean =>
+
 export const isNumber = (value: unknown): value is number =>
   !isNaN(value) && toString(value) === '[object Number]'
 

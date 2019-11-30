@@ -10,11 +10,13 @@ type ResolvedLoader = {
   path: string
   query: string
   module: Function
+  pitchExecuted: boolean
 }
 
 const scopedCSSLoaderPath = require.resolve('@rosemlabs/scoped-css-loader')
 const isPitcher = (loader: ResolvedLoader): boolean =>
   __filename === loader.path
+const isPostLoader = (loader: ResolvedLoader): boolean => loader.pitchExecuted
 const isNullLoader = (loader: ResolvedLoader): boolean =>
   /[/\\@]null-loader/.test(loader.path)
 const isCSSLoader = (loader: ResolvedLoader): boolean =>
@@ -24,6 +26,8 @@ const isCacheLoader = (loader: ResolvedLoader): boolean =>
 const sfcLoaderPath = require.resolve('./index')
 const isSFCLoader = (loader: ResolvedLoader): boolean =>
   loader.path === sfcLoaderPath
+// If a custom block has no other matching loader other than sfc-loader itself
+// or cache-loader, we should ignore it
 const shouldIgnoreCustomBlock = (loaders: ResolvedLoader[]) => {
   const actualLoaders: ResolvedLoader[] = loaders.filter((loader) => {
     return !isPitcher(loader) && !isSFCLoader(loader) && !isCacheLoader(loader)
@@ -66,7 +70,7 @@ export function pitch(this: LoaderContext): string | void {
   // file twice.
   const loaders: ResolvedLoader[] = this.loaders
   const seen: { [identifier: string]: boolean } = {}
-  const loaderStrings: string[] = []
+  const loadersStrings: string[] = []
 
   // Inject scoped-css-loader before css-loader for scoped CSS // todo trimming
   if (
@@ -84,6 +88,7 @@ export function pitch(this: LoaderContext): string | void {
         path: scopedCSSLoaderPath,
         query: `??${SFC_LOADER_IDENT}`,
         module: scopedCSSLoader,
+        pitchExecuted: false,
       })
     }
   }
@@ -99,13 +104,13 @@ export function pitch(this: LoaderContext): string | void {
       seen[identifier] = true
       // loader.request contains both the resolved loader path and its options
       // query (e.g. ??ref-0)
-      loaderStrings.push(request)
+      loadersStrings.push(request)
     }
   })
 
   const request: string = stringifyRequest(
     this,
-    '-!' + [...loaderStrings, this.resourcePath + this.resourceQuery].join('!')
+    '-!' + [...loadersStrings, this.resourcePath + this.resourceQuery].join('!')
   )
 
   return (
