@@ -13,6 +13,10 @@ export type TextParserHooks = Partial<{
   onText: TokenHook<Text>
 }>
 
+export type TextParserEventMap = {
+  text: Text
+}
+
 export default class TextParser extends MarkupParser<Text, TextParserHooks> {
   private nonTextTokenIdentifiers: TokenIdentifier[]
 

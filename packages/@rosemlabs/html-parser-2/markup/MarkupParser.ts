@@ -1,43 +1,36 @@
-import { TextParserHooks } from '@rosemlabs/html-parser-2/markup/TextParser'
 import { ErrorCodes } from '../error'
 import Node from '../Node'
 import {
-  startsWithControlCharExcSpaceAndNullSeqRE,
-  startsWithNonCharSeqRE,
-  startsWithSurrogateCharSeqRE,
+  startsWithControlCharExcSpaceAndNullSeqRegExp,
+  startsWithNonCharSeqRegExp,
+  startsWithSurrogateCharSeqRegExp,
 } from '../preprocess'
-import Tokenizer, {
-  TokenHooks,
-  TokenParser,
-  WithErrorHook,
-} from '../Tokenizer'
+import Tokenizer, { TokenHooks, TokenParser, WithErrorHook } from '../Tokenizer'
 
 const preprocessors: {
-  re: RegExp
+  regExp: RegExp
   code: ErrorCodes
   message: string
 }[] = [
   {
-    re: startsWithSurrogateCharSeqRE,
+    regExp: startsWithSurrogateCharSeqRegExp,
     code: ErrorCodes.SURROGATE_IN_INPUT_STREAM,
     message: 'Non-character in input stream',
   },
   {
-    re: startsWithNonCharSeqRE,
+    regExp: startsWithNonCharSeqRegExp,
     code: ErrorCodes.NONCHARACTER_IN_INPUT_STREAM,
     message: 'Surrogate in input stream',
   },
   {
-    re: startsWithControlCharExcSpaceAndNullSeqRE,
+    regExp: startsWithControlCharExcSpaceAndNullSeqRegExp,
     code: ErrorCodes.CONTROL_CHARACTER_IN_INPUT_STREAM,
     message: 'Control character in input stream',
   },
 ]
 
-export default abstract class MarkupParser<
-  T extends Node,
-  U extends TokenHooks
-> implements TokenParser<T, U> {
+export default abstract class MarkupParser<T extends Node, U extends TokenHooks>
+  implements TokenParser<T, U> {
   protected hooks?: WithErrorHook<U>
 
   protected constructor(hooks?: WithErrorHook<U>) {
@@ -49,7 +42,7 @@ export default abstract class MarkupParser<
   parse(source: string, tokenizer: Tokenizer<U>): void | T {
     for (let index = 0; index < preprocessors.length; ++index) {
       const preprocessor = preprocessors[index]
-      const match: RegExpExecArray | null = preprocessor.re.exec(
+      const match: RegExpExecArray | null = preprocessor.regExp.exec(
         tokenizer.remainingSource
       )
 
