@@ -26,15 +26,11 @@ export const defaultPlotOptions: Required<PlotOptions> = {
   boundaryOffsetX: 100,
   boundaryOffsetY: 100,
   axisThickness: 1,
-  // xAxisColor: '#bfd9df',
-  // yAxisColor: '#bfd9df',
   xAxisColor: 'gray',
   yAxisColor: 'gray',
   gridThickness: 1,
-  // gridColor: '#b9cce0',
   gridColor: 'lightgray',
   curveThickness: 2,
-  // curveColor: '#99b2c9',
   curveColor: 'black',
 }
 

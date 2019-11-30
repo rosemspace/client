@@ -1,18 +1,21 @@
 import {
-  requestAnimationFrame,
   cancelAnimationFrame,
-} from '@rosemlabs/dom-easing'
+  MS_PER_FRAME,
+  queueMicrotask,
+  requestAnimationFrame,
+} from '@rosemlabs/std'
 import {
+  easeInExpo,
   bounceOut,
   bounceOutIn,
   circleInOut,
+  easeInOut2D,
+  easeIn2D,
+  easeOut2D,
   easeOutElastic,
   TimingFunction,
   TimingFunction2D,
 } from './timingFunction'
-
-//Motion(20).to(15)
-//Motion().from(20).to(15)
 
 export type MotionOptions = Partial<{
   // value: number | string | any[]
@@ -21,7 +24,7 @@ export type MotionOptions = Partial<{
   delay: number
   duration: number
   precision: number
-  timingFunction: TimingFunction // | TimingFunction2D
+  timingFunction: TimingFunction //TimingFunction2D
   // reverse: boolean
   params: any[]
 }> &
@@ -37,6 +40,7 @@ export type MotionEvents = Partial<{
 export type MotionEventListener = (data: MotionEventData) => void
 
 export type MotionEventData = {
+  fps: number
   precision: number
   duration: number
   fromValue: number
@@ -52,6 +56,8 @@ export type MotionEventData = {
   reversed: boolean
 }
 
+const floor = Math.floor
+
 const defaultMotionOptions: Required<Omit<
   MotionOptions,
   keyof MotionEvents
@@ -62,7 +68,7 @@ const defaultMotionOptions: Required<Omit<
   delay: 300,
   duration: 300,
   precision: Infinity,
-  timingFunction: bounceOut,
+  timingFunction: easeOutElastic,
   // reverse: false,
   params: [],
 }
@@ -74,6 +80,7 @@ export default class Motion {
   private readonly precision: number
   private readonly approximate: (value: number) => number
   private animationId: number = 0
+  private fps: number = 0
   private fromValue: number = 0
   private value: number = 0
   private toValue: number = 0
@@ -93,7 +100,6 @@ export default class Motion {
     }
     this.duration = this.options.duration || 0
     this.precision = this.options.precision ?? Infinity
-    this.computeFrame = this.computeFrame.bind(this)
 
     if (Number.isFinite(this.precision)) {
       const precisionFactor: number = Math.pow(10, this.precision)
@@ -107,6 +113,7 @@ export default class Motion {
 
   getData(): MotionEventData {
     return {
+      fps: this.fps,
       duration: this.duration,
       precision: this.precision,
       fromValue: this.fromValue,
@@ -127,7 +134,7 @@ export default class Motion {
     this.cancel()
     this.running = true
     this.animationId = requestAnimationFrame((time: number): void => {
-      this.startTime = time
+      this.startTime = time - MS_PER_FRAME
       this.timePassed = this.progress = 0
       this.oscillation = [0] //todo need?
       this.emit('start', this.getData())
@@ -157,29 +164,30 @@ export default class Motion {
   }
 
   computeFrame(time: number) {
-    this.timePassed = time - this.startTime
+    const timePassed = time - this.startTime
 
-    if (this.timePassed < this.duration) {
-      this.animationId = requestAnimationFrame(this.computeFrame)
+    this.fps = floor(1 / ((timePassed - this.timePassed) / this.duration))
+
+    if (timePassed < this.duration) {
+      this.timePassed = timePassed
+      this.animationId = requestAnimationFrame((time: number) =>
+        this.computeFrame(time)
+      )
     } else {
       this.timePassed = this.duration
-      // this.$nextTick(() => {
-      requestAnimationFrame(() => {
+      queueMicrotask(() => {
         this.running = false
         this.emit('process', this.getData())
         this.emit('end', this.getData())
       })
     }
 
-    const timeFraction = this.timePassed / this.duration
+    this.progress = this.timePassed / this.duration
     this.oscillation = [
-      this.options.timingFunction(timeFraction, this.options.params),
+      this.options.timingFunction(this.progress, this.options.params),
     ]
-
     this.value =
-      // 0 - dimension
       this.startValue + this.approximate(this.interval * this.oscillation[0])
-    this.progress = timeFraction
     this.emit('process', this.getData())
   }
 
@@ -199,23 +207,20 @@ export default class Motion {
       if (this.running) {
         // this.cancel()
         this.startValue = this.value
-        this.interval =
-          (this.reversed ? this.fromValue : value) - this.startValue
+        this.toValue = this.reversed ? this.fromValue : value
       } else {
         if (this.reversed) {
           this.startValue = value
-          this.interval = this.fromValue - this.startValue
+          this.toValue = this.fromValue
         } else {
           this.startValue = this.fromValue
-          this.interval = value - this.startValue
+          this.toValue = value
         }
       }
 
-      this.toValue = value
+      this.interval = this.toValue - this.startValue
       this.run()
     }
-
-    // this.value = value
   }
 
   // render(h) {

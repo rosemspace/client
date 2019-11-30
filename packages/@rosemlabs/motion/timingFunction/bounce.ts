@@ -1,4 +1,4 @@
-import { reflect, TimingFunction } from './index'
+import { reflect, reverse, TimingFunction } from './index'
 
 export type BounceParams = Partial<{
   restitution: number
@@ -15,18 +15,18 @@ export function bounceOut(
   timeFraction: number,
   { restitution = 0.25 }: BounceParams = {}
 ): number {
-  const computedRestitution = Math.sqrt(restitution),
-    gravity = 2 / (1 - computedRestitution),
-    normalizedTimeFraction = timeFraction - (timeFraction - 1) / gravity,
-    currentNumberOfBounces = Math.floor(
-      Math.log(
-        ((computedRestitution - 1) * gravity * normalizedTimeFraction) / 2 + 1
-      ) / Math.log(computedRestitution)
-    ),
-    currentRestitution = computedRestitution ** currentNumberOfBounces,
-    deltaTimeFraction =
-      normalizedTimeFraction -
-      ((2 / gravity) * (currentRestitution - 1)) / (computedRestitution - 1)
+  const computedRestitution = Math.sqrt(restitution)
+  const gravity = 2 / (1 - computedRestitution)
+  const normalizedTimeFraction = timeFraction - (timeFraction - 1) / gravity
+  const currentNumberOfBounces = Math.floor(
+    Math.log(
+      ((computedRestitution - 1) * gravity * normalizedTimeFraction) / 2 + 1
+    ) / Math.log(computedRestitution)
+  )
+  const currentRestitution = computedRestitution ** currentNumberOfBounces
+  const deltaTimeFraction =
+    normalizedTimeFraction -
+    ((2 / gravity) * (currentRestitution - 1)) / (computedRestitution - 1)
 
   return (
     1 -
@@ -37,12 +37,7 @@ export function bounceOut(
   )
 }
 
-export function bounceIn(
-  timeFraction: number,
-  { restitution = 0.25 }: BounceParams = {}
-): number {
-  return 1 - bounceOut(1 - timeFraction, { restitution })
-}
+export const bounceIn: TimingFunction = reverse(bounceOut)
 
 export const bounceOutIn: TimingFunction = reflect(bounceOut)
 
