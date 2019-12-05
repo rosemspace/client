@@ -11,30 +11,28 @@ export type EventMap<Event = unknown> = Record<
   Event | [Event, ...unknown[]]
 >
 
-export type EventListener<Context, Event, Params extends unknown[] = unknown[]> = <
+export type EventListener<Event, Params extends unknown[] = unknown[]> = <
   T extends Event
 >(
-  this: Context,
   event: T,
   ...args: Params
 ) => unknown
 
-export type EventListenerMap<Context, Map extends EventMap<unknown>> = {
+export type EventListenerMap<Map extends EventMap<unknown>> = {
   [Name in keyof Map]: (Map[Name] extends unknown[]
-    ? EventListener<Context, Head<Map[Name]>, Tail<Map[Name]>>
-    : EventListener<Context, Map[Name]>)[]
+    ? EventListener<Head<Map[Name]>, Tail<Map[Name]>>
+    : EventListener<Map[Name]>)[]
 }
 
 export default class EventEmitter<
-  Context extends EventEmitter<Context, Map, Event>,
   Map extends EventMap<Event>,
   Event = unknown
 > {
-  private listeners: EventListenerMap<Context, Map> = {} as EventListenerMap<Context, Map>
+  private listeners: EventListenerMap<Map> = {} as EventListenerMap<Map>
 
   on<Name extends keyof Map>(
     event: Name,
-    listener: EventListenerMap<Context, Map>[Name][0]
+    listener: EventListenerMap<Map>[Name][0]
   ): this {
     if (this.listeners[event] !== void 0) {
       this.listeners[event] = []
@@ -47,11 +45,11 @@ export default class EventEmitter<
 
   emit<Name extends keyof Map>(
     event: Name,
-    ...args: Parameters<EventListenerMap<Context, Map>[Name][0]>
+    ...args: Parameters<EventListenerMap<Map>[Name][0]>
   ): boolean {
     for (const listener of this.listeners[event]) {
-      // Reflect.apply(listener, this, args)
-      listener.apply(this, args)
+      Reflect.apply(listener, this, args)
+      // listener.apply(listener, args)
     }
 
     return true
