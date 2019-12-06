@@ -1,10 +1,10 @@
 // require('@rosemlabs/motion')
 //
-// //@ts-ignore
-// if (module.hot) {
-//   //@ts-ignore
-//   module.hot.accept()
-// }
+//@ts-ignore
+if (module.hot) {
+  //@ts-ignore
+  module.hot.accept()
+}
 // require('@rosemlabs/observable-reactive/test')
 
 // // import Style from './style.css' //mtc - multi-type container
@@ -33,7 +33,7 @@ const vNode = render.call(data, vDOMHyperRenderer, data)
 // console.log(data)
 // console.log(vNode)
 const el = document.querySelector('#app')!
-debugger
+
 el.appendChild(vDOMConverter.convert(vNode, webDOMRenderer))
 
 // data[OBSERVATION_KEY].observe(function() {

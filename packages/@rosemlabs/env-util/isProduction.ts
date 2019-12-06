@@ -1,3 +1,3 @@
-const isProduction: boolean = 'production' === process.env.NODE_ENV
+const isProduction: boolean = 'production' === globalThis.process?.env?.NODE_ENV
 
 export default isProduction
