@@ -1,11 +1,14 @@
 import { StartTag } from '@rosemlabs/html-parser/nodes'
 import { RawSourceMap } from 'source-map'
 
-// name, lang, index, src, meta, output
-export default interface SFCBlock extends StartTag {
+// name, lang, index, src, meta, data
+export default interface SFCBlock<Data = any> extends StartTag {
   id: string
   map?: RawSourceMap
-  output: any
+  data: Data
+  // If src attribute is presented.
+  // Full name in dev mode only
+  file?: string
   // type?: string // instead of lang
   // src?: string
   // global?: boolean // instead of "scoped", should be scoped by default

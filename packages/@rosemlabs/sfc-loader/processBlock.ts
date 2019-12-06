@@ -20,7 +20,7 @@ export default function processBlock(
 
   loaderContext.callback(
     null,
-    block.output,
+    block.data,
     block.map
   )
 }

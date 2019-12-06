@@ -16,7 +16,7 @@ export const isArrayLike = <T = unknown>(
 ): target is ArrayLike<T> =>
   isArray(target) ||
   (isObject(target) &&
-    target.hasOwnProperty('length') &&
+    hasOwnProperty(target, 'length') &&
     isInteger(target.length) &&
     (target.length === 0 || (target.length > 0 && target.length - 1 in target)))
 
@@ -26,6 +26,11 @@ export const isCollection = <T = unknown>(
   isIterable(target) || isArrayLike(target)
 
 export const exists = <T>(value: T): value is NonNullable<T> => null != value
+
+export const hasOwnProperty: (
+  target: object,
+  property: PropertyKey
+) => boolean = Object.prototype.hasOwnProperty.call
 
 // fallback check is for IE
 export const isFunction = (value: unknown): value is Function =>

@@ -1,5 +1,6 @@
 import { getAttrMap } from '@rosemlabs/html-parser/modules/AttrMapModule'
 import { AttrMap } from '@rosemlabs/html-parser/nodes'
+import { hasOwnProperty } from '@rosemlabs/std'
 import camelCase from 'camelcase'
 import { stringifyRequest } from 'loader-utils'
 import { escape } from 'querystring'
@@ -78,11 +79,11 @@ export default function generateBlocksCode(
 
   let importCode = ''
   let blocksCode = ''
-  let outputCode = ''
+  let dataCode = ''
   const { blocks } = sfcDescriptor
 
   for (const name in blocks) {
-    if (!blocks.hasOwnProperty(name)) {
+    if (!hasOwnProperty(blocks, name)) {
       continue
     }
 
@@ -133,10 +134,10 @@ export default function generateBlocksCode(
           const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
           const blockName: string = `${name}${index}`
 
-          blocksCode += `\n    ${stringify(block, ['output', 'map'])},`
-          outputCode += `\n${exportName}.blocks[${jsonStringify(
+          blocksCode += `\n    ${stringify(block, ['data', 'map'])},`
+          dataCode += `\n${exportName}.blocks[${jsonStringify(
             name
-          )}][${jsonStringify(index)}].output = ${blockName}`
+          )}][${jsonStringify(index)}].data = ${blockName}`
 
           return `import ${blockName} from ${stringifyRequest(
             loaderContext,
@@ -151,7 +152,7 @@ export default function generateBlocksCode(
 
   return `${importCode}\nvar ${exportName} = ${stringify(sfcDescriptor, [
     'blocks',
-  ])}\n\n${exportName}.blocks = {${blocksCode}\n}\n${outputCode}\n\nexport ${
+  ])}\n\n${exportName}.blocks = {${blocksCode}\n}\n${dataCode}\n\nexport ${
     isDefault ? `default` : ''
   } ${exportName}\n`
 }

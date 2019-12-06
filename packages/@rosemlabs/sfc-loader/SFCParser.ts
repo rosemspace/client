@@ -92,7 +92,7 @@ export default class SFCParser extends HTMLParser {
           // Pad content so that linters and pre-processors can output
           // correct line numbers in errors and warnings
           if (!options.noPad) {
-            block.output = ''.padStart(offsetLineIndex, '\n') + block.output
+            block.data = ''.padStart(offsetLineIndex, '\n') + block.data
             // Don't add offset in source map of padded content
             offsetLineIndex = 0
           }
@@ -101,7 +101,7 @@ export default class SFCParser extends HTMLParser {
             block.map = generateSourceMap(
               filename,
               source,
-              block.output,
+              block.data,
               sourceRoot,
               offsetLineIndex
             )
@@ -130,7 +130,7 @@ export default class SFCParser extends HTMLParser {
     blocks[nameLowerCased].push(
       Object.assign(startTag, {
         id: '',
-        output: undefined,
+        data: undefined,
         end: startTag.end,
         start: startTag.end,
       })
@@ -149,7 +149,7 @@ export default class SFCParser extends HTMLParser {
         `${this.descriptor.id}\n${lastBlock.nameLowerCased}\n${blocks.length -
           1}${isProduction ? '\n' + text.content : ''}`
       )
-      lastBlock.output = text.content
+      lastBlock.data = text.content
       lastBlock.start = text.start
       lastBlock.end = text.end
     }

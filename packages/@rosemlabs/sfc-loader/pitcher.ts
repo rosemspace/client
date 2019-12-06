@@ -1,5 +1,5 @@
 import scopedCSSLoader from '@rosemlabs/scoped-css-loader'
-import { SFC_LOADER_IDENT, SFCLoaderOptions } from '@rosemlabs/sfc-loader/index'
+import { SFC_LOADER_IDENT, SFCLoaderOptions } from './index'
 import { getOptions, stringifyRequest } from 'loader-utils'
 import querystring, { ParsedUrlQuery } from 'querystring'
 import { loader } from 'webpack'

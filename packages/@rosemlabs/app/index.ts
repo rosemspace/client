@@ -14,7 +14,7 @@ import { VDOMConverter, VDOMHyperRenderer } from '@rosemlabs/virtual-dom'
 import { WebDOMRenderer } from '@rosemlabs/web-ui'
 import { isHTMLElementAttribute } from '@rosemlabs/html-util/attr'
 //@ts-ignore
-console.log(App)//.script[0].output.setup());
+console.log(App)//.script[0].data.setup());
 
 //@ts-ignore
 window.isHTMLElementAttribute = isHTMLElementAttribute
@@ -24,9 +24,9 @@ const webDOMRenderer = new WebDOMRenderer()
 const vDOMConverter = new VDOMConverter<Node>()
 
 //@ts-ignore
-const data: ObservableObject = App.blocks.script[0].output.setup()
+const data: ObservableObject = App.blocks.script[0].data.setup()
 //@ts-ignore
-const render: Function = App.blocks.template[0].output
+const render: Function = App.blocks.template[0].data
 const vNode = render.call(data, vDOMHyperRenderer, data)
 
 // console.log(App)
