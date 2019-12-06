@@ -33,7 +33,7 @@ type loaderCallbackWithMeta = ((
 
 export type ScopedCSSLoaderOptions = {
   sourceMap?: boolean
-  useStrictPostCSSVersion?: boolean
+  ignorePostCSSVersion?: boolean
 } & ScopeOptions
 
 export const SCOPE_PREFIX = isProduction ? '_' : '_scope-'
@@ -78,13 +78,18 @@ export default (function scopedCSSLoader(
   if (meta) {
     const { ast } = meta
 
-    if (
-      ast &&
-      'postcss' === ast.type &&
-      (!options.useStrictPostCSSVersion || ast.version === version)
-    ) {
-      // eslint-disable-next-line no-param-reassign
-      source = ast.root
+    if (ast && 'postcss' === ast.type) {
+      if (options.ignorePostCSSVersion || ast.version === version) {
+        // eslint-disable-next-line no-param-reassign
+        source = ast.root
+      } else {
+        throw new TypeError(
+          `[@rosemlabs/scoped-css-loader]: PostCSS version of the loader is ` +
+            `incompatible with version installed by a user. Please use the ` +
+            `following version - ${version} or enable ` +
+            `"ignorePostCSSVersion" option of the loader.`
+        )
+      }
     }
   }
 

@@ -13,10 +13,7 @@ export type Scope = {
 
 export type ScopeType = 'class' | 'attr'
 
-export function getScopeInfo(
-  query: string,
-  scopeOptions: ScopeOptions
-): Scope {
+export function getScopeInfo(query: string, scopeOptions: ScopeOptions): Scope {
   // `.slice(1)` - remove "?" character
   const parsedQuery: ParsedUrlQuery = querystring.parse(query.slice(1))
   const id: string =
