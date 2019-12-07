@@ -3,6 +3,7 @@ import { isProduction } from '@rosemlabs/env-util'
 import HTMLParser from '@rosemlabs/html-parser'
 import AttrMapModule from '@rosemlabs/html-parser/modules/AttrMapModule'
 import { Content, MatchRange, StartTag } from '@rosemlabs/html-parser/nodes'
+import { hasOwnProperty } from '@rosemlabs/std'
 import { qualifiedNameRegExp } from '@rosemlabs/xml-util'
 import hashSum from 'hash-sum'
 import LRUCache from 'lru-cache'
@@ -81,10 +82,12 @@ export default class SFCParser extends HTMLParser {
 
     if (options.sourceMap) {
       for (const name in blocks) {
-        if (!blocks.hasOwnProperty(name)) {
+        // noinspection JSUnfilteredForInLoop
+        if (!hasOwnProperty(blocks, name)) {
           continue
         }
 
+        // noinspection JSUnfilteredForInLoop
         blocks[name].forEach((block: SFCBlock): void => {
           // Use this offset to generate correct source map
           let offsetLineIndex: number = getLineIndex(source, block.start)

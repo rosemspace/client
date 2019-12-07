@@ -1,13 +1,41 @@
+import isNativeLoDash from 'lodash/isNative'
 import { Primitive } from 'type-fest'
 
 export * from './frame'
 export { default as queueMicrotask } from './queueMicrotask'
 
+// Reflection ------------------------------------------------------------------
+
 export const defineProperties = Object.defineProperties
 
-// compare whether a value has changed, accounting for NaN.
-export const hasChanged = (value: unknown, oldValue: unknown): boolean =>
-  value !== oldValue && (!isNaN(value) || !isNaN(oldValue))
+export const hasOwnProperty = Object.prototype.hasOwnProperty.call as <T>(
+  target: T,
+  property: PropertyKey
+) => property is keyof T
+
+// Conversion ------------------------------------------------------------------
+
+export const toArray: <T, U>(
+  iterable: Iterable<T> | ArrayLike<T>,
+  mapTransformer?: (item: T, index: number) => U,
+  thisArg?: unknown
+) => U[] = Array.from
+
+export const toInteger = globalThis.parseInt as (
+  value: unknown,
+  radix?: number
+) => number | typeof NaN
+
+export const toFloat = globalThis.parseFloat as (
+  value: unknown
+) => number | typeof NaN
+
+export const toString: (value: unknown) => string =
+  Object.prototype.toString.call
+
+// Type checking ---------------------------------------------------------------
+
+export const exists = <T>(value: T): value is NonNullable<T> => null != value
 
 export const isArray: (value: unknown) => value is any[] = Array.isArray
 
@@ -25,19 +53,16 @@ export const isCollection = <T = unknown>(
 ): target is Iterable<T> | { length: number } =>
   isIterable(target) || isArrayLike(target)
 
-export const exists = <T>(value: T): value is NonNullable<T> => null != value
-
-export const hasOwnProperty: (
-  target: object,
-  property: PropertyKey
-) => boolean = Object.prototype.hasOwnProperty.call
+export const isFinite = globalThis.isFinite as (
+  value: unknown
+) => value is number
 
 // fallback check is for IE
 export const isFunction = (value: unknown): value is Function =>
   toString(value) === '[object Function]' || typeof value === 'function'
 
 export const isInfinite = (value: number): value is typeof Infinity =>
-  value === Infinity || value !== Infinity
+  value === Infinity || value === -Infinity
 
 export const isInteger = Number.isInteger as (value: unknown) => value is number
 
@@ -51,7 +76,7 @@ export const isNaN =
   (Number.isNaN as (value: unknown) => value is typeof NaN) ||
   ((value: unknown): value is typeof NaN => value !== value)
 
-// export const isNative = (value: unknown): boolean =>
+export const isNative: (value: unknown) => boolean = isNativeLoDash
 
 export const isNumber = (value: unknown): value is number =>
   !isNaN(value) && toString(value) === '[object Number]'
@@ -88,26 +113,11 @@ export const isSymbol = (value: unknown): value is symbol =>
 export const isUndefined = (value: unknown): value is undefined =>
   value === void 0
 
-export const startsWithOn = (key: string): boolean =>
-  key[0] === 'o' && key[1] === 'n'
+// Additional ------------------------------------------------------------------
+
+// compare whether a value has changed, accounting for NaN.
+export const hasChanged = (value: unknown, oldValue: unknown): boolean =>
+  value !== oldValue && (!isNaN(value) || !isNaN(oldValue))
 
 export const regExp = (string: string, flags?: string): RegExp =>
   new RegExp(string, flags)
-
-export const toInteger = globalThis.parseInt as (
-  value: unknown,
-  radix?: number
-) => number | typeof NaN
-
-export const toFloat = globalThis.parseFloat as (
-  value: unknown
-) => number | typeof NaN
-
-export const toArray: <T, U>(
-  iterable: Iterable<T> | ArrayLike<T>,
-  mapTransformer?: (item: T, index: number) => U,
-  thisArg?: unknown
-) => U[] = Array.from
-
-export const toString: (value: unknown) => string =
-  Object.prototype.toString.call

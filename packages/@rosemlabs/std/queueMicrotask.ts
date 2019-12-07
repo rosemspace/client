@@ -1,3 +1,6 @@
+export const nativeCode = (name: string): string =>
+  `function ${name}() { [native code] }`
+
 let promise: Promise<void>
 
 const createQueueMicrotaskViaPromises: () => (
@@ -43,11 +46,10 @@ const createQueueMicrotaskViaMutationObserver: () => (
  */
 const queueMicrotask: (microtask: () => void) => void =
   typeof globalThis.queueMicrotask === 'function' &&
-  globalThis.queueMicrotask.toString() ===
-    'function queueMicrotask() { [native code] }'
+  globalThis.queueMicrotask.toString() === nativeCode('queueMicrotask')
     ? globalThis.queueMicrotask.bind(globalThis)
     : typeof Promise === 'function' &&
-      Promise.toString() === 'function Promise() { [native code] }'
+      Promise.toString() === nativeCode('Promise')
     ? createQueueMicrotaskViaPromises()
     : createQueueMicrotaskViaMutationObserver()
 

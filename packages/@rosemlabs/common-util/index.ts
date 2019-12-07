@@ -14,7 +14,7 @@ export const spliceLines = (
   source: string,
   lineIndex: number,
   deleteCount: number = 1,
-  ...items: string[]
+  ...newLines: string[]
 ): string => {
   if (!deleteCount) {
     return source
@@ -22,9 +22,12 @@ export const spliceLines = (
 
   const lines: string[] = source.split(newlineRegExp)
 
-  lines.splice(lineIndex, deleteCount, ...items)
+  lines.splice(lineIndex, deleteCount, ...newLines)
 
   return lines.join('\n')
 }
 
 export const unifyPath = (path: string): string => path.replace(/\\/gm, '/')
+
+export const startsWithOn = (key: string): boolean =>
+  key[0] === 'o' && key[1] === 'n'

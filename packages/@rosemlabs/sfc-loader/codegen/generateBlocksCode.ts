@@ -83,23 +83,28 @@ export default function generateBlocksCode(
   const { blocks } = sfcDescriptor
 
   for (const name in blocks) {
+    // noinspection JSUnfilteredForInLoop
     if (!hasOwnProperty(blocks, name)) {
       continue
     }
 
+    // noinspection JSUnfilteredForInLoop
     blocksCode += `\n  "${name}": [`
+    // noinspection JSUnfilteredForInLoop
     importCode +=
       `/* ${name} blocks */\n` +
       blocks[name]
         .map((block: SFCBlock, index: number) => {
           // todo: improve getAttrMap
           const attrMap: AttrMap = getAttrMap(block.attrs)
+          // noinspection JSUnfilteredForInLoop
           const internalAttrMap: AttrMap<string> = {
             block: escape(name),
           }
           let src: string = loaderContext.resourcePath
 
           if (!attrMap.src) {
+            // noinspection JSUnfilteredForInLoop
             const lang: string | number | boolean =
               attrMap.lang || pluginOptions.blockLangMap[name]
 
@@ -132,9 +137,11 @@ export default function generateBlocksCode(
             ? `&${loaderContext.resourceQuery.slice(1)}`
             : ''
           const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
+          // noinspection JSUnfilteredForInLoop
           const blockName: string = `${name}${index}`
 
           blocksCode += `\n    ${stringify(block, ['data', 'map'])},`
+          // noinspection JSUnfilteredForInLoop
           dataCode += `\n${exportName}.blocks[${jsonStringify(
             name
           )}][${jsonStringify(index)}].data = ${blockName}`

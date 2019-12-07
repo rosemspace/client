@@ -1,3 +1,4 @@
+import { isNumber } from 'lodash'
 import {
   cancelAnimationFrame,
   MS_PER_FRAME,
@@ -12,10 +13,14 @@ import {
   easeInOut2D,
   easeIn2D,
   easeOut2D,
+  easeInElastic,
   easeOutElastic,
   TimingFunction,
   TimingFunction2D,
 } from './timingFunction'
+
+const { pow, round } = Math
+const { isFinite } = Number
 
 export type MotionOptions = Partial<{
   // value: number | string | any[]
@@ -37,26 +42,25 @@ export type MotionEvents = Partial<{
   cancelled: MotionEventListener
 }>
 
-export type MotionEventListener = (data: MotionEventData) => void
+export type MotionEventListener = (motionEvent: MotionEvent) => void
 
-export type MotionEventData = {
+export type MotionEvent = Partial<{
   fps: number
+  lowestFps: number
   precision: number
   duration: number
   fromValue: number
   value: number
   toValue: number
   startValue: number
-  interval: number
+  valueInterval: number
   startTime: number
   timePassed: number
   progress: number
   oscillation: number[]
   running: boolean
   reversed: boolean
-}
-
-const floor = Math.floor
+}>
 
 const defaultMotionOptions: Required<Omit<
   MotionOptions,
@@ -68,7 +72,7 @@ const defaultMotionOptions: Required<Omit<
   delay: 300,
   duration: 300,
   precision: Infinity,
-  timingFunction: easeOutElastic,
+  timingFunction: bounceOut,
   // reverse: false,
   params: [],
 }
@@ -81,11 +85,12 @@ export default class Motion {
   private readonly approximate: (value: number) => number
   private animationId: number = 0
   private fps: number = 0
+  private lowestFps: number = 0
   private fromValue: number = 0
-  private value: number = 0
   private toValue: number = 0
   private startValue: number = 0
-  private interval: number = 0
+  private valueInterval: number = 0
+  private value: number = 0
   private startTime: number = 0
   private timePassed: number = 0
   private progress: number = 0
@@ -98,41 +103,45 @@ export default class Motion {
       ...defaultMotionOptions,
       ...options,
     }
-    this.duration = this.options.duration || 0
-    this.precision = this.options.precision ?? Infinity
+    this.duration = isNumber(this.options.duration) ? this.options.duration : 0
+    this.precision = isNumber(this.options.precision)
+      ? this.options.precision
+      : Infinity
 
-    if (Number.isFinite(this.precision)) {
-      const precisionFactor: number = Math.pow(10, this.precision)
+    if (isFinite(this.precision)) {
+      const precisionFactor: number = pow(10, this.precision)
 
       this.approximate = (value: number): number =>
-        Math.round(value * precisionFactor) / precisionFactor
+        round(value * precisionFactor) / precisionFactor
     } else {
       this.approximate = (value: number): number => value
     }
   }
 
-  getData(): MotionEventData {
+  getData(): MotionEvent {
     return {
       fps: this.fps,
-      duration: this.duration,
-      precision: this.precision,
-      fromValue: this.fromValue,
-      value: this.value,
-      toValue: this.toValue,
-      startValue: this.startValue,
-      interval: this.interval,
-      startTime: this.startTime,
-      timePassed: this.timePassed,
+      lowestFps: this.lowestFps,
+      // duration: this.duration,
+      // precision: this.precision,
+      // fromValue: this.fromValue,
+      // toValue: this.toValue,
+      // startValue: this.startValue,
+      // valueInterval: this.valueInterval,
+      // value: this.value,
+      // startTime: this.startTime,
+      // timePassed: this.timePassed,
       progress: this.progress,
       oscillation: this.oscillation,
-      running: this.running,
-      reversed: this.reversed,
+      // running: this.running,
+      // reversed: this.reversed,
     }
   }
 
   run() {
     this.cancel()
     this.running = true
+    this.lowestFps = 0
     this.animationId = requestAnimationFrame((time: number): void => {
       this.startTime = time - MS_PER_FRAME
       this.timePassed = this.progress = 0
@@ -166,7 +175,11 @@ export default class Motion {
   computeFrame(time: number) {
     const timePassed = time - this.startTime
 
-    this.fps = floor(1 / ((timePassed - this.timePassed) / this.duration))
+    this.fps = 1000 / (timePassed - this.timePassed)
+
+    if (this.fps < this.lowestFps || this.lowestFps <= 0) {
+      this.lowestFps = this.fps
+    }
 
     if (timePassed < this.duration) {
       this.timePassed = timePassed
@@ -177,7 +190,6 @@ export default class Motion {
       this.timePassed = this.duration
       queueMicrotask(() => {
         this.running = false
-        this.emit('process', this.getData())
         this.emit('end', this.getData())
       })
     }
@@ -187,23 +199,24 @@ export default class Motion {
       this.options.timingFunction(this.progress, this.options.params),
     ]
     this.value =
-      this.startValue + this.approximate(this.interval * this.oscillation[0])
+      this.startValue +
+      this.approximate(this.valueInterval * this.oscillation[0])
     this.emit('process', this.getData())
   }
 
-  emit(eventName: keyof MotionEvents, motionInfo: MotionEventData): void {
+  emit(eventName: keyof MotionEvents, motionInfo: MotionEvent): void {
     this.options[eventName]?.(motionInfo)
   }
 
   from(value: number): Motion {
     this.fromValue = this.startValue = value
-    this.interval = 0
+    this.valueInterval = 0
 
     return this
   }
 
   to(value: number) {
-    if (value !== this.startValue + this.interval) {
+    if (value !== this.startValue + this.valueInterval) {
       if (this.running) {
         // this.cancel()
         this.startValue = this.value
@@ -218,7 +231,7 @@ export default class Motion {
         }
       }
 
-      this.interval = this.toValue - this.startValue
+      this.valueInterval = this.toValue - this.startValue
       this.run()
     }
   }
