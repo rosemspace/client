@@ -11,13 +11,13 @@ export type BounceParams = Partial<{
 // https://physics.stackexchange.com/questions/245791/explicit-function-for-bouncing-ball
 // Coefficient of restitution:
 // https://en.wikipedia.org/wiki/Coefficient_of_restitution
-export function bounceOut(
+export function bounceIn(
   timeFraction: number,
   { restitution = 0.25 }: BounceParams = {}
 ): number {
   const computedRestitution = Math.sqrt(restitution)
   const gravity = 2 / (1 - computedRestitution)
-  const normalizedTimeFraction = timeFraction - (timeFraction - 1) / gravity
+  const normalizedTimeFraction = 1 - timeFraction + timeFraction / gravity
   const currentNumberOfBounces = Math.floor(
     Math.log(
       ((computedRestitution - 1) * gravity * normalizedTimeFraction) / 2 + 1
@@ -29,15 +29,16 @@ export function bounceOut(
     ((2 / gravity) * (currentRestitution - 1)) / (computedRestitution - 1)
 
   return (
-    1 -
     2 *
-      gravity *
-      (currentRestitution * deltaTimeFraction -
-        (gravity / 2) * deltaTimeFraction ** 2)
+    gravity *
+    (currentRestitution * deltaTimeFraction -
+      (gravity / 2) * deltaTimeFraction ** 2)
   )
 }
 
-export const bounceIn: TimingFunction = reverse(bounceOut)
+export const bounceOut: TimingFunction = reverse(bounceIn)
+
+export const bounceInOut: TimingFunction = reflect(bounceIn)
 
 export const bounceOutIn: TimingFunction = reflect(bounceOut)
 

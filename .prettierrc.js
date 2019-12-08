@@ -8,7 +8,7 @@ module.exports = {
   bracketSpacing: true,
   jsxBracketSameLine: false,
   arrowParens: 'always',
-  proseWrap: 'never',
-  htmlWhitespaceSensitivity: 'strict',
+  // proseWrap: 'never',
+  // htmlWhitespaceSensitivity: 'strict',
   endOfLine: 'lf',
-}
+};

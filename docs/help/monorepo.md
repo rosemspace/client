@@ -1,0 +1,3 @@
+- You need `compilerOptions.paths` option to be configured in `tsconfig.json` for TypeScript type checking.
+- You need `yarn` workspaces to be configured to let `NodeJS` to resolve local packages after `yarn install` (symlink for each local package will be created in `node_modules`).
+- You need `lerna` to be configured to install dependencies of local packages and to publish these packages to `npm`.

@@ -3,7 +3,8 @@ module.exports = {
   env: {
     node: true,
   },
-  extends: ['plugin:vue/essential', '@vue/prettier', '@vue/typescript'],
+  plugins: ['prettier'],
+  // extends: ['@rosemlabs/prettier', '@rosemlabs/typescript'],
   rules: {
     // Only allow debugger in development
     'no-debugger': process.env.PRE_COMMIT ? 'error' : 'off',
@@ -11,20 +12,6 @@ module.exports = {
     'no-console': process.env.PRE_COMMIT
       ? ['error', { allow: ['warn', 'error'] }]
       : 'off',
-    'vue/component-name-in-template-casing': [
-      'error',
-      'PascalCase',
-      {
-        ignores: [
-          'component',
-          'template',
-          'transition',
-          'transition-group',
-          'keep-alive',
-          'slot',
-        ],
-      },
-    ],
   },
   parserOptions: {
     parser: '@typescript-eslint/parser',

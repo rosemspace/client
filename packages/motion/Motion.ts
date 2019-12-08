@@ -7,7 +7,9 @@ import {
 } from '@rosemlabs/std'
 import {
   easeInExpo,
+  bounceIn,
   bounceOut,
+  bounceInOut,
   bounceOutIn,
   circleInOut,
   easeInOut2D,
@@ -72,7 +74,7 @@ const defaultMotionOptions: Required<Omit<
   delay: 300,
   duration: 300,
   precision: Infinity,
-  timingFunction: bounceOut,
+  timingFunction: bounceInOut,
   // reverse: false,
   params: [],
 }

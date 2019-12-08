@@ -2,7 +2,6 @@
 //cross-env TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack
 //cross-env TS_NODE_FILES=true webpack
 
-import { isProduction } from '@rosemlabs/env-util'
 import CaseSensitivePathsPlugin from 'case-sensitive-paths-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from 'friendly-errors-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
@@ -13,13 +12,14 @@ import {
   HotModuleReplacementPlugin,
   ProgressPlugin,
 } from 'webpack'
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
+// import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 // import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 // import { isProduction } from '@rosemlabs/env-util'
 import SFCLoaderPlugin from '@rosemlabs/sfc-loader/SFCLoaderPlugin'
 
-const dir: (path: string) => string = (path: string): string =>
-  resolve(__dirname, path)
+const isProduction = 'production' === process.env.NODE_ENV
+
+const dir = (path: string): string => resolve(__dirname, path)
 
 const babelLoader = {
   loader: 'babel-loader',
@@ -57,13 +57,15 @@ export default {
       '.ts',
       '.tsx',
     ],
-    // Needed for Webpack to resolve modules on client side
-    plugins: [new TsconfigPathsPlugin()],
+    // Needed for Webpack to resolve modules on client side.
+    // Can't use it due to a bug
+    // https://github.com/dividab/tsconfig-paths/issues/85
+    // plugins: [new TsconfigPathsPlugin()],
   },
   resolveLoader: {
     extensions: ['.es', '.es6', '.js', '.mjs', '.ts'],
-    // No need to use TsconfigPathsPlugin as TypeScript resolves loaders itself
-    // based on tsconfig.json
+    // No need to use TsconfigPathsPlugin with yarn workspaces
+    // plugins: [new TsconfigPathsPlugin()],
   },
   module: {
     rules: [
@@ -255,7 +257,7 @@ export default {
       //   'chunk-common',
       //   'index'
       // ],
-      template: 'packages/@rosemlabs/app/index.html',
+      template: 'packages/app/index.html',
       filename: 'index.html',
       title: 'Rosem | Home Page',
     }),

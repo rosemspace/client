@@ -1,16 +1,14 @@
 {
   "compilerOptions": {
-//    "rootDir": "./packages",
+    "baseUrl": ".",
     "outDir": "dist",
-    "jsx": "preserve",
-    // esnext if babel is used, es5 otherwise
-    "target": "es2019",
-    // commonjs is set to use custom Node.js modules during runtime
-    "module": "commonjs",
+    "sourceMap": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "node",
     "strict": true,
 //    "composite": true,
     "importHelpers": true,
-    "moduleResolution": "node",
 //    "noImplicitThis": true, // for vue
     "noImplicitAny": true,
 //    "noUnusedLocals": true,
@@ -22,39 +20,27 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-//    "noImplicitReturns": true,
-//    "noLib": false,
 //    "declaration": true,
 //    "declarationMap": true,
-    "sourceMap": true,
-    "baseUrl": "./packages",
+    "jsx": "preserve",
+    "lib": ["dom", "esnext"],
     "types": [
       "jest",
       "node"
-//      "lodash-es",
-//      "webpack-env"
     ],
-//    "paths": {
-//      "@rosemlabs/*": [
-//        "packages/@rosemlabs/*"
-//      ]
-//    },
-    "lib": [
-      "esnext",
-      "dom"
-//      "dom.iterable",
-//      "scripthost"
-    ]
+    "rootDir": ".",
+    "paths": {
+      "@rosemlabs/*": ["packages/*"]
+    }
   },
 //  "references": [],
-//  "typeRoots": ["node_modules/@types", "packages/@rosemlabs" ],
   "include": [
-//    "webpack.config.ts",
     "packages/**/*.ts",
     "packages/**/*.tsx",
     "packages/**/*.sfc"
   ],
   "exclude": [
+    "dist",
     "node_modules"
   ]
 }

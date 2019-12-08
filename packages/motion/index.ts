@@ -17,6 +17,7 @@ const motion = new Motion({
   duration: 1000,
   process(data) {
     info.textContent = JSON.stringify(data, null, 2)
+    //@ts-ignore
     plot.draw(data.progress, data.oscillation[data.oscillation.length - 1])
   },
   start() {

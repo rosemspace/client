@@ -6,10 +6,11 @@ Thumbs.db
 node_modules/
 
 # Dev/Build Artifacts
-/dist/
-/tests/e2e/videos/
-/tests/e2e/screenshots/
-/tests/unit/coverage/
+dist
+temp
+coverage
+__tests__/e2e/videos
+__tests__/e2e/screenshots
 jsconfig.json
 
 # Local Env Files
