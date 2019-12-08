@@ -1,0 +1,28 @@
+{
+  "name": "@rosemlabs/eslint-config-typescript",
+  "version": "0.0.1",
+  "description": "Typescript ESLint config",
+  "keywords": [
+    "eslint",
+    "config",
+    "eslint-config",
+    "typescript",
+    "eslint-config-typescript"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "@rosemlabs/eslint-config-prettier": "^0.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.10.0",
+    "@typescript-eslint/parser": "^2.10.0"
+  }
+}
