@@ -3,7 +3,10 @@ module.exports = {
   env: {
     node: true,
   },
-  extends: ['@rosemlabs/typescript'],
+  extends: [
+    '@rosemlabs/eslint-config/recommended',
+    '@rosemlabs/eslint-config-typescript/recommended',
+  ],
   rules: {
     // Only allow debugger in development
     'no-debugger': process.env.PRE_COMMIT ? 'error' : 'off',

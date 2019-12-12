@@ -1,7 +1,7 @@
 {
-  "name": "@rosemlabs/eslint-config-prettier",
+  "name": "@rosemlabs/eslint-config",
   "version": "0.0.1",
-  "description": "Prettier ESLint config",
+  "description": "ESLint config",
   "keywords": [
     "eslint",
     "config",
@@ -21,11 +21,14 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "eslint-config-prettier": "^6.7.0"
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "prettier": "^1.19.1"
   },
   "peerDependencies": {
     "eslint": ">= 5.0.0",
-    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-prettier": "^3.0.0",
     "prettier": ">= 1.13.0"
   }
 }
