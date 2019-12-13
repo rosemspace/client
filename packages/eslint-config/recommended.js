@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['eslint:recommended', './index', './prettier'],
+  extends: ['./index.js', 'eslint:recommended', './prettier.js'],
 }

@@ -1,9 +1,9 @@
 module.exports = {
   plugins: ['@typescript-eslint'],
   extends: [
-    '@rosemlabs/eslint-config',
     './index.js',
     'plugin:@typescript-eslint/recommended',
+    './prettier.js',
   ],
   rules: {
     // this rule, if on, would require explicit return type on the `render` function

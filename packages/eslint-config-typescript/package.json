@@ -26,9 +26,6 @@
     "eslint": "^6.7.2",
     "typescript": "^3.7.3"
   },
-  "dependencies": {
-    "@rosemlabs/eslint-config": "^0.0.1"
-  },
   "peerDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.0.0",
     "@typescript-eslint/parser": "^2.0.0",
