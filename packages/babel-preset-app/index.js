@@ -1,9 +1,4 @@
-import { TransformOptions } from 'babel-core'
-
-export default (
-  context: any,
-  options: Record<string, any> = {}
-): TransformOptions => {
+module.exports = (/*context, options*/) => {
   // const presets = []
   //
   // // JSX
@@ -32,6 +27,10 @@ export default (
       '@babel/plugin-syntax-import-meta',
       ['@babel/plugin-proposal-class-properties', { loose: false }],
       '@babel/plugin-proposal-json-strings',
+
+      // Additional
+      '@babel/plugin-proposal-nullish-coalescing-operator',
+      '@babel/plugin-proposal-optional-chaining',
     ],
   }
 }

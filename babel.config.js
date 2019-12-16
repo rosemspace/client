@@ -1,6 +1,6 @@
 module.exports = {
   presets: [
-    '@rosemlabs/app',
+    '@rosemlabs/babel-preset-app',
     ['@babel/preset-typescript' /*, {
       allExtensions: true
     }*/],
@@ -16,8 +16,6 @@ module.exports = {
     ],
   ],
   plugins: [
-    '@babel/plugin-proposal-optional-chaining',
-
     // Setting noInterop to true disables behavior where Babel creates synthetic
     // default exports. Setting this to match expected TypeScript behavior.
     // ['@babel/plugin-transform-modules-commonjs', { noInterop: true }],
