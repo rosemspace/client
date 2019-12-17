@@ -1,7 +1,7 @@
 //todo https://npm.runkit.com/regexgen
 //https://dev.w3.org/html5/html-author/
 
-import { isNaN, toFloat } from '@rosemlabs/std'
+import { isNaN } from 'lodash'
 import { isWaiAriaAttribute } from '@rosemlabs/wai-aria-util'
 import { LiteralUnion } from 'type-fest'
 
@@ -48,7 +48,7 @@ export const isReservedAttribute = (name: string): boolean =>
 // class, id, slot
 // Global attributes (ARIA Standard)
 // role, aria-*
-export const htmlElementCommonAttributeRegExp: RegExp = /^accesskey|autocapitalize|class|contenteditable|dir|draggable|enterkeyhint|hidden|i[ds]|inputmode|item(?:id|prop|ref|scope|type)|lang|nonce|role|slot|spellcheck|style|tabindex|title|translate$/
+export const htmlElementCommonAttributeRegExp = /^accesskey|autocapitalize|class|contenteditable|dir|draggable|enterkeyhint|hidden|i[ds]|inputmode|item(?:id|prop|ref|scope|type)|lang|nonce|role|slot|spellcheck|style|tabindex|title|translate$/
 
 export const isHTMLElementCommonAttribute = (name: string): boolean =>
   htmlElementCommonAttributeRegExp.test(name)
@@ -270,7 +270,7 @@ export function getAttributeScalarValue(attr: {
     return true
   }
 
-  const numericValue: number = toFloat(value)
+  const numericValue: number = globalThis.parseFloat(value)
 
   return isNaN(numericValue) ? value : numericValue
 }
@@ -300,7 +300,6 @@ export const propsToAttrMap = {
   httpEquiv: 'http-equiv',
 }
 
-//@ts-ignore
 const attrToPropsMap = {
   'accept-charset': 'acceptCharset',
   checked: 'defaultChecked',

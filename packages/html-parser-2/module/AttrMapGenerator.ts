@@ -1,5 +1,4 @@
 import { getAttributeScalarValue } from '@rosemlabs/html-util'
-import { defineProperties } from '@rosemlabs/std'
 import camelCase from 'camelcase'
 import { Attr, Element, HTMLParserHooks, Module } from '../index'
 
@@ -17,6 +16,26 @@ export type AttrMapGeneratorOptions = Partial<{
   mixAttributesMap: boolean
 }>
 
+export function camelCaseName(attrOrElement: Attr | Element): string {
+  return attrOrElement.prefix
+    ? `${camelCase(attrOrElement.prefix)}:${camelCase(attrOrElement.localName)}`
+    : camelCase(attrOrElement.localName)
+}
+
+export function getAttributeMap(
+  attrs: Attr[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transformer: (value: Attr) => NonNullable<any> = (value: Attr) => value
+): AttrMap<ReturnType<typeof transformer>> {
+  const attrMap: AttrMap<ReturnType<typeof transformer>> = {}
+
+  attrs.forEach((attr: Attr): void => {
+    attrMap[camelCaseName(attr)] = transformer(attr)
+  })
+
+  return attrMap
+}
+
 export default class AttrMapGenerator implements Module<HTMLParserHooks> {
   private options: AttrMapGeneratorOptions
 
@@ -26,7 +45,7 @@ export default class AttrMapGenerator implements Module<HTMLParserHooks> {
 
   onStartTag<T extends Element & ElementAttrMap>(element: T): void {
     if (this.options.mixAttributesMap) {
-      defineProperties(
+      Object.defineProperties(
         element.attributes,
         getAttributeMap(
           element.attributes,
@@ -54,23 +73,4 @@ export default class AttrMapGenerator implements Module<HTMLParserHooks> {
       }
     }
   }
-}
-
-export function getAttributeMap<T>(
-  attrs: Attr[],
-  transformer: (value: any) => T = (value: any): T => value
-): AttrMap<T> {
-  const attrMap: AttrMap<T> = {}
-
-  attrs.forEach((attr: Attr): void => {
-    attrMap[camelCaseName(attr)] = transformer(attr)
-  })
-
-  return attrMap
-}
-
-export function camelCaseName(attrOrElement: Attr | Element): string {
-  return attrOrElement.prefix
-    ? `${camelCase(attrOrElement.prefix)}:${camelCase(attrOrElement.localName)}`
-    : camelCase(attrOrElement.localName)
 }

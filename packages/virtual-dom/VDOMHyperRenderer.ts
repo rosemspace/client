@@ -2,7 +2,7 @@ import forEach from 'lodash/forEach'
 import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import isString from 'lodash/isString'
-import { isPrimitive } from '@rosemlabs/std'
+import { isObject } from 'lodash'
 import { NodeType } from '@rosemlabs/dom-api'
 import VDOMRenderer from './VDOMRenderer'
 import {
@@ -153,20 +153,20 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
         forEach(
           virtualElement.attrs,
           (attr: VirtualAttr | VirtualContent, attrName: string): void => {
-            isPrimitive(attr)
-              ? this.setAttribute(virtualElement, attrName, attr)
-              : null == (attr as VirtualAttr).namespaceURI
-              ? this.setAttribute(
-                  virtualElement,
-                  attrName,
-                  (attr as VirtualAttr).value
-                )
-              : this.setAttributeNS(
-                  virtualElement,
-                  (attr as VirtualAttr).namespaceURI as string,
-                  attrName,
-                  (attr as VirtualAttr).value
-                )
+            isObject(attr)
+              ? null == (attr as VirtualAttr).namespaceURI
+                ? this.setAttribute(
+                    virtualElement,
+                    attrName,
+                    (attr as VirtualAttr).value
+                  )
+                : this.setAttributeNS(
+                    virtualElement,
+                    (attr as VirtualAttr).namespaceURI as string,
+                    attrName,
+                    (attr as VirtualAttr).value
+                  )
+              : this.setAttribute(virtualElement, attrName, attr)
           }
         )
 
@@ -193,9 +193,9 @@ export default class VDOMHyperRenderer extends VDOMRenderer {
     for (const child of childNodeList) {
       this.appendChild(
         parent,
-        isPrimitive(child)
-          ? this.createTextNode(String(child))
-          : (child as VirtualNode)
+        isObject(child)
+          ? (child as VirtualNode)
+          : this.createTextNode(String(child))
       )
     }
   }

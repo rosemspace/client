@@ -5,7 +5,6 @@
 // - add middleware functionality
 // - migrate extension from mime types to namespaces
 
-import { exists } from '@rosemlabs/std'
 import {
   APPLICATION_XML_MIME_TYPE,
   XLINK_NAMESPACE,
@@ -83,14 +82,14 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
     [this.parseStartTag, this.startTag as ParsingHook<StartTag>],
     [this.parseText, this.text as ParsingHook<Content>],
   ]
-  protected instructionIndex: number = 0
+  protected instructionIndex = 0
   protected typeMap: TypeMap = {
     [APPLICATION_XML_MIME_TYPE]: XML_NAMESPACE,
   }
   protected namespaceMap: NamespaceMap = this.defaultNamespaceMap
-  protected originalSource: string = ''
-  protected source: string = ''
-  protected sourceCursor: number = 0
+  protected originalSource = ''
+  protected source = ''
+  protected sourceCursor = 0
   protected readonly rootTagStack: StartTag[] = []
   protected readonly tagStack: StartTag[] = []
 
@@ -110,7 +109,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         this.rootTagStack.length - 1
       ].namespaceURI
 
-      if (exists(rootTagNamespaceURI)) {
+      if (null != rootTagNamespaceURI) {
         return rootTagNamespaceURI
       }
     }
@@ -382,7 +381,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       if (tagPrefix) {
         const namespaceURI: string = this.namespaceMap[tagPrefix]
 
-        if (exists(namespaceURI)) {
+        if (null != namespaceURI) {
           this.namespaceURI = startTag.namespaceURI = namespaceURI
         } else if (!this.options.suppressWarnings) {
           this.warn(`Namespace not found for tag prefix: ${tagPrefix}`, {
@@ -475,7 +474,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
         ) {
           this.rootTagStack.pop()
 
-          if (exists((this.namespaceURI = this.rootNamespaceURI))) {
+          if (null != (this.namespaceURI = this.rootNamespaceURI)) {
             this.useProcessor(this.namespaceURI)
           }
         }

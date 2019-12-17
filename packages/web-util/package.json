@@ -1,16 +1,14 @@
 {
-  "name": "@rosemlabs/html-util",
+  "name": "@rosemlabs/web-util",
   "version": "0.0.1",
-  "description": "HTML utilities library",
+  "description": "Rosem Web utilities library",
   "keywords": [
     "rosem",
     "util",
     "utils",
-    "html",
-    "html-util",
-    "html-utils",
-    "hyml-syntax",
-    "hyml-parser"
+    "web",
+    "web-util",
+    "web-utils"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",
@@ -24,9 +22,14 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@rosemlabs/wai-aria-util": "^0.0.1"
+    "raf": "^3.4.1",
+    "requestidlecallback": "^0.3.0",
+    "setimmediate": "^1.0.5"
   },
   "devDependencies": {
+    "@types/raf": "^3.4.0",
+    "@types/requestidlecallback": "^0.3.1",
+    "@types/setimmediate": "^1.0.0",
     "type-fest": "^0.8.1"
   }
 }

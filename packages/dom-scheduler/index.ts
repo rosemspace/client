@@ -1,5 +1,3 @@
-import { requestAnimationFrame } from '@rosemlabs/std'
-
 function remove<T>(array: T[], item: T): boolean {
   const index = array.indexOf(item)
 
@@ -13,10 +11,13 @@ function runTasks(tasks: Function[]) {
 }
 
 export default new (class DOMScheduler {
-  reads: Function[] = []
-  writes: Function[] = []
-  scheduled: boolean = false
-  catch?: (error: Error) => any
+  private readonly reads: Function[] = []
+
+  private readonly writes: Function[] = []
+
+  private scheduled = false
+
+  catch?: (error: Error) => unknown
 
   measure<T extends Function>(task: T): T {
     this.reads.push(task)

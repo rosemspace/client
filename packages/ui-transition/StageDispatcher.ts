@@ -1,15 +1,11 @@
 import {
-  getComputedTransition,
   getComputedAnimation,
-  isTransitionMaxTimeout,
+  getComputedTransition,
   isAnimationMaxTimeout,
+  isTransitionMaxTimeout,
 } from '@rosemlabs/dom-easing'
-import {
-  cancelAnimationFrame,
-  requestNextAnimationFrame,
-} from '@rosemlabs/std'
-import CSSTransitionDeclaration from '@rosemlabs/dom-easing/CSSTransitionDeclaration'
 import CSSAnimationDeclaration from '@rosemlabs/dom-easing/CSSAnimationDeclaration'
+import CSSTransitionDeclaration from '@rosemlabs/dom-easing/CSSTransitionDeclaration'
 import { Detail, Phase, PhaseEnum } from './Module'
 import Stage from './Stage'
 
@@ -40,7 +36,7 @@ export default class StageDispatcher {
   protected stages: Stage[]
   protected detail!: Detail
   protected stageIndex: number
-  protected running: boolean = false
+  protected running = false
   protected easing: CSSTransitionDeclaration | CSSAnimationDeclaration =
     StageDispatcher.defaultEasing
   protected easingEndEventListener?: EventListener
@@ -240,7 +236,7 @@ export default class StageDispatcher {
     }
   }
 
-  public forceDispatchByIndex(stageIndex: number = 0): Detail {
+  public forceDispatchByIndex(stageIndex = 0): Detail {
     const detail = this.getDetail()
 
     this.stageIndex = detail.stageIndex = stageIndex
@@ -248,7 +244,7 @@ export default class StageDispatcher {
     return this.dispatchPhase(PhaseEnum.AfterEnd, detail)
   }
 
-  public dispatchByIndex(stageIndex: number = 0): Promise<Detail> {
+  public dispatchByIndex(stageIndex = 0): Promise<Detail> {
     cancelAnimationFrame(this.frameId as number)
 
     if (this.running) {
@@ -267,7 +263,7 @@ export default class StageDispatcher {
 
     this.beforeStart(this.detail)
 
-    this.frameId = requestAnimationFrame(
+    this.frameId = globalThis.requestAnimationFrame(
       // requestNextAnimationFrame(
       () => {
         this.addEasingEndEventListener(this.detail)
@@ -296,7 +292,7 @@ export default class StageDispatcher {
   }
 
   public play(
-    startStageIndex: number = 0,
+    startStageIndex = 0,
     endStageIndex?: number | null
   ): Promise<Detail> {
     endStageIndex = null != endStageIndex ? endStageIndex : this.stages.length

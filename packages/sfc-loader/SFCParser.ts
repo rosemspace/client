@@ -3,7 +3,6 @@ import { isProduction } from '@rosemlabs/env-util'
 import HTMLParser from '@rosemlabs/html-parser'
 import AttrMapModule from '@rosemlabs/html-parser/modules/AttrMapModule'
 import { Content, MatchRange, StartTag } from '@rosemlabs/html-parser/nodes'
-import { hasOwnProperty } from '@rosemlabs/std'
 import { qualifiedNameRegExp } from '@rosemlabs/xml-util'
 import hashSum from 'hash-sum'
 import LRUCache from 'lru-cache'
@@ -43,7 +42,7 @@ export default class SFCParser extends HTMLParser {
 
   parseFromString(
     source: string,
-    filepathWithQuery: string = '',
+    filepathWithQuery = '',
     options: SFCParserOptions = {}
   ): SFCDescriptor {
     options = { ...defaultOptions, ...options }
@@ -83,7 +82,7 @@ export default class SFCParser extends HTMLParser {
     if (options.sourceMap) {
       for (const name in blocks) {
         // noinspection JSUnfilteredForInLoop
-        if (!hasOwnProperty(blocks, name)) {
+        if (!Object.prototype.hasOwnProperty.call(blocks, name)) {
           continue
         }
 
@@ -158,5 +157,8 @@ export default class SFCParser extends HTMLParser {
     }
   }
 
-  warn(message: string, matchRange: MatchRange): void {}
+  warn(message: string, matchRange: MatchRange): void {
+    //todo: improve
+    console.warn(message, matchRange)
+  }
 }

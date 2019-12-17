@@ -1,10 +1,5 @@
 import { isNumber } from 'lodash'
-import {
-  cancelAnimationFrame,
-  MS_PER_FRAME,
-  queueMicrotask,
-  requestAnimationFrame,
-} from '@rosemlabs/std'
+import { MS_PER_FRAME } from '@rosemlabs/web-util'
 import {
   easeInExpo,
   bounceIn,
@@ -33,7 +28,7 @@ export type MotionOptions = Partial<{
   precision: number
   timingFunction: TimingFunction //TimingFunction2D
   // reverse: boolean
-  params: any[]
+  params: unknown[]
 }> &
   MotionEvents
 
@@ -85,20 +80,20 @@ export default class Motion {
   private readonly duration: number
   private readonly precision: number
   private readonly approximate: (value: number) => number
-  private animationId: number = 0
-  private fps: number = 0
-  private lowestFps: number = 0
-  private fromValue: number = 0
-  private toValue: number = 0
-  private startValue: number = 0
-  private valueInterval: number = 0
-  private value: number = 0
-  private startTime: number = 0
-  private timePassed: number = 0
-  private progress: number = 0
+  private animationId = 0
+  private fps = 0
+  private lowestFps = 0
+  private fromValue = 0
+  private toValue = 0
+  private startValue = 0
+  private valueInterval = 0
+  private value = 0
+  private startTime = 0
+  private timePassed = 0
+  private progress = 0
   private oscillation: number[] = [0]
-  private running: boolean = false
-  private reversed: boolean = false
+  private running = false
+  private reversed = false
 
   constructor(options: MotionOptions) {
     this.options = {
@@ -144,6 +139,8 @@ export default class Motion {
     this.cancel()
     this.running = true
     this.lowestFps = 0
+    this.startTime =
+      globalThis.performance.now() + globalThis.performance.timeOrigin
     this.animationId = requestAnimationFrame((time: number): void => {
       this.startTime = time - MS_PER_FRAME
       this.timePassed = this.progress = 0

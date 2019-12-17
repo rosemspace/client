@@ -1,5 +1,4 @@
 import { getExactDisjunctionRegExpFromArray } from '@rosemlabs/regexp-util'
-import { exists } from '@rosemlabs/std'
 import { foreignElementRegExp } from '@rosemlabs/svg-util'
 import { IMAGE_SVG_XML_MIME_TYPE, SVG_NAMESPACE } from '@rosemlabs/w3-util'
 import isArray from 'lodash/isArray'
@@ -84,11 +83,10 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
       this.rootTagStack.push(startTag)
 
       if (
-        exists(
-          (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
-            startTag.nameLowerCased
-          ])
-        )
+        null !=
+        (this.namespaceURI = startTag.namespaceURI = this.namespaceMap[
+          startTag.nameLowerCased
+        ])
       ) {
         this.useProcessor(this.namespaceURI)
       }

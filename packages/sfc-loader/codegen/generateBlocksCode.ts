@@ -1,6 +1,5 @@
 import { getAttrMap } from '@rosemlabs/html-parser/modules/AttrMapModule'
 import { AttrMap } from '@rosemlabs/html-parser/nodes'
-import { hasOwnProperty } from '@rosemlabs/std'
 import camelCase from 'camelcase'
 import { stringifyRequest } from 'loader-utils'
 import { escape } from 'querystring'
@@ -16,12 +15,13 @@ import attrsToQuery from './attrsToQuery'
 import LoaderContext = loader.LoaderContext
 
 const jsonStringify = JSON.stringify
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const stringify = (value: any, ignoreRootKeyList: string[] = []): string => {
-  let cache: any[] = []
+  const cache: unknown[] = []
 
   const string: string = jsonStringify(
     value,
-    function(key: string, innerValue: any) {
+    function(key: string, innerValue: unknown) {
       // Ignore some unnecessary properties to reduce size of generated code
       if (ignoreRootKeyList.includes(key) && innerValue === value[key]) {
         return
@@ -51,7 +51,7 @@ const stringify = (value: any, ignoreRootKeyList: string[] = []): string => {
   return string
 }
 
-const DEFAULT_EXPORT_VARIABLE_NAME: string = 'sfc'
+const DEFAULT_EXPORT_VARIABLE_NAME = 'sfc'
 // these are built-in query parameters so should be ignored if the user happen
 // to add them as attrs
 // `src` and `lang` will be added as internal attributes
@@ -60,7 +60,7 @@ const ignoredAttrs = ['block', 'index', 'lang', 'src', 'scopeId', 'issuerPath']
 export default function generateBlocksCode(
   loaderContext: LoaderContext,
   sfcDescriptor: SFCDescriptor,
-  exportName: string = 'default'
+  exportName = 'default'
 ): string {
   const pluginOptions: SFCLoaderPluginOptions = getOptions(loaderContext)
 
@@ -70,7 +70,7 @@ export default function generateBlocksCode(
     )
   }
 
-  let isDefault: boolean = false
+  let isDefault = false
 
   if ('default' === exportName) {
     isDefault = true
@@ -84,7 +84,7 @@ export default function generateBlocksCode(
 
   for (const name in blocks) {
     // noinspection JSUnfilteredForInLoop
-    if (!hasOwnProperty(blocks, name)) {
+    if (!Object.prototype.hasOwnProperty.call(blocks, name)) {
       continue
     }
 
@@ -136,9 +136,9 @@ export default function generateBlocksCode(
           const inheritQuery: string = loaderContext.resourceQuery
             ? `&${loaderContext.resourceQuery.slice(1)}`
             : ''
-          const query: string = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
+          const query = `?${pluginOptions.fileExtension}${internalAttrsQuery}${attrsQuery}${inheritQuery}`
           // noinspection JSUnfilteredForInLoop
-          const blockName: string = `${name}${index}`
+          const blockName = `${name}${index}`
 
           blocksCode += `\n    ${stringify(block, ['data', 'map'])},`
           // noinspection JSUnfilteredForInLoop
