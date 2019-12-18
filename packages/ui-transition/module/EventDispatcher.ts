@@ -4,20 +4,19 @@ export type EventDispatcherDetail = {
   eventInit: CustomEventInit<Detail>
 }
 
+const eventDispatcherDefaultOptions: CustomEventInit<Detail> = {
+  bubbles: false,
+  cancelable: false,
+  composed: false,
+}
+
 export default class EventDispatcher implements Module {
   protected readonly stageName: string
   protected eventInit: CustomEventInit<Detail>
 
-  constructor(
-    stageName: string,
-    eventInit: CustomEventInit<Detail> = {
-      bubbles: false,
-      cancelable: false,
-      composed: false,
-    }
-  ) {
+  constructor(stageName: string, eventInit: CustomEventInit<Detail> = {}) {
     this.stageName = stageName
-    this.eventInit = eventInit
+    this.eventInit = { ...eventDispatcherDefaultOptions, ...eventInit }
   }
 
   beforeStart(detail: Detail, next: () => void): void {

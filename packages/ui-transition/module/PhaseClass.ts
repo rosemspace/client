@@ -1,18 +1,13 @@
 import { AbstractModule, Detail } from '../Module'
 
-export type PhaseClassOptions = {
-  fromClass?: string
-  activeClass?: string
-  toClass?: string
-  doneClass?: string
-}
-
-export type PhaseClassDetail = {
+export type PhaseClassOptions = Partial<{
   fromClass: string
   activeClass: string
   toClass: string
   doneClass: string
-}
+}>
+
+export type PhaseClassDetail = Required<PhaseClassOptions>
 
 export default class PhaseClass extends AbstractModule {
   static CLASS_PREFIX_FROM = ''
