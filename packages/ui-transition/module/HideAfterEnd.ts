@@ -1,14 +1,18 @@
-import { Detail } from '../Module'
-import Delegate from './Delegate'
+import { AbstractModule, Detail } from '../Module'
 
-export default class HideAfterEnd extends Delegate {
+export type HideAfterEndDetail = {
+  hideAfterEnd: boolean
+}
+
+export default class HideAfterEnd extends AbstractModule {
   afterEnd(detail: Detail, next: () => void): void {
-    detail.target.style.setProperty('display', 'none')
-
-    super.afterEnd(detail, next)
+    this.mutate(() => {
+      detail.target.style.setProperty('display', 'none')
+    })
+    next()
   }
 
-  getDetail(): Partial<Detail> {
+  getDetail(): HideAfterEndDetail {
     return {
       hideAfterEnd: true,
     }

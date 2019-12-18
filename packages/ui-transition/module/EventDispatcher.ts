@@ -1,7 +1,10 @@
-import { Detail } from '../Module'
-import Delegate from './Delegate'
+import Module, { Detail } from '../Module'
 
-export default class EventDispatcher extends Delegate {
+export type EventDispatcherDetail = {
+  eventInit: CustomEventInit<Detail>
+}
+
+export default class EventDispatcher implements Module {
   protected readonly stageName: string
   protected eventInit: CustomEventInit<Detail>
 
@@ -13,7 +16,6 @@ export default class EventDispatcher extends Delegate {
       composed: false,
     }
   ) {
-    super()
     this.stageName = stageName
     this.eventInit = eventInit
   }
@@ -23,8 +25,7 @@ export default class EventDispatcher extends Delegate {
     detail.currentTarget.dispatchEvent(
       new CustomEvent(`before-${this.stageName}`, this.eventInit)
     )
-
-    super.beforeStart(detail, next)
+    next()
   }
 
   start(detail: Detail, next: () => void): void {
@@ -32,8 +33,7 @@ export default class EventDispatcher extends Delegate {
     detail.currentTarget.dispatchEvent(
       new CustomEvent(this.stageName, this.eventInit)
     )
-
-    super.start(detail, next)
+    next()
   }
 
   afterEnd(detail: Detail, next: () => void): void {
@@ -41,8 +41,7 @@ export default class EventDispatcher extends Delegate {
     detail.currentTarget.dispatchEvent(
       new CustomEvent(`after-${this.stageName}`, this.eventInit)
     )
-
-    super.afterEnd(detail, next)
+    next()
   }
 
   cancelled(detail: Detail, next: () => void): void {
@@ -50,13 +49,11 @@ export default class EventDispatcher extends Delegate {
     detail.currentTarget.dispatchEvent(
       new CustomEvent(`${this.stageName}-cancelled`, this.eventInit)
     )
-
-    super.cancelled(detail, next)
+    next()
   }
 
-  getDetail(): Partial<Detail> {
+  getDetail(): EventDispatcherDetail {
     return {
-      events: true,
       eventInit: this.eventInit,
     }
   }

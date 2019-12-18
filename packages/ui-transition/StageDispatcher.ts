@@ -1,3 +1,4 @@
+import DOMScheduler from '@rosemlabs/dom-scheduler'
 import {
   getComputedAnimation,
   getComputedTransition,
@@ -12,8 +13,8 @@ import Stage from './Stage'
 const { setTimeout, clearTimeout, getComputedStyle } = globalThis
 
 export type StageDispatcherOptions = {
-  target?: string
   name: string
+  target?: string
   stageIndex?: number
 }
 
@@ -42,7 +43,8 @@ export default class StageDispatcher {
   protected easingEndEventListener?: EventListener
   protected easingEndTimerId?: number
   protected frameId?: number
-  protected timerId?: number
+  protected mutateTask?: () => void
+  protected timerId?: NodeJS.Timeout | number
   protected resolve?: (value?: Detail | PromiseLike<Detail>) => void
 
   constructor(
@@ -83,13 +85,18 @@ export default class StageDispatcher {
   }
 
   protected cancelNextFrame(): void {
+    //todo
+    if (this.mutateTask) {
+      DOMScheduler.clear(this.mutateTask)
+    }
+
     if (this.frameId) {
       // Auto duration used
-      cancelAnimationFrame(this.frameId)
+      globalThis.cancelAnimationFrame(this.frameId)
       this.frameId = undefined
     } else {
       // Custom duration used
-      clearTimeout(this.timerId)
+      globalThis.clearTimeout(this.timerId as NodeJS.Timeout)
       this.timerId = undefined
     }
   }
@@ -163,7 +170,7 @@ export default class StageDispatcher {
         event.propertyName
       )
     ) {
-      this.afterEnd(detail)
+      this.done(detail)
     }
   }
 
@@ -176,7 +183,7 @@ export default class StageDispatcher {
         event.animationName
       )
     ) {
-      this.afterEnd(detail)
+      this.done(detail)
     }
   }
 
@@ -184,22 +191,11 @@ export default class StageDispatcher {
     return this.stage.dispatch(phase, detail)
   }
 
-  protected beforeStart(detail: Detail): Detail {
-    this.running = true
-
-    return this.dispatchPhase(PhaseEnum.BeforeStart, detail)
-  }
-
-  protected start(detail: Detail): Detail {
-    detail.done = () => this.afterEnd(detail)
-
-    return this.dispatchPhase(PhaseEnum.Start, detail)
-  }
-
-  protected afterEnd(detail: Detail): Detail {
+  protected done(detail: Detail): Detail {
     this.removeEasingEndEventListener()
     delete detail.done
     this.running = false
+
     const finalDetail = this.dispatchPhase(PhaseEnum.AfterEnd, detail)
 
     if (null != this.resolve) {
@@ -212,6 +208,7 @@ export default class StageDispatcher {
   protected cancelled(detail: Detail): Detail {
     this.cancelNextFrame()
     this.removeEasingEndEventListener()
+    this.running = false
 
     return this.dispatchPhase(PhaseEnum.Cancelled, detail)
   }
@@ -245,7 +242,9 @@ export default class StageDispatcher {
   }
 
   public dispatchByIndex(stageIndex = 0): Promise<Detail> {
-    cancelAnimationFrame(this.frameId as number)
+    //todo
+    this.mutateTask && DOMScheduler.clear(this.mutateTask)
+    globalThis.cancelAnimationFrame(this.frameId as number)
 
     if (this.running) {
       this.cancelled(this.detail)
@@ -261,30 +260,31 @@ export default class StageDispatcher {
       )
     }
 
-    this.beforeStart(this.detail)
+    this.dispatchPhase(PhaseEnum.BeforeStart, this.detail)
+    this.running = true
+    // this.frameId = globalThis.requestAnimationFrame(
+    this.mutateTask = DOMScheduler.mutate(() => {
+      this.addEasingEndEventListener(this.detail)
+      this.detail.done = () => this.done(this.detail)
+      this.dispatchPhase(PhaseEnum.Start, this.detail)
 
-    this.frameId = globalThis.requestAnimationFrame(
-      // requestNextAnimationFrame(
-      () => {
-        this.addEasingEndEventListener(this.detail)
-        this.start(this.detail)
-
-        if (this.isExplicitDuration) {
-          if ((this.stage.duration as number) > 0) {
-            this.timerId = setTimeout(() => {
-              this.afterEnd(this.detail)
-            }, this.stage.duration)
-          } else {
-            // No need to run on next macrotask if zero duration
-            this.afterEnd(this.detail)
-          }
-        } else if (this.easing.timeout <= 0) {
-          // If zero duration then end event won't be fired
-          this.afterEnd(this.detail)
+      if (this.isExplicitDuration) {
+        if ((this.stage.duration as number) > 0) {
+          // Remove frame id as we will use setTimeout function instead of
+          // requestAnimationFrame function
+          this.frameId = undefined
+          this.timerId = globalThis.setTimeout(() => {
+            this.done(this.detail)
+          }, this.stage.duration)
+        } else {
+          // No need to run on next macrotask if zero duration
+          this.done(this.detail)
         }
+      } else if (this.easing.timeout <= 0) {
+        // If zero duration then end event won't be fired
+        this.done(this.detail)
       }
-      // (id) => (this.frameId = id)
-    )
+    })
 
     return new Promise((resolve) => {
       this.resolve = resolve

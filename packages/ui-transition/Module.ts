@@ -1,3 +1,9 @@
+import DOMScheduler from '@rosemlabs/dom-scheduler'
+import { EventDispatcherDetail } from './module/EventDispatcher'
+import { HideAfterEndDetail } from './module/HideAfterEnd'
+import { PhaseClassDetail } from './module/PhaseClass'
+import { ShowBeforeStartDetail } from './module/ShowBeforeStart'
+
 export enum PhaseEnum {
   Cleanup = 'cleanup',
   BeforeStart = 'beforeStart',
@@ -24,15 +30,46 @@ export type Detail = {
   done?: () => Detail
   computedStyle: CSSStyleDeclaration
   scheduleAnimationFrame: () => void
-} & Record<string, any>
+} & Partial<EventDispatcherDetail> &
+  Partial<HideAfterEndDetail> &
+  Partial<PhaseClassDetail> &
+  Partial<ShowBeforeStartDetail> &
+  Record<string, any>
 
 export type PhaseHook = (detail: Detail, next: () => void) => void
 
 export default interface Module {
-  cleanup: PhaseHook
-  beforeStart: PhaseHook
-  start: PhaseHook
-  afterEnd: PhaseHook
-  cancelled: PhaseHook
+  cleanup?: PhaseHook
+  beforeStart?: PhaseHook
+  start?: PhaseHook
+  afterEnd?: PhaseHook
+  cancelled?: PhaseHook
   getDetail(): Partial<Detail>
+}
+
+export abstract class AbstractModule implements Module {
+  private mutateTask: () => void = () => void 0
+
+  private measureTask: () => void = () => void 0
+
+  abstract getDetail(): Partial<Detail>
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  cancelled(detail: Detail, next: () => void): void {
+    this.clearTasks()
+    next()
+  }
+
+  protected mutate(callback: () => void): void {
+    DOMScheduler.mutate((this.mutateTask = callback))
+  }
+
+  protected measure(callback: () => void): void {
+    DOMScheduler.measure((this.measureTask = callback))
+  }
+
+  protected clearTasks(): void {
+    DOMScheduler.clear(this.mutateTask)
+    DOMScheduler.clear(this.measureTask)
+  }
 }

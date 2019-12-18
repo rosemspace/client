@@ -1,17 +1,18 @@
-import DOMScheduler from '@rosemlabs/dom-scheduler'
-import { Detail } from '../Module'
-import Delegate from './Delegate'
+import { AbstractModule, Detail } from '../Module'
 
-export default class ShowBeforeStart extends Delegate {
+export type ShowBeforeStartDetail = {
+  showBeforeStart: boolean
+}
+
+export default class ShowBeforeStart extends AbstractModule {
   beforeStart(detail: Detail, next: () => void): void {
-    DOMScheduler.mutate(() => {
+    this.mutate(() => {
       detail.target.style.setProperty('display', '')
     })
-
-    super.beforeStart(detail, next)
+    next()
   }
 
-  getDetail(): Partial<Detail> {
+  getDetail(): ShowBeforeStartDetail {
     return {
       showBeforeStart: true,
     }

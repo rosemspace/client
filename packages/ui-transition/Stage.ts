@@ -1,38 +1,19 @@
+import { Middleware } from './Middleware'
 import Module, { Detail, Phase } from './Module'
 import ModuleDispatcher, {
   ModuleDispatcherPhaseOrder,
 } from './ModuleDispatcher'
 
-class Middleware {
-  private readonly module: Module
-  private successor?: Middleware
-
-  constructor(module: Module, predecessor?: Middleware) {
-    this.module = module
-
-    if (predecessor) {
-      predecessor.successor = this
-    }
-  }
-
-  process(phase: Phase, detail: Detail): void {
-    this.module[phase](
-      Object.assign(detail, this.module.getDetail()),
-      this.successor
-        ? () => {
-            this.successor!.process(phase, detail)
-          }
-        : () => {}
-    )
-  }
-}
-
 export default class Stage implements ModuleDispatcher {
   public readonly name: string
-  public readonly duration?: number
+
+  public readonly duration: number
+
   public readonly isExplicitDuration: boolean = false
-  private middleware!: Middleware
-  private middlewareCursor!: Middleware
+
+  private middleware?: Middleware
+
+  private lastMiddleware?: Middleware
 
   constructor(name: string, duration?: number) {
     this.name = name
@@ -46,10 +27,10 @@ export default class Stage implements ModuleDispatcher {
   }
 
   addModule(module: Module, order?: ModuleDispatcherPhaseOrder | number) {
-    this.middlewareCursor = new Middleware(module, this.middlewareCursor)
+    this.lastMiddleware = new Middleware(module, this.lastMiddleware)
 
     if (!this.middleware) {
-      this.middleware = this.middlewareCursor
+      this.middleware = this.lastMiddleware
     }
   }
 

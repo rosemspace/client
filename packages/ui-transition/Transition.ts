@@ -64,8 +64,8 @@ export const defaultOptions: TransitionOptions = {
 }
 
 export default class Transition extends StageDispatcher {
-  public static STAGE_LEAVE_ORDER: number = STAGE_LEAVE_ORDER
-  public static STAGE_ENTER_ORDER: number = STAGE_ENTER_ORDER
+  static STAGE_LEAVE_ORDER: number = STAGE_LEAVE_ORDER
+  static STAGE_ENTER_ORDER: number = STAGE_ENTER_ORDER
 
   protected options: TransitionOptions
 
@@ -74,10 +74,12 @@ export default class Transition extends StageDispatcher {
     options?: TransitionOptions
   ) {
     super(element, [], options)
+
     this.options = {
       ...defaultOptions,
       ...options,
     }
+
     const duration: undefined | number | TransitionDuration = this.options
       .duration
     let leaveDuration = duration as number
@@ -179,6 +181,6 @@ export default class Transition extends StageDispatcher {
       stageIndex = Number(!this.stageIndex)
     }
 
-    return stageIndex !== STAGE_LEAVE_ORDER ? this.enter() : this.leave()
+    return stageIndex === STAGE_ENTER_ORDER ? this.enter() : this.leave()
   }
 }

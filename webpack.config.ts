@@ -17,8 +17,7 @@ import {
 // import { isProduction } from '@rosemlabs/env-util'
 import SFCLoaderPlugin from '@rosemlabs/sfc-loader/SFCLoaderPlugin'
 
-const isProduction = 'production' === process.env.NODE_ENV
-
+const isProduction: boolean = 'production' === process.env.NODE_ENV
 const dir = (path: string): string => resolve(__dirname, path)
 
 const babelLoader = {
@@ -61,6 +60,9 @@ export default {
     // Can't use it due to a bug
     // https://github.com/dividab/tsconfig-paths/issues/85
     // plugins: [new TsconfigPathsPlugin()],
+    alias: {
+      '@rosemlabs': dir('packages'),
+    },
   },
   resolveLoader: {
     extensions: ['.es', '.es6', '.js', '.mjs', '.ts'],

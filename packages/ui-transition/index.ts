@@ -34,7 +34,7 @@ export default {
       .morph-enter, .morph-leave-to, .morph-leave-done {
         /*width: 100px;*/
         border-radius: 50%;
-        height: 100px;
+        /*height: 100px;*/
         background-color: green;
       }
     `
@@ -83,8 +83,9 @@ export default {
       name: 'morph',
       forceUpdate: true,
       // css: false,
-      autoSize: true,
-      hideAfterLeave: false,
+      // autoSize: true,
+      hideAfterLeave: true,
+      // duration: 2500,
     })
 
     btn.addEventListener('click', async () => {
