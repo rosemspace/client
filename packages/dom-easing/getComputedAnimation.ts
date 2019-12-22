@@ -1,23 +1,16 @@
-import {
-  CSS_EASING_DEFAULT_TIMEOUT,
-  CSS_EASING_VALUES_SEPARATOR,
-} from './CSSEasingDeclaration'
 import CSSAnimationDeclaration, {
   CSS_ANIMATION_DEFAULT_NAME,
 } from './CSSAnimationDeclaration'
-import getTimeout from './getTimeout'
+import { CSS_EASING_VALUES_SEPARATOR } from './CSSEasingDeclaration'
+import { getMaxTimeout, getTimeouts } from './timeout'
 
 export default function getComputedAnimation({
   animationDelay,
   animationDuration,
   animationName,
 }: CSSStyleDeclaration): CSSAnimationDeclaration {
-  const delays = (animationDelay || CSS_EASING_DEFAULT_TIMEOUT).split(
-    CSS_EASING_VALUES_SEPARATOR
-  )
-  const durations = (animationDuration || CSS_EASING_DEFAULT_TIMEOUT).split(
-    CSS_EASING_VALUES_SEPARATOR
-  )
+  const delays: number[] = getTimeouts(animationDelay)
+  const durations: number[] = getTimeouts(animationDuration)
 
   return {
     endEventName: 'animationend',
@@ -26,6 +19,6 @@ export default function getComputedAnimation({
     ),
     delays,
     durations,
-    timeout: getTimeout(delays, durations),
+    timeout: getMaxTimeout(delays, durations),
   }
 }

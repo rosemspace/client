@@ -1,4 +1,3 @@
-import { convertSStringToMs } from '@rosemlabs/time-util'
 import CSSAnimationDeclaration from './CSSAnimationDeclaration'
 
 export default function isAnimationMaxTimeout(
@@ -7,9 +6,5 @@ export default function isAnimationMaxTimeout(
 ): boolean {
   const nameIndex: number = names.indexOf(name)
 
-  return (
-    convertSStringToMs(delays[nameIndex]) +
-      convertSStringToMs(durations[nameIndex]) ===
-    timeout
-  )
+  return delays[nameIndex] + durations[nameIndex] === timeout
 }

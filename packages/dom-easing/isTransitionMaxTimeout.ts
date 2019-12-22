@@ -1,4 +1,3 @@
-import { convertSStringToMs } from '@rosemlabs/time-util'
 import CSSTransitionDeclaration, {
   CSS_TRANSITION_DEFAULT_PROPERTY,
 } from './CSSTransitionDeclaration'
@@ -12,9 +11,5 @@ export default function isTransitionMaxTimeout(
       ? properties.indexOf(property)
       : 0
 
-  return (
-    convertSStringToMs(delays[propertyIndex]) +
-      convertSStringToMs(durations[propertyIndex]) ===
-    timeout
-  )
+  return delays[propertyIndex] + durations[propertyIndex] === timeout
 }
