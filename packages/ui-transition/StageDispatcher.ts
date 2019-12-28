@@ -1,4 +1,3 @@
-import DOMScheduler from '@rosemlabs/dom-scheduler'
 import {
   getComputedAnimation,
   getComputedTransition,
@@ -7,7 +6,8 @@ import {
 } from '@rosemlabs/dom-easing'
 import CSSAnimationDeclaration from '@rosemlabs/dom-easing/CSSAnimationDeclaration'
 import CSSTransitionDeclaration from '@rosemlabs/dom-easing/CSSTransitionDeclaration'
-import { Detail, Phase, PhaseEnum } from './Module'
+import DOMScheduler from '@rosemlabs/dom-scheduler'
+import { Phase, PhaseEnum } from './Module'
 import Stage from './Stage'
 
 const { setTimeout, clearTimeout, getComputedStyle } = globalThis
@@ -18,7 +18,24 @@ export type StageDispatcherOptions = {
   stageIndex?: number
 }
 
-export default class StageDispatcher {
+export type StageDispatcherDetail = {
+  name: string
+  currentTarget: HTMLElement | SVGSVGElement
+  target: HTMLElement | SVGSVGElement
+  delegateTarget: HTMLElement | SVGSVGElement
+  computedStyle: CSSStyleDeclaration
+  transitionInfo: CSSTransitionDeclaration
+  animationInfo: CSSAnimationDeclaration
+  stageIndex: number
+  stageName: string
+  duration: number
+  running: boolean
+  done?: () => void
+}
+
+export default class StageDispatcher<
+  T extends StageDispatcherDetail = StageDispatcherDetail
+> {
   protected static defaultEasing: CSSTransitionDeclaration = {
     endEventName: 'transitionend',
     properties: [],
@@ -27,25 +44,26 @@ export default class StageDispatcher {
     timeout: 0,
   }
 
-  protected element: HTMLElement | SVGSVGElement
-  protected target: HTMLElement | SVGSVGElement
+  readonly element: HTMLElement | SVGSVGElement
+  readonly currentTarget: HTMLElement | SVGSVGElement
+  readonly target: HTMLElement | SVGSVGElement
   protected options: StageDispatcherOptions = {
     name: 'transition',
     stageIndex: 0,
   }
   // name: string
-  protected stages: Stage[]
-  protected detail!: Detail
-  protected stageIndex: number
-  protected running = false
+  protected stages: Stage<T>[]
+  detail!: T
+  stageIndex: number
+  running = false
   protected easing: CSSTransitionDeclaration | CSSAnimationDeclaration =
     StageDispatcher.defaultEasing
   protected easingEndEventListener?: EventListener
-  protected easingEndTimerId?: number
-  protected frameId?: number
-  protected mutateTask?: () => void
+  protected easingEndTimerId?: NodeJS.Timeout | number
+  // protected frameId?: number
+  protected tasks: (() => void)[] = []
   protected timerId?: NodeJS.Timeout | number
-  protected resolve?: (value?: Detail | PromiseLike<Detail>) => void
+  protected resolve?: (value?: T | PromiseLike<T>) => void
 
   constructor(
     element: HTMLElement | SVGSVGElement,
@@ -53,20 +71,18 @@ export default class StageDispatcher {
     options?: StageDispatcherOptions
   ) {
     this.element = element
-    this.target = this.element
+    this.currentTarget = this.element
+    this.target =
+      null != this.options.target
+        ? this.currentTarget.querySelector(this.options.target) ||
+          this.currentTarget
+        : this.currentTarget
     this.stages = stages
     this.options = Object.assign(this.options, options || {})
     this.stageIndex = this.options.stageIndex || 0
   }
 
-  public get delegatedTarget(): HTMLElement | SVGSVGElement {
-    // todo remove ternary or maybe just make it as computed?
-    return null != this.options.target
-      ? this.target.querySelector(this.options.target) || this.target
-      : this.target
-  }
-
-  public get stage(): Stage {
+  public get stage(): Stage<T> {
     return this.stages[this.stageIndex]
   }
 
@@ -84,30 +100,11 @@ export default class StageDispatcher {
     return this.stage.isExplicitDuration
   }
 
-  protected cancelNextFrame(): void {
-    //todo
-    if (this.mutateTask) {
-      DOMScheduler.clear(this.mutateTask)
-    }
-
-    if (this.frameId) {
-      // Auto duration used
-      globalThis.cancelAnimationFrame(this.frameId)
-      this.frameId = undefined
-    } else {
-      // Custom duration used
-      globalThis.clearTimeout(this.timerId as NodeJS.Timeout)
-      this.timerId = undefined
-    }
-  }
-
-  protected addEasingEndEventListener(detail: Detail): void {
+  protected addEasingEndEventListener(): void {
     this.easing = StageDispatcher.defaultEasing
 
     if (!this.isExplicitDuration) {
-      const computedStyle = this.detail.computedStyle
-      const transitionInfo = getComputedTransition(computedStyle)
-      const animationInfo = getComputedAnimation(computedStyle)
+      const { target, transitionInfo, animationInfo } = this.detail
 
       if (
         transitionInfo.timeout &&
@@ -115,19 +112,17 @@ export default class StageDispatcher {
       ) {
         this.easing = transitionInfo
         this.easingEndEventListener = this.onTransitionEnd.bind(
-          this,
-          detail
+          this
         ) as EventListener
       } else if (animationInfo.timeout) {
         this.easing = animationInfo
         this.easingEndEventListener = this.onAnimationEnd.bind(
-          this,
-          detail
+          this
         ) as EventListener
       }
 
       if (null != this.easingEndEventListener && this.easing.timeout > 0) {
-        this.detail.target.addEventListener(
+        target.addEventListener(
           this.easing.endEventName,
           this.easingEndEventListener,
           { passive: true }
@@ -136,9 +131,7 @@ export default class StageDispatcher {
         this.easingEndTimerId = setTimeout(
           this.easingEndEventListener,
           this.easing.timeout + 50,
-          {
-            target: this.detail.target,
-          }
+          { target }
         )
       }
     } else {
@@ -149,141 +142,189 @@ export default class StageDispatcher {
   protected removeEasingEndEventListener(): void {
     if (
       null != this.easingEndEventListener &&
-      null != this.delegatedTarget &&
+      null != this.target &&
       !this.isExplicitDuration
     ) {
-      this.delegatedTarget.removeEventListener(
+      this.target.removeEventListener(
         this.easing.endEventName,
         this.easingEndEventListener
       )
       // Clear failsafe
-      clearTimeout(this.easingEndTimerId)
+      clearTimeout(this.easingEndTimerId as NodeJS.Timeout)
     }
   }
 
-  protected onTransitionEnd(detail: Detail, event: TransitionEvent): void {
+  protected onTransitionEnd(event: TransitionEvent): void {
     if (
       this.running &&
-      event.target === this.delegatedTarget &&
+      event.target === this.target &&
       isTransitionMaxTimeout(
         this.easing as CSSTransitionDeclaration,
         event.propertyName
       )
     ) {
-      this.done(detail)
+      this.done()
     }
   }
 
-  protected onAnimationEnd(detail: Detail, event: AnimationEvent): void {
+  protected onAnimationEnd(event: AnimationEvent): void {
     if (
       this.running &&
-      event.target === this.delegatedTarget &&
+      event.target === this.target &&
       isAnimationMaxTimeout(
         this.easing as CSSAnimationDeclaration,
         event.animationName
       )
     ) {
-      this.done(detail)
+      this.done()
     }
   }
 
-  protected dispatchPhase(phase: Phase, detail: Detail): Detail {
-    return this.stage.dispatch(phase, detail)
+  protected dispatchPhase(phase: Phase): void {
+    this.stage.dispatch(this, phase)
   }
 
-  protected done(detail: Detail): Detail {
-    this.removeEasingEndEventListener()
-    delete detail.done
-    this.running = false
+  queueMeasureTask(comment: string, task: () => void): void {
+    this.tasks.push(task)
+    DOMScheduler.measure(task)
+    console.log(comment)
+  }
 
-    const finalDetail = this.dispatchPhase(PhaseEnum.AfterEnd, detail)
+  queueMutationTask(comment: string, task: () => void): void {
+    const newTask = (): void => {
+      task()
+      console.log(comment)
+    }
+    this.tasks.push(newTask)
+    DOMScheduler.mutate(newTask)
+  }
+
+  protected clearTasks(): void {
+    for (const task of this.tasks) {
+      DOMScheduler.clear(task)
+    }
+
+    this.tasks.length = 0
+
+    if (this.timerId) {
+      // Custom duration used
+      clearTimeout(this.timerId as NodeJS.Timeout)
+      this.timerId = undefined
+    }
+    // else {
+    //   // Auto duration used
+    //   cancelAnimationFrame(this.frameId)
+    //   this.frameId = undefined
+    // }
+  }
+
+  protected done(): void {
+    this.removeEasingEndEventListener()
+    delete this.detail.done
+    this.queueMutationTask('done before AfterEnd', (): void => {
+      this.running = false
+      this.tasks.length = 0
+    })
+    this.dispatchPhase(PhaseEnum.AfterEnd)
 
     if (null != this.resolve) {
-      this.resolve(finalDetail)
+      this.resolve(this.detail)
     }
-
-    return finalDetail
   }
 
-  protected cancelled(detail: Detail): Detail {
-    this.cancelNextFrame()
+  protected cancelled(): void {
+    this.clearTasks()
     this.removeEasingEndEventListener()
+    this.dispatchPhase(PhaseEnum.Cancelled)
+  }
+
+  assignDetail(detail: Record<string, unknown>): void {
+    Object.assign(this.detail, detail)
+  }
+
+  computeDetail(): void {
+    this.queueMeasureTask('1. compute detail basic', (): void => {
+      const target = this.target
+
+      this.detail = {
+        ...this.detail,
+        name: this.options.name,
+        currentTarget: this.element,
+        target,
+        delegateTarget: this.currentTarget,
+        stageIndex: this.stageIndex,
+        stageName: this.stageName,
+        duration: this.duration || 0,
+        running: this.running,
+      }
+
+      this.queueMeasureTask('3. compute detail transition', (): void => {
+        const computedStyle = getComputedStyle(target)
+
+        this.detail.transitionInfo = getComputedTransition(computedStyle)
+        this.detail.animationInfo = getComputedAnimation(computedStyle)
+      })
+    })
+  }
+
+  public forceDispatchByIndex(stageIndex = 0): Promise<T> {
     this.running = false
+    this.computeDetail()
+    this.queueMeasureTask(
+      'force change stage index and clear tasks',
+      (): void => {
+        this.stageIndex = this.detail.stageIndex = stageIndex
+        this.clearTasks()
+      }
+    )
+    this.dispatchPhase(PhaseEnum.AfterEnd)
 
-    return this.dispatchPhase(PhaseEnum.Cancelled, detail)
+    return new Promise((resolve) => {
+      this.resolve = resolve
+    })
   }
 
-  public cancel(): Detail {
-    return this.dispatchPhase(PhaseEnum.Cancelled, this.getDetail())
-  }
-
-  public getDetail(): Detail {
-    const delegatedTarget = this.delegatedTarget
-
-    return {
-      ...this.detail,
-      name: this.options.name,
-      currentTarget: this.element,
-      target: delegatedTarget,
-      computedStyle: getComputedStyle(delegatedTarget),
-      delegateTarget: this.target,
-      stageIndex: this.stageIndex,
-      stageName: this.stageName,
-      duration: this.duration || 0,
-    }
-  }
-
-  public forceDispatchByIndex(stageIndex = 0): Detail {
-    const detail = this.getDetail()
-
-    this.stageIndex = detail.stageIndex = stageIndex
-
-    return this.dispatchPhase(PhaseEnum.AfterEnd, detail)
-  }
-
-  public dispatchByIndex(stageIndex = 0): Promise<Detail> {
-    //todo
-    this.mutateTask && DOMScheduler.clear(this.mutateTask)
-    globalThis.cancelAnimationFrame(this.frameId as number)
-
-    if (this.running) {
-      this.cancelled(this.detail)
+  public dispatchByIndex(stageIndex = 0): Promise<T> {
+    if (this.tasks.length) {
+      this.cancelled()
     }
 
     if (this.stageIndex !== stageIndex) {
       const oldStageIndex = this.stageIndex
 
+      this.computeDetail()
+      // this.queueMeasureTask('2. change stage index', (): void => {
+      //   // Should be inside the task!
+      // })
       this.stageIndex = stageIndex
-      this.stages[oldStageIndex].dispatch(
-        PhaseEnum.Cleanup,
-        (this.detail = this.getDetail())
-      )
+      this.stages[oldStageIndex].dispatch(this, PhaseEnum.BeforeStageChange)
     }
 
-    this.dispatchPhase(PhaseEnum.BeforeStart, this.detail)
-    this.running = true
-    // this.frameId = globalThis.requestAnimationFrame(
-    this.mutateTask = DOMScheduler.mutate(() => {
-      this.addEasingEndEventListener(this.detail)
-      this.detail.done = () => this.done(this.detail)
-      this.dispatchPhase(PhaseEnum.Start, this.detail)
-
-      if (this.isExplicitDuration) {
-        if ((this.stage.duration as number) > 0) {
-          // Remove frame id as we will use setTimeout function instead of
-          // requestAnimationFrame function
-          this.frameId = undefined
-          this.timerId = globalThis.setTimeout(() => {
-            this.done(this.detail)
-          }, this.stage.duration)
-        } else {
-          // No need to run on next macrotask if zero duration
-          this.done(this.detail)
+    this.dispatchPhase(PhaseEnum.BeforeStart)
+    this.queueMutationTask('after BeforeStart', (): void => {
+      // Request a new animation frame (alongside with the existed one in the
+      // DOM scheduler) to run the code in a next frame
+      this.queueMutationTask('after BeforeStart next frame', (): void => {
+        this.running = true
+        this.addEasingEndEventListener()
+        this.detail.done = this.done.bind(this)
+      })
+      this.dispatchPhase(PhaseEnum.Start)
+      this.queueMutationTask('after Start', (): void => {
+        if (this.isExplicitDuration) {
+          if ((this.stage.duration as number) > 0) {
+            this.timerId = setTimeout(() => {
+              this.done()
+            }, this.stage.duration)
+          } else {
+            // No need to run on next macrotask if zero duration
+            this.done()
+          }
+        } else if (this.easing.timeout <= 0) {
+          // If zero duration then end event won't be fired
+          this.done()
         }
-      } else if (this.easing.timeout <= 0) {
-        // If zero duration then end event won't be fired
-        this.done(this.detail)
-      }
+      })
     })
 
     return new Promise((resolve) => {
@@ -291,10 +332,7 @@ export default class StageDispatcher {
     })
   }
 
-  public play(
-    startStageIndex = 0,
-    endStageIndex?: number | null
-  ): Promise<Detail> {
+  public play(startStageIndex = 0, endStageIndex?: number | null): Promise<T> {
     endStageIndex = null != endStageIndex ? endStageIndex : this.stages.length
 
     return this.dispatchByIndex(startStageIndex).then((detail) => {

@@ -1,19 +1,21 @@
 import { Middleware } from './Middleware'
-import Module, { Detail, Phase } from './Module'
+import Module, { Phase } from './Module'
 import ModuleDispatcher, {
   ModuleDispatcherPhaseOrder,
 } from './ModuleDispatcher'
+import StageDispatcher, { StageDispatcherDetail } from './StageDispatcher'
 
-export default class Stage implements ModuleDispatcher {
+export default class Stage<T extends StageDispatcherDetail>
+  implements ModuleDispatcher<T> {
   public readonly name: string
 
   public readonly duration: number
 
   public readonly isExplicitDuration: boolean = false
 
-  private middleware?: Middleware
+  private middleware?: Middleware<T>
 
-  private lastMiddleware?: Middleware
+  private lastMiddleware?: Middleware<T>
 
   constructor(name: string, duration?: number) {
     this.name = name
@@ -26,7 +28,7 @@ export default class Stage implements ModuleDispatcher {
     }
   }
 
-  addModule(module: Module, order?: ModuleDispatcherPhaseOrder | number) {
+  addModule(module: Module<any, T>, order?: ModuleDispatcherPhaseOrder | number) {
     this.lastMiddleware = new Middleware(module, this.lastMiddleware)
 
     if (!this.middleware) {
@@ -34,15 +36,9 @@ export default class Stage implements ModuleDispatcher {
     }
   }
 
-  dispatch(phase: Phase, detail: Detail): Detail {
+  dispatch(stageDispatcher: StageDispatcher<T>, phase: Phase): void {
     if (this.middleware) {
-      this.middleware.process(phase, detail)
+      this.middleware.process(stageDispatcher, phase)
     }
-
-    // this.middlewareList.forEach((module) => {
-    //   module[phase](Object.assign(detail, module.getDetail()))
-    // })
-
-    return detail
   }
 }

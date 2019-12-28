@@ -1,46 +1,52 @@
-import DOMScheduler from '@rosemlabs/dom-scheduler'
-import { Detail } from '../Module'
-import Delegate from './Delegate'
+import Module from '../Module'
 
 export type Size = 'width' | 'height'
-export type SizeProperty = 'offsetWidth' | 'offsetHeight'
 
-export const sizeMap: Record<Size, SizeProperty> = {
-  width: 'offsetWidth',
-  height: 'offsetHeight',
+export type Side = 'top' | 'right' | 'bottom' | 'left'
+
+export type SizeProperty = 'scrollWidth' | 'scrollHeight'
+
+export const SIZE_INDEX_SCROLL_SIZE_MAP: Record<Size, SizeProperty> = {
+  width: 'scrollWidth',
+  height: 'scrollHeight',
 }
 
-export default abstract class AutoSize extends Delegate {
+export const SIZE_INDEX_PADDING_SIDE_MAP: Record<Size, Side[]> = {
+  width: ['left', 'right'],
+  height: ['top', 'bottom'],
+}
+
+export function getPropertiesBySizeIndex(
+  property: string,
+  size: Size
+): string[] {
+  return SIZE_INDEX_PADDING_SIDE_MAP[size].map((size: Side) => {
+    return `${property}-${size}`
+  })
+}
+
+export type AutoSizeDetail = {
+  width?: number
+  height?: number
+  sizeList: Size[]
+}
+
+export default abstract class AutoSize implements Module<AutoSizeDetail> {
   protected readonly sizeList: Size[]
-  protected readonly propertyList: SizeProperty[]
 
   constructor(sizeList: Size[] = ['height']) {
-    super()
     this.sizeList = sizeList
-    this.propertyList = sizeList.map((size) => sizeMap[size])
   }
 
-  protected removeStyles(detail: Detail): void {
-    const { target } = detail
-
-    detail.taskList.push(
-      DOMScheduler.mutate(() => {
-        this.sizeList.forEach((property) => {
-          target.style.setProperty(property, '')
-        })
-      })
-    )
+  protected removeSizeStyles(target: HTMLElement | SVGSVGElement): void {
+    this.sizeList.forEach((property) => {
+      target.style.setProperty(property, '')
+    })
   }
 
-  cancelled(detail: Detail, next: () => void): void {
-    detail.taskList.forEach((task: Function) => DOMScheduler.clear(task))
-    super.cancelled(detail, next)
-  }
-
-  getDetail(): Partial<Detail> {
+  getDetail(): AutoSizeDetail {
     return {
-      autoSize: true,
-      autoSizePropertyList: this.propertyList,
+      sizeList: this.sizeList,
     }
   }
 }

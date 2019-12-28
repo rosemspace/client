@@ -1,4 +1,5 @@
-import { AbstractModule, Detail } from '../Module'
+import Module from '../Module'
+import StageDispatcher, { StageDispatcherDetail } from '../StageDispatcher'
 
 export type PhaseClassOptions = Partial<{
   fromClass: string
@@ -9,7 +10,9 @@ export type PhaseClassOptions = Partial<{
 
 export type PhaseClassDetail = Required<PhaseClassOptions>
 
-export default class PhaseClass extends AbstractModule {
+export default class PhaseClass<
+  T extends StageDispatcherDetail & PhaseClassDetail
+> implements Module<PhaseClassDetail> {
   static CLASS_PREFIX_FROM = ''
   static CLASS_PREFIX_ACTIVE = ''
   static CLASS_PREFIX_TO = ''
@@ -23,7 +26,6 @@ export default class PhaseClass extends AbstractModule {
   private readonly options: PhaseClassOptions
 
   constructor(name: string, options: PhaseClassOptions) {
-    super()
     this.name = name
     this.options = { ...options }
   }
@@ -58,42 +60,61 @@ export default class PhaseClass extends AbstractModule {
     )
   }
 
-  cleanup(detail: Detail, next: () => void): void {
-    this.mutate(() => {
-      detail.target.classList.remove(this.doneClass)
+  beforeStageChange(
+    stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
+    next: () => void
+  ): void {
+    stageDispatcher.queueMutationTask(
+      `PhaseClass beforeStageChange ${this.doneClass}`,
+      (): void => {
+        stageDispatcher.target.classList.remove(this.doneClass)
+      }
+    )
+    next()
+  }
+
+  beforeStart(
+    stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
+    next: () => void
+  ): void {
+    stageDispatcher.queueMutationTask(
+      `PhaseClass beforeStart ${this.fromClass + ` ${stageDispatcher.stageIndex} ` + this.activeClass}`,
+      (): void => {
+        stageDispatcher.target.classList.remove(this.toClass, this.doneClass)
+        stageDispatcher.target.classList.add(this.fromClass, this.activeClass)
+      }
+    )
+    next()
+  }
+
+  start(
+    stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
+    next: () => void
+  ): void {
+    stageDispatcher.queueMutationTask('PhaseClass start', (): void => {
+      stageDispatcher.target.classList.remove(this.fromClass)
+      stageDispatcher.target.classList.add(this.toClass)
     })
     next()
   }
 
-  beforeStart({ target }: Detail, next: () => void): void {
-    this.mutate(() => {
-      target.classList.remove(this.toClass, this.doneClass)
-      target.classList.add(this.fromClass, this.activeClass)
+  afterEnd(
+    stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
+    next: () => void
+  ): void {
+    stageDispatcher.queueMutationTask('PhaseClass AfterEnd', (): void => {
+      stageDispatcher.target.classList.remove(this.activeClass, this.toClass)
+      stageDispatcher.target.classList.add(this.doneClass)
     })
     next()
   }
 
-  start({ target }: Detail, next: () => void): void {
-    this.mutate(() => {
-      target.classList.remove(this.fromClass)
-      target.classList.add(this.toClass)
-    })
-    next()
-  }
-
-  afterEnd({ target }: Detail, next: () => void): void {
-    this.mutate(() => {
-      target.classList.remove(this.activeClass, this.toClass)
-      target.classList.add(this.doneClass)
-    })
-    next()
-  }
-
-  cancelled(detail: Detail, next: () => void): void {
-    super.clearTasks()
-    this.mutate(() => {
-      console.log(this.fromClass, this.activeClass, this.toClass)
-      detail.target.classList.remove(
+  cancelled(
+    stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
+    next: () => void
+  ): void {
+    stageDispatcher.queueMutationTask('PhaseClass cancelled', (): void => {
+      stageDispatcher.target.classList.remove(
         this.fromClass,
         this.activeClass,
         this.toClass

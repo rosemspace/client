@@ -1,11 +1,7 @@
-import DOMScheduler from '@rosemlabs/dom-scheduler'
-import { EventDispatcherDetail } from './module/EventDispatcher'
-import { HideAfterEndDetail } from './module/HideAfterEnd'
-import { PhaseClassDetail } from './module/PhaseClass'
-import { ShowBeforeStartDetail } from './module/ShowBeforeStart'
+import StageDispatcher, { StageDispatcherDetail } from './StageDispatcher'
 
 export enum PhaseEnum {
-  Cleanup = 'cleanup',
+  BeforeStageChange = 'beforeStageChange',
   BeforeStart = 'beforeStart',
   Start = 'start',
   AfterEnd = 'afterEnd',
@@ -13,63 +9,25 @@ export enum PhaseEnum {
 }
 
 export type Phase =
-  | PhaseEnum.Cleanup
+  | PhaseEnum.BeforeStageChange
   | PhaseEnum.BeforeStart
   | PhaseEnum.Start
   | PhaseEnum.AfterEnd
   | PhaseEnum.Cancelled
 
-export type Detail = {
-  name: string
-  currentTarget: HTMLElement | SVGSVGElement
-  target: HTMLElement | SVGSVGElement
-  delegateTarget: HTMLElement | SVGSVGElement
-  stageIndex: number
-  stageName: string
-  duration: number
-  done?: () => Detail
-  computedStyle: CSSStyleDeclaration
-  scheduleAnimationFrame: () => void
-} & Partial<EventDispatcherDetail> &
-  Partial<HideAfterEndDetail> &
-  Partial<PhaseClassDetail> &
-  Partial<ShowBeforeStartDetail> &
-  Record<string, any>
+export type PhaseHook<
+  T extends StageDispatcherDetail = StageDispatcherDetail
+> = (stageDispatcher: StageDispatcher<T>, next: () => void) => void
 
-export type PhaseHook = (detail: Detail, next: () => void) => void
-
-export default interface Module {
-  cleanup?: PhaseHook
-  beforeStart?: PhaseHook
-  start?: PhaseHook
-  afterEnd?: PhaseHook
-  cancelled?: PhaseHook
-  getDetail(): Partial<Detail>
-}
-
-export abstract class AbstractModule implements Module {
-  private mutateTask: () => void = () => void 0
-
-  private measureTask: () => void = () => void 0
-
-  abstract getDetail(): Partial<Detail>
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  cancelled(detail: Detail, next: () => void): void {
-    this.clearTasks()
-    next()
-  }
-
-  protected mutate(callback: () => void): void {
-    DOMScheduler.mutate((this.mutateTask = callback))
-  }
-
-  protected measure(callback: () => void): void {
-    DOMScheduler.measure((this.measureTask = callback))
-  }
-
-  protected clearTasks(): void {
-    DOMScheduler.clear(this.mutateTask)
-    DOMScheduler.clear(this.measureTask)
-  }
+export default interface Module<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  U extends Record<string, unknown> = any,
+  T extends StageDispatcherDetail = StageDispatcherDetail
+> {
+  beforeStageChange?: PhaseHook<U & T>
+  beforeStart?: PhaseHook<U & T>
+  start?: PhaseHook<U & T>
+  afterEnd?: PhaseHook<U & T>
+  cancelled?: PhaseHook<U & T>
+  getDetail(): U
 }

@@ -1,4 +1,5 @@
-import Module, { Detail, Phase, PhaseEnum } from './Module'
+import Module, { Phase, PhaseEnum } from './Module'
+import StageDispatcher, { StageDispatcherDetail } from './StageDispatcher'
 
 export type ModuleDispatcherPhaseOrder = {
   [PhaseEnum.BeforeStart]: number
@@ -6,8 +7,11 @@ export type ModuleDispatcherPhaseOrder = {
   [PhaseEnum.AfterEnd]: number
 }
 
-export default interface ModuleDispatcher {
-  addModule(module: Module, order?: ModuleDispatcherPhaseOrder | number): void
+export default interface ModuleDispatcher<T extends StageDispatcherDetail> {
+  addModule(
+    module: Module<any, T>,
+    order?: ModuleDispatcherPhaseOrder | number
+  ): void
 
-  dispatch(phase: Phase, details: Detail): Detail
+  dispatch(stageDispatcher: StageDispatcher<T>, phase: Phase): void
 }

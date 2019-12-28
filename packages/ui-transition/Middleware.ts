@@ -1,15 +1,17 @@
-import Module, { Detail, Phase, PhaseHook } from './Module'
+import Module, { Phase, PhaseHook } from './Module'
+import StageDispatcher, { StageDispatcherDetail } from './StageDispatcher'
 
-interface MiddlewareInterface {
-  process(phase: Phase, detail: Detail): void
+interface MiddlewareInterface<T extends StageDispatcherDetail> {
+  process(stageDispatcher: StageDispatcher<T>, phase: Phase): void
 }
 
-export class Middleware implements MiddlewareInterface {
-  private readonly module: Module
+export class Middleware<T extends StageDispatcherDetail>
+  implements MiddlewareInterface<T> {
+  private readonly module: Module<any, T>
 
-  private successor: MiddlewareInterface = { process: () => void 0 }
+  private successor: MiddlewareInterface<T> = { process: () => void 0 }
 
-  constructor(module: Module, predecessor?: Middleware) {
+  constructor(module: Module<any, T>, predecessor?: Middleware<T>) {
     this.module = module
 
     if (predecessor) {
@@ -17,16 +19,19 @@ export class Middleware implements MiddlewareInterface {
     }
   }
 
-  process(phase: Phase, detail: Detail): void {
+  process(stageDispatcher: StageDispatcher<T>, phase: Phase): void {
     if (null != this.module[phase]) {
-      ;(this.module[phase] as PhaseHook)(
-        Object.assign(detail, this.module.getDetail()),
-        () => {
-          this.successor.process(phase, detail)
+      stageDispatcher.queueMeasureTask(
+        `middleware measure get detail`,
+        (): void => {
+          stageDispatcher.assignDetail(this.module.getDetail())
         }
       )
+      ;(this.module[phase] as PhaseHook<T>)(stageDispatcher, () => {
+        this.successor.process(stageDispatcher, phase)
+      })
     } else {
-      this.successor.process(phase, detail)
+      this.successor.process(stageDispatcher, phase)
     }
   }
 }

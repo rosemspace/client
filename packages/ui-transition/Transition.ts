@@ -1,22 +1,28 @@
 import isPlainObject from 'lodash/isPlainObject'
-import { Detail } from './Module'
-import Stage from './Stage'
-import StageDispatcher, { StageDispatcherOptions } from './StageDispatcher'
+import { AutoSizeDetail, Size } from './module/AutoSize'
 import AutoSizeEnter from './module/AutoSizeEnter'
 import AutoSizeLeave from './module/AutoSizeLeave'
-import PhaseClass from './module/PhaseClass'
-import EventDispatcher from './module/EventDispatcher'
-import ShowBeforeStart from './module/ShowBeforeStart'
-import HideAfterEnd from './module/HideAfterEnd'
+import EventDispatcher, {
+  EventDispatcherDetail,
+} from './module/EventDispatcher'
+import HideAfterEnd, { HideAfterEndDetail } from './module/HideAfterEnd'
+import PhaseClass, { PhaseClassDetail } from './module/PhaseClass'
+import ShowBeforeStart, {
+  ShowBeforeStartDetail,
+} from './module/ShowBeforeStart'
+import Stage from './Stage'
+import StageDispatcher, {
+  StageDispatcherDetail,
+  StageDispatcherOptions,
+} from './StageDispatcher'
 
 // ENTER stage
 // - ShowBeforeStart::beforeStart
 // - PhaseClass::beforeStart
-// - AutoSizeEnter::beforeStart
 // - AutoSizeEnter::start
 // - PhaseClass::start - should go after AutoSizeEnter to do not trigger too early transitionend event
-// - PhaseClass::afterEnd
 // - AutoSizeEnter::afterEnd
+// - PhaseClass::afterEnd
 // - EventDispatcher
 
 // LEAVE stage
@@ -47,10 +53,20 @@ export type TransitionOptions = {
   forceUpdate?: boolean
   hideAfterLeave?: boolean
   events?: boolean
-  autoSize?: boolean | ('width' | 'height') | ('width' | 'height')[]
+  autoSize?: boolean | Size | Size[]
 } & StageDispatcherOptions
 
+export type TransitionDetail = StageDispatcherDetail &
+  Partial<
+    AutoSizeDetail &
+      EventDispatcherDetail &
+      HideAfterEndDetail &
+      PhaseClassDetail &
+      ShowBeforeStartDetail
+  >
+
 export const STAGE_LEAVE_ORDER = 0
+
 export const STAGE_ENTER_ORDER = 1
 
 export const defaultOptions: TransitionOptions = {
@@ -63,8 +79,9 @@ export const defaultOptions: TransitionOptions = {
   autoSize: false,
 }
 
-export default class Transition extends StageDispatcher {
+export default class Transition extends StageDispatcher<TransitionDetail> {
   static STAGE_LEAVE_ORDER: number = STAGE_LEAVE_ORDER
+
   static STAGE_ENTER_ORDER: number = STAGE_ENTER_ORDER
 
   protected options: TransitionOptions
@@ -97,23 +114,9 @@ export default class Transition extends StageDispatcher {
       enterStage.addModule(new ShowBeforeStart())
     }
 
-    // Should ge before AutoSizeEnter
-    if (this.options.css) {
-      enterStage.addModule(
-        new PhaseClass(`${this.options.name}-${enterStage.name}`, {
-          fromClass: this.options.enterClass,
-          activeClass: this.options.enterActiveClass,
-          toClass: this.options.enterToClass,
-          doneClass: this.options.enterDoneClass,
-        })
-      )
-    }
-
+    // Should ge before PhaseClass as there are measure tasks
     if (this.options.autoSize) {
-      let autoSize:
-        | boolean
-        | ('width' | 'height')
-        | ('width' | 'height')[] = this.options.autoSize
+      let autoSize: boolean | Size | Size[] = this.options.autoSize
 
       if (!Array.isArray(autoSize)) {
         autoSize = autoSize === true ? ['width', 'height'] : [autoSize]
@@ -125,7 +128,6 @@ export default class Transition extends StageDispatcher {
       }
     }
 
-    // Should go after AutoSizeLeave
     if (this.options.css) {
       leaveStage.addModule(
         new PhaseClass(`${this.options.name}-${leaveStage.name}`, {
@@ -133,6 +135,17 @@ export default class Transition extends StageDispatcher {
           activeClass: this.options.leaveActiveClass,
           toClass: this.options.leaveToClass,
           doneClass: this.options.leaveDoneClass,
+        })
+      )
+    }
+
+    if (this.options.css) {
+      enterStage.addModule(
+        new PhaseClass(`${this.options.name}-${enterStage.name}`, {
+          fromClass: this.options.enterClass,
+          activeClass: this.options.enterActiveClass,
+          toClass: this.options.enterToClass,
+          doneClass: this.options.enterDoneClass,
         })
       )
     }
@@ -154,29 +167,29 @@ export default class Transition extends StageDispatcher {
     }
   }
 
-  forceLeave(): void {
-    this.forceDispatchByIndex(STAGE_LEAVE_ORDER)
+  forceLeave(): Promise<TransitionDetail> {
+    return this.forceDispatchByIndex(STAGE_LEAVE_ORDER)
   }
 
-  forceEnter(): void {
-    this.forceDispatchByIndex(STAGE_ENTER_ORDER)
+  forceEnter(): Promise<TransitionDetail> {
+    return this.forceDispatchByIndex(STAGE_ENTER_ORDER)
   }
 
-  forceUpdate(): void {
-    this.stageIndex !== STAGE_LEAVE_ORDER
+  forceUpdate(): Promise<TransitionDetail> {
+    return this.stageIndex !== STAGE_LEAVE_ORDER
       ? this.forceEnter()
       : this.forceLeave()
   }
 
-  leave(): Promise<Detail> {
+  leave(): Promise<TransitionDetail> {
     return this.dispatchByIndex(STAGE_LEAVE_ORDER)
   }
 
-  enter(): Promise<Detail> {
+  enter(): Promise<TransitionDetail> {
     return this.dispatchByIndex(STAGE_ENTER_ORDER)
   }
 
-  toggle(stageIndex?: number): Promise<Detail> {
+  toggle(stageIndex?: number): Promise<TransitionDetail> {
     if (null == stageIndex) {
       stageIndex = Number(!this.stageIndex)
     }

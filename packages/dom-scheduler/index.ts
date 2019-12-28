@@ -4,12 +4,6 @@ function remove<T>(array: T[], item: T): boolean {
   return !!~index && !!array.splice(index, 1)
 }
 
-function runTasks(tasks: Function[]) {
-  let task
-  //todo improve performance
-  while ((task = tasks.shift())) task()
-}
-
 export default new (class DOMScheduler {
   private readonly reads: Function[] = []
 
@@ -19,6 +13,20 @@ export default new (class DOMScheduler {
 
   catch?: (error: Error) => unknown
 
+  /**
+   * We run this inside a try catch
+   * so that if any jobs error, we
+   * are able to recover and continue
+   * to flush the batch until it's empty.
+   *
+   * @param {Array} tasks
+   */
+  runTasks(tasks: Function[]) {
+    let task
+    //todo improve performance
+    while ((task = tasks.shift())) task()
+  }
+
   measure<T extends Function>(task: T): T {
     this.reads.push(task)
     this.scheduleFlush()
@@ -26,7 +34,7 @@ export default new (class DOMScheduler {
     return task
   }
 
-  mutate<T extends Function>(task: T, name?: string, description?: string): T {
+  mutate<T extends Function>(task: T): T {
     this.writes.push(task)
     this.scheduleFlush()
 
@@ -40,23 +48,27 @@ export default new (class DOMScheduler {
   protected scheduleFlush() {
     if (!this.scheduled) {
       this.scheduled = true
-      requestAnimationFrame(() => this.flush())
+      requestAnimationFrame(() => {
+        this.flush()
+      })
     }
   }
 
   protected flush() {
-    const writes = this.writes
-    const reads = this.reads
+    const reads = this.reads.slice()
+    const writes = this.writes.slice()
     let error: Error | undefined
 
+    this.reads.length = 0
+    this.writes.length = 0
+    this.scheduled = false
+
     try {
-      runTasks(reads)
-      runTasks(writes)
+      this.runTasks(reads)
+      this.runTasks(writes)
     } catch (e) {
       error = e
     }
-
-    this.scheduled = false
 
     // If the batch errored we may still have tasks queued
     if (reads.length || writes.length) {

@@ -1,59 +1,77 @@
-import Module, { Detail } from '../Module'
+import Module from '../Module'
+import StageDispatcher, { StageDispatcherDetail } from '../StageDispatcher'
 
-export type EventDispatcherDetail = {
-  eventInit: CustomEventInit<Detail>
-}
+export type EventDispatcherDetail = {}
 
-const eventDispatcherDefaultOptions: CustomEventInit<Detail> = {
-  bubbles: false,
-  cancelable: false,
-  composed: false,
-}
-
-export default class EventDispatcher implements Module {
+export default class EventDispatcher implements Module<EventDispatcherDetail> {
   protected readonly stageName: string
-  protected eventInit: CustomEventInit<Detail>
+  protected eventInit: CustomEventInit
 
-  constructor(stageName: string, eventInit: CustomEventInit<Detail> = {}) {
+  constructor(stageName: string, eventInit?: CustomEventInit) {
     this.stageName = stageName
-    this.eventInit = { ...eventDispatcherDefaultOptions, ...eventInit }
+    this.eventInit = {
+      ...{
+        bubbles: false,
+        cancelable: false,
+        composed: false,
+      },
+      ...(eventInit || {}),
+    }
   }
 
-  beforeStart(detail: Detail, next: () => void): void {
-    this.eventInit.detail = detail
-    detail.currentTarget.dispatchEvent(
+  beforeStart(
+    stageDispatcher: StageDispatcher<
+      StageDispatcherDetail & EventDispatcherDetail
+    >,
+    next: () => void
+  ): void {
+    this.eventInit.detail = stageDispatcher.detail
+    stageDispatcher.currentTarget.dispatchEvent(
       new CustomEvent(`before-${this.stageName}`, this.eventInit)
     )
     next()
   }
 
-  start(detail: Detail, next: () => void): void {
-    this.eventInit.detail = detail
-    detail.currentTarget.dispatchEvent(
+  start(
+    stageDispatcher: StageDispatcher<
+      StageDispatcherDetail & EventDispatcherDetail
+    >,
+    next: () => void
+  ): void {
+    this.eventInit.detail = stageDispatcher.detail
+    stageDispatcher.currentTarget.dispatchEvent(
       new CustomEvent(this.stageName, this.eventInit)
     )
     next()
   }
 
-  afterEnd(detail: Detail, next: () => void): void {
-    this.eventInit.detail = detail
-    detail.currentTarget.dispatchEvent(
+  afterEnd(
+    stageDispatcher: StageDispatcher<
+      StageDispatcherDetail & EventDispatcherDetail
+    >,
+    next: () => void
+  ): void {
+    this.eventInit.detail = stageDispatcher.detail
+    stageDispatcher.currentTarget.dispatchEvent(
       new CustomEvent(`after-${this.stageName}`, this.eventInit)
     )
     next()
   }
 
-  cancelled(detail: Detail, next: () => void): void {
-    this.eventInit.detail = detail
-    detail.currentTarget.dispatchEvent(
+  cancelled(
+    stageDispatcher: StageDispatcher<
+      StageDispatcherDetail & EventDispatcherDetail
+    >,
+    next: () => void
+  ): void {
+    this.eventInit.detail = stageDispatcher.detail
+    stageDispatcher.currentTarget.dispatchEvent(
       new CustomEvent(`${this.stageName}-cancelled`, this.eventInit)
     )
     next()
   }
 
   getDetail(): EventDispatcherDetail {
-    return {
-      eventInit: this.eventInit,
-    }
+    return {}
   }
 }

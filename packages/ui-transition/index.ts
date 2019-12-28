@@ -10,7 +10,8 @@ export default {
         background: blue;
         transition: all 1s;
       }
-      .list {padding: 15px 30px;margin: 10px;/*width: 100px;height: 20px;*/background: red;}
+      .list {padding: 15px 30px;margin: 10px;/*width: 100px;height: 20px;*/background: yellow;}
+      /*.list {padding: 0;margin: 0;}*/
       .list > li {padding: 10px 20px;}
       .square {width: 50px; height: 50px; background: orange;}
 
@@ -32,9 +33,12 @@ export default {
         transition: all 1.5s;
       }
       .morph-enter, .morph-leave-to, .morph-leave-done {
-        /*width: 100px;*/
         border-radius: 50%;
-        /*height: 100px;*/
+        /*width: 0;*/
+        height: 0;
+        border-width: 0;
+        margin: 0;
+        padding: 0;
         background-color: green;
       }
     `
@@ -44,10 +48,28 @@ export default {
   test() {
     // this.init()
 
-    const div = document.createElement('div')
+    const box = document.createElement('div')
 
-    div.classList.add('box')
-    document.body.appendChild(div)
+    box.classList.add('box')
+    document.body.appendChild(box)
+
+    const button = document.createElement('button')
+
+    button.textContent = 'PLAY'
+    document.body.appendChild(button)
+    button.addEventListener('click', () => {
+      requestAnimationFrame(() => {
+        box.style.transition = 'none'
+        box.style.transform = 'translateX(1000px)'
+
+        requestAnimationFrame(() => {
+          box.style.transition = 'transform 1s ease-in-out'
+          box.style.transform = 'translateX(500px)'
+        })
+      })
+    })
+    //@ts-ignore
+    window.box = box
   },
 
   test2() {
@@ -81,9 +103,10 @@ export default {
 
     const transition = new Transition(ul, {
       name: 'morph',
+      stageIndex: 1,
       forceUpdate: true,
-      // css: false,
-      // autoSize: true,
+      css: true,
+      autoSize: true,
       hideAfterLeave: true,
       // duration: 2500,
     })
@@ -91,6 +114,12 @@ export default {
     btn.addEventListener('click', async () => {
       await transition.toggle()
     })
+
+    // let i = 100;
+    //
+    // while (--i) {
+    //   transition.toggle()
+    // }
 
     // @ts-ignore
     window.transition = transition
