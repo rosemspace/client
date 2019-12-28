@@ -20,6 +20,9 @@ import SFCLoaderPlugin from '@rosemlabs/sfc-loader/SFCLoaderPlugin'
 const isProduction: boolean = 'production' === process.env.NODE_ENV
 const dir = (path: string): string => resolve(__dirname, path)
 
+const jsEntry: string = dir('packages/battle-city/index.ts')
+const htmlEntry: string = dir('packages/battle-city/index.html')
+
 const babelLoader = {
   loader: 'babel-loader',
   // options: {
@@ -38,7 +41,7 @@ export default {
   //   console: true,
   // },
   context: dir('.'),
-  entry: '@rosemlabs/app/index.ts',
+  entry: jsEntry,
   output: {
     filename: 'main.js',
     path: dir('dist'),
@@ -55,6 +58,7 @@ export default {
       '.sfc',
       '.ts',
       '.tsx',
+      '.glsl',
     ],
     // Needed for Webpack to resolve modules on client side.
     // Can't use it due to a bug
@@ -107,7 +111,7 @@ export default {
             options: {
               // todo use isProduction instead of true
               // transpileOnly: true, // false by default
-              appendTsSuffixTo: ['\\.sfc$'],
+              appendTsSuffixTo: ['\\.sfc$', '\\.glsl$'],
               // happyPackMode: false // false by default
             },
           },
@@ -211,6 +215,10 @@ export default {
           },
         ],
       },
+      {
+        test: /\.glsl$/,
+        use: 'webpack-glsl-loader',
+      },
     ],
   },
   devServer: {
@@ -259,7 +267,7 @@ export default {
       //   'chunk-common',
       //   'index'
       // ],
-      template: 'packages/app/index.html',
+      template: htmlEntry,
       filename: 'index.html',
       title: 'Rosem | Home Page',
     }),

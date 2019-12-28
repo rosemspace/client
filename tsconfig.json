@@ -37,7 +37,8 @@
   "include": [
     "packages/**/*.ts",
     "packages/**/*.tsx",
-    "packages/**/*.sfc"
+    "packages/**/*.sfc",
+    "packages/**/*.glsl"
   ],
   "exclude": [
     "dist",

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico">
+  <title><%= htmlWebpackPlugin.options.title %></title>
+  <style>
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    #canvas, #canvas > canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+<noscript>
+  <strong>We're sorry but <span><%= htmlWebpackPlugin.options.title.split('|')[0].trim() %></span> application doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+</noscript>
+<div id="app"></div>
+<canvas id="canvas" width="640" height="320">Your browser does not seem to support HTML5 canvas.</canvas>
+<!--
+Serves a polyfill with only the browser features
+not supported in the current browser.
+https://polyfill.io/v2/docs/features/
+-->
+<!--<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>-->
+<!-- Built files will be auto injected here. -->
+</body>
+</html>
