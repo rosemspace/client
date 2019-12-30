@@ -64,7 +64,7 @@ export default class Continuum {
   }
 
   private loop(time: number): void {
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT)
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT)// | this.gl.DEPTH_BUFFER_BIT)
 
     const uScalingFactor = this.shader.getUniformLocation('uScalingFactor')
     const uGlobalColor = this.shader.getUniformLocation('uGlobalColor')

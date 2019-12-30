@@ -1,16 +1,17 @@
 {
-  "name": "@rosemlabs/common-util",
+  "name": "@rosemlabs/dom-easing",
   "version": "0.0.1",
-  "description": "Common utility functions",
+  "description": "DOM easing helper functions",
   "keywords": [
-    "util",
-    "utils",
-    "shared",
-    "shared-util",
-    "shared-utils",
-    "common",
-    "common-util",
-    "common-utils"
+    "dom",
+    "easing",
+    "dom-easing",
+    "dom-util",
+    "dom-utils",
+    "easing-util",
+    "easing-utils",
+    "dom-easing-util",
+    "dom-easing-utils"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",
@@ -23,9 +24,6 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "lodash": "^4.17.15"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.149"
+    "@rosemlabs/time-util": "^0.0.1"
   }
 }

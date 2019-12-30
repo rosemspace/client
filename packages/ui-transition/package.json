@@ -1,16 +1,14 @@
 {
-  "name": "@rosemlabs/common-util",
+  "name": "@rosemlabs/ui-transition",
   "version": "0.0.1",
-  "description": "Common utility functions",
+  "description": "UI elements transition component",
   "keywords": [
-    "util",
-    "utils",
-    "shared",
-    "shared-util",
-    "shared-utils",
-    "common",
-    "common-util",
-    "common-utils"
+    "dom",
+    "ui",
+    "transition",
+    "dom-transition",
+    "element-transition",
+    "ui-transition"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",
@@ -23,9 +21,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "lodash": "^4.17.15"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.149"
+    "@rosemlabs/dom-scheduler": "^0.0.1",
+    "@rosemlabs/dom-easing": "^0.0.1"
   }
 }

@@ -28,7 +28,7 @@ if (inBrowser && !isIE) {
     // smaller than it, it means the event is using a hi-res timestamp,
     // and we need to use the hi-res version for event listener timestamps as
     // well.
-    timestamp = () => performance.now()
+    timestamp = performance.now.bind(performance)
   }
 }
 

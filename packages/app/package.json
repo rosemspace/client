@@ -22,7 +22,7 @@
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
-  "dependencies": {
-    "style-loader": "^1.0.0"
+  "devDependencies": {
+    "style-loader": "^1.1.2"
   }
 }

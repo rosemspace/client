@@ -8,5 +8,5 @@ email regexp
 value, valueAsDate, valueAsNumber
 
 life cycle hooks
-mounting (mountingScheduled)
+mounting (mountingScheduled / mountingQueued)
 mounted (already include nextTick)

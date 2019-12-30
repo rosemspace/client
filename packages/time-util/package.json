@@ -1,16 +1,13 @@
 {
-  "name": "@rosemlabs/common-util",
+  "name": "@rosemlabs/time-util",
   "version": "0.0.1",
-  "description": "Common utility functions",
+  "description": "Time utility functions",
   "keywords": [
+    "time",
     "util",
     "utils",
-    "shared",
-    "shared-util",
-    "shared-utils",
-    "common",
-    "common-util",
-    "common-utils"
+    "time-util",
+    "time-utils"
   ],
   "author": "Roman Shevchenko <iroman.via@gmail.com>",
   "homepage": "",
@@ -21,11 +18,5 @@
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
-  },
-  "dependencies": {
-    "lodash": "^4.17.15"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.149"
   }
 }
