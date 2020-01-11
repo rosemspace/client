@@ -1,23 +1,63 @@
-import { Element, HTMLParserHooks, Module, Tokenizer } from '../index'
+import { VElement } from '../ast'
+import { ErrorCode } from '../errors'
+import { HTMLParserEventMap } from '../HTMLParser'
+import Tokenizer, { Module } from '../Tokenizer'
 
 const assign = Object.assign
 
-export default class ElementIntegrity implements Module<HTMLParserHooks> {
-  private readonly tokenizer: Tokenizer<HTMLParserHooks>
-  private readonly elementStack: Element[] = []
+export function matchingStartTagMissed(
+  tokenizer: Tokenizer<HTMLParserEventMap>,
+  element: VElement
+): void {
+  // todo correct error code
+  tokenizer.emit(
+    'error',
+    tokenizer.error(ErrorCode.MISSING_END_TAG_NAME, {
+      __starts: element.__starts,
+      __ends: element.__ends,
+    })
+  )
 
-  constructor(tokenizer: Tokenizer<HTMLParserHooks>) {
-    this.tokenizer = tokenizer
+  // No need
+  // this.tokenizer.consume(element.__ends - element.__starts)
+  // this.tokenizer.replaceToken(this.tokenizer.token().next().value)
+  tokenizer.skipToken()
+}
+
+export function matchingEndTagMissed(
+  tokenizer: Tokenizer<HTMLParserEventMap>,
+  element: VElement
+): void {
+  tokenizer.emit(
+    'error',
+    tokenizer.error(ErrorCode.MISSING_END_TAG_NAME, {
+      __starts: element.__starts,
+      __ends: element.__ends,
+    })
+  )
+  tokenizer.emit('endTag', {
+    ...element,
+    __starts: tokenizer.cursorPosition,
+    __ends: tokenizer.cursorPosition,
+  })
+}
+
+export default class ElementIntegrity implements Module<HTMLParserEventMap> {
+  private readonly elementStack: VElement[] = []
+
+  register(tokenizer: Tokenizer<HTMLParserEventMap>): void {
+    tokenizer.on('startTagOpen', this.onStartTagOpen.bind(this))
+    tokenizer.on('endTag', this.onEndTag.bind(this, tokenizer))
   }
 
-  onStartTagOpen(element: Element): void {
+  onStartTagOpen(element: VElement): void {
     if (!element.void) {
       // Add start tag to the stack of opened tags
       this.elementStack.push(element)
     }
   }
 
-  onEndTag(element: Element): void {
+  onEndTag(tokenizer: Tokenizer<HTMLParserEventMap>, element: VElement): void {
     let lastIndex: number
 
     // Find the closest opened tag of the same type
@@ -52,7 +92,7 @@ export default class ElementIntegrity implements Module<HTMLParserHooks> {
         index > lastIndex;
         --index
       ) {
-        this.matchingEndTagMissed(this.elementStack[index])
+        matchingEndTagMissed(tokenizer, this.elementStack[index])
       }
 
       // const closeElement: Element = {
@@ -70,40 +110,11 @@ export default class ElementIntegrity implements Module<HTMLParserHooks> {
 
       // Remove the open elements from the stack
       this.elementStack.length = lastIndex
-      // tokenizer.advance(endTagMatch[0].length)
+      // tokenizer.consume(endTagMatch[0].length)
 
       // tokenizer.endTag && tokenizer.endTag(closeElement)
     } else {
-      this.matchingStartTagMissed(element)
+      matchingStartTagMissed(tokenizer, element)
     }
-  }
-
-  protected matchingStartTagMissed(element: Element): void {
-    this.tokenizer.error({
-      code: 0, //todo
-      message: `<${element.tagName}> element has no matching start tag`,
-      __starts: element.__starts,
-      __ends: element.__ends,
-    })
-
-    // No need
-    // this.tokenizer.advance(element.__ends - element.__starts)
-    // this.tokenizer.replaceToken(this.tokenizer.token().next().value)
-    this.tokenizer.skipToken()
-  }
-
-  protected matchingEndTagMissed(element: Element): void {
-    this.tokenizer.error({
-      code: 0, //todo
-      message: `<${element.tagName}> element has no matching end tag`,
-      __starts: element.__starts,
-      __ends: element.__ends,
-    })
-
-    this.tokenizer.emit('onEndTag', {
-      ...element,
-      __starts: this.tokenizer.cursorPosition,
-      __ends: this.tokenizer.cursorPosition,
-    })
   }
 }

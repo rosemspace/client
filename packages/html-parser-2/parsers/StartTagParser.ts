@@ -4,45 +4,34 @@ import {
   startTagCloseRegExp,
   startTagOpenRegExp,
 } from '@rosemlabs/xml-util'
-import {
-  Attr,
-  Element,
-  TokenHook,
-  Tokenizer,
-  TokenParser,
-  WithErrorHook,
-} from '../index'
+import { VAttr, VElement } from '../ast'
+import { ErrorCode } from '../errors'
+import { TokenParser } from '../Token'
+import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
 
-export type StartTagParserHooks = Partial<{
-  onStartTagOpen: TokenHook<Element>
-  onAttribute: TokenHook<Attr>
-  onStartTag: TokenHook<Element>
-}>
+export type StartTagParserEventMap = {
+  startTagOpen: VElement
+  attribute: VAttr
+  startTag: VElement
+} & CommonEventMap
 
 export default class StartTagParser extends RegExp
-  implements TokenParser<Element, StartTagParserHooks> {
-  private hooks?: WithErrorHook<StartTagParserHooks> = {
-    //todo: remove
-    onStartTag: console.dir,
-    error: console.warn,
-  }
+  implements TokenParser<StartTagParserEventMap> {
+  readonly delimiter = '<'
 
-  consume: string = '<'
-
-  constructor(hooks?: WithErrorHook<StartTagParserHooks>) {
+  constructor() {
     super(startTagOpenRegExp)
-
-    this.hooks = hooks
   }
 
   parse(
     source: string,
-    tokenizer: Tokenizer<StartTagParserHooks> = new Tokenizer(
+    hooks?: Module<StartTagParserEventMap>,
+    tokenizer: Tokenizer<StartTagParserEventMap> = new Tokenizer(
       [],
-      this.hooks ? [this.hooks] : [],
+      hooks,
       source
     )
-  ): Element | void {
+  ): VElement | void {
     const match: string[] | null = this.exec(source)
 
     if (!match) {
@@ -57,8 +46,8 @@ export default class StartTagParser extends RegExp
 
     const prefix: string | undefined = match[2]
     const localName: string = match[3]
-    const attributes: Attr[] = []
-    const element: Element = {
+    const attributes: VAttr[] = []
+    const element: VElement = {
       nodeType: NodeType.ELEMENT_NODE,
       nodeName,
       tagName: nodeName.toLowerCase(),
@@ -73,8 +62,8 @@ export default class StartTagParser extends RegExp
       __ends: tokenizer.cursorPosition,
     }
 
-    tokenizer.advance(match[0].length)
-    tokenizer.emit('onStartTagOpen', element)
+    tokenizer.consume(match[0].length)
+    tokenizer.emit('startTagOpen', element)
     source = tokenizer.remainingSource
 
     let startTagCloseTagMatch: RegExpMatchArray | null
@@ -90,7 +79,7 @@ export default class StartTagParser extends RegExp
       const name = attrMatch[1]
       // Local name of an attribute, i. e. "xlink" (before ":")
       const [prefix, localName] = name.split(':', 2)
-      const attr: Attr = {
+      const attr: VAttr = {
         nodeType: NodeType.ATTRIBUTE_NODE,
         nodeName: attrMatch[1],
         name,
@@ -104,7 +93,7 @@ export default class StartTagParser extends RegExp
         __starts:
           tokenizer.cursorPosition +
           (attrMatch[0].match(/^\s*/) as RegExpMatchArray).length,
-        __ends: tokenizer.advance(attrMatch[0].length),
+        __ends: tokenizer.consume(attrMatch[0].length),
       }
 
       source = tokenizer.remainingSource
@@ -144,14 +133,14 @@ export default class StartTagParser extends RegExp
       }
 
       attributes.push(attr)
-      tokenizer.emit('onAttribute', attr)
+      tokenizer.emit('attribute', attr)
     }
 
     // If tag is closed
     if (startTagCloseTagMatch) {
       element.unarySlash = startTagCloseTagMatch[1]
       element.void = Boolean(element.unarySlash)
-      element.__ends = tokenizer.advance(startTagCloseTagMatch[0].length)
+      element.__ends = tokenizer.consume(startTagCloseTagMatch[0].length)
 
       // NAMESPACE PLUGIN
       // if (prefix) {
@@ -191,17 +180,18 @@ export default class StartTagParser extends RegExp
       // }
     } else {
       // When a tag starts with "<abc<" (just the example)
-      tokenizer.error({
-        code: 0,
-        message: `Mal-formatted tag <${element.tagName}`,
-        __starts: element.__starts,
-        __ends: tokenizer.cursorPosition,
-      })
+      tokenizer.emit(
+        'error',
+        tokenizer.error(ErrorCode.EOF_IN_TAG, {
+          __starts: element.__starts,
+          __ends: tokenizer.cursorPosition,
+        })
+      )
       //todo: add correct __ends
       // tokenizer.skipToken()
     }
 
-    tokenizer.emit('onStartTag', element)
+    tokenizer.emit('startTag', element)
 
     return element
   }

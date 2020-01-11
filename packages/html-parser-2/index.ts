@@ -1,18 +1,12 @@
 import getStackedTokenRegExp from '@rosemlabs/regexp-util'
-import {
-  EndTagParserHooks,
-  StartTagParserHooks,
-  TextParserHooks,
-} from './markup'
 
 export { default } from './HTMLParser'
-export { default as Node } from './Node'
-export * from './Node'
-export { default as Tokenizer } from './Tokenizer'
-export * from './Tokenizer'
-export * from './baseEntities'
-export * from './markup'
-export * from './module'
+// export * from './ast'
+// export { default as Tokenizer } from './Tokenizer'
+// export * from './Tokenizer'
+// export * from './baseEntities'
+// export * from './parsers'
+// export * from './modules'
 
 export type SourceSupportedType =
   | 'application/mathml+xml'
@@ -28,17 +22,6 @@ export type NamespaceMap = {
 export type TypeMap = {
   [type: string]: ChildNode
 }
-
-export type HTMLParserHooks = StartTagParserHooks &
-  TextParserHooks &
-  EndTagParserHooks /* & {
-    xmlDeclaration?: TokenHook<Text>
-    documentType?: DocumentTypeHook
-    declaration?: TokenHook<Text>
-    processingInstruction?: ProcessingInstructionHook
-    comment?: CommentHook
-    cDataSection?: CDATASectionHook
-  }*/
 
 export function getStackedTagRegExp(tagName: string): RegExp {
   return getStackedTokenRegExp(`</${tagName}[^>]*>`, tagName)

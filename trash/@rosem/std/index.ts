@@ -4,6 +4,14 @@ import { Primitive } from 'type-fest'
 export * from './frame'
 export { default as queueMicrotask } from './queueMicrotask'
 
+type PickFirst<T extends any[]> = T extends [infer U, ...any[]] ? U : never
+type OmitFirst<T extends any[]> = ((...args: T) => void) extends (
+  head: any,
+  ...tail: infer U
+  ) => any
+  ? U
+  : never
+
 // Reflection ------------------------------------------------------------------
 
 export const defineProperties = Object.defineProperties

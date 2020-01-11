@@ -1,20 +1,28 @@
-import {
-  EndTagParser,
-  HTMLParserHooks,
-  Module,
-  SourceSupportedType,
-  StartTagParser,
-  TextParser,
-  Token,
-  TokenParser,
-} from './index'
-import Tokenizer from './Tokenizer'
+import { ErrorCode } from './errors'
 import {
   AttrMapGenerator,
   AttrMapGeneratorOptions,
   ElementIntegrity,
   EntityDecoder,
-} from './module'
+} from './modules'
+import {
+  EndTagParser,
+  EndTagParserEventMap,
+  StartTagParser,
+  StartTagParserEventMap,
+  TextParser,
+  TextParserEventMap,
+} from './parsers'
+import { normalizeNewLines } from './preprocess'
+import { TokenParser } from './Token'
+import Tokenizer, { TokenizerEventMap } from './Tokenizer'
+
+export type HTMLParserEventMap<
+  T extends ErrorCode = ErrorCode
+> = TextParserEventMap &
+  StartTagParserEventMap &
+  EndTagParserEventMap &
+  TokenizerEventMap<T>
 
 export type HTMLParserOptions = Partial<{
   decode: (value: string) => string
@@ -22,13 +30,12 @@ export type HTMLParserOptions = Partial<{
 }> &
   AttrMapGeneratorOptions
 
-export default class HTMLParser<T extends HTMLParserHooks> extends Tokenizer<
-  T | HTMLParserHooks
+export default class HTMLParser<T extends HTMLParserEventMap> extends Tokenizer<
+  HTMLParserEventMap
 > {
   private readonly textParser: TextParser
-  // private readonly options: HTMLParserOptions
 
-  constructor(options: HTMLParserOptions = {}) {
+  constructor(private readonly options: HTMLParserOptions = {}) {
     super(
       [
         // todo: add other parsers
@@ -38,58 +45,58 @@ export default class HTMLParser<T extends HTMLParserHooks> extends Tokenizer<
       [new EntityDecoder(options.decode)]
     )
 
-    this.textParser = new TextParser(undefined, this.tokenParsers.slice())
-    // this.addMarkupParser(this.textParser)
+    this.tokenParsers.push(
+      (this.textParser = new TextParser(this.tokenParsers.slice()))
+    )
 
     if (options.generateAttributeMap) {
       this.addModule(new AttrMapGenerator(options))
     }
 
-    // this.options = options
-    this.addModule(new ElementIntegrity(this))
+    // Should go last as it copies the whole elements data, which may be added
+    // by another modules
+    this.addModule(new ElementIntegrity())
+    this.on('start', this.reset.bind(this))
+    this.on('start', normalizeNewLines)
   }
 
   parseFromString(
-    source: string,
-    hooks: Module<T | HTMLParserHooks> = {
-      // todo: remove
-      onStartTag: console.log,
-      onText: console.log,
-      onEndTag: console.log,
-      error: console.warn,
-    },
-    type: SourceSupportedType = 'text/html'
+    source: string
+    // hooks: Module<T | HTMLParserEventMap, U> = {
+    //   // todo: remove
+    //   onStartTag: console.log,
+    //   onText: console.log,
+    //   onEndTag: console.log,
+    //   onError: console.warn,
+    // },
+    // type: SourceSupportedType = 'text/html'
   ): HTMLParser<T> {
     if (!source) {
       return this
     }
 
-    this.tokenParsers.push(this.textParser)
-    this.modules.push(hooks)
-    this.start(source, type)
+    // this.tokenParsers.push(this.textParser)
+    // this.modules.push(hooks)
+    this.emit('start', source) //, type)
 
     for (const node of this.token()) {
-      // console.log(node)
+      console.log(node)
     }
 
-    this.end()
-    this.tokenParsers.pop()
-    this.modules.pop()
+    this.emit('end', undefined)
+    // this.tokenParsers.pop()
+    // this.modules.pop()
 
     return this
   }
 
-  addMarkupParser(tokenParser: TokenParser<Token, T>): void {
+  addTokenParser(tokenParser: TokenParser<HTMLParserEventMap>): void {
     this.tokenParsers.unshift(tokenParser)
     this.textParser.addNonTextTokenIdentifier(tokenParser)
   }
 
-  addModule(module: Module<T | HTMLParserHooks>): void {
-    this.modules.push(module)
-  }
-
-  start(source: string, type: SourceSupportedType = 'text/html'): void {
-    // todo set type in DoctypePlugin
-    super.start(source)
-  }
+  // start(source: string, type: SourceSupportedType = 'text/html'): void {
+  //   // todo set type in DoctypePlugin
+  //   super.start(source)
+  // }
 }

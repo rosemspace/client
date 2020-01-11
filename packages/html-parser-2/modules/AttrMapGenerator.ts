@@ -1,10 +1,12 @@
 import { getAttributeScalarValue } from '@rosemlabs/html-util'
 import camelCase from 'camelcase'
-import { Attr, Element, HTMLParserHooks, Module } from '../index'
+import { VAttr, VElement } from '../ast'
+import { HTMLParserEventMap } from '../HTMLParser'
+import Tokenizer, { Module } from '../Tokenizer'
 
 export type ElementAttrMap = {
   attributeMap?: AttrMap<string | number | boolean>
-  rawAttributeMap?: AttrMap<Attr>
+  rawAttributeMap?: AttrMap<VAttr>
 }
 
 export type AttrMap<T> = {
@@ -16,46 +18,50 @@ export type AttrMapGeneratorOptions = Partial<{
   mixAttributesMap: boolean
 }>
 
-export function camelCaseName(attrOrElement: Attr | Element): string {
+export function camelCaseName(attrOrElement: VAttr | VElement): string {
   return attrOrElement.prefix
     ? `${camelCase(attrOrElement.prefix)}:${camelCase(attrOrElement.localName)}`
     : camelCase(attrOrElement.localName)
 }
 
 export function getAttributeMap(
-  attrs: Attr[],
+  attrs: VAttr[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transformer: (value: Attr) => NonNullable<any> = (value: Attr) => value
+  transformer: (value: VAttr) => NonNullable<any> = (value: VAttr) => value
 ): AttrMap<ReturnType<typeof transformer>> {
   const attrMap: AttrMap<ReturnType<typeof transformer>> = {}
 
-  attrs.forEach((attr: Attr): void => {
+  attrs.forEach((attr: VAttr): void => {
     attrMap[camelCaseName(attr)] = transformer(attr)
   })
 
   return attrMap
 }
 
-export default class AttrMapGenerator implements Module<HTMLParserHooks> {
+export default class AttrMapGenerator implements Module<HTMLParserEventMap> {
   private options: AttrMapGeneratorOptions
 
   constructor(options: AttrMapGeneratorOptions) {
     this.options = options
   }
 
-  onStartTag<T extends Element & ElementAttrMap>(element: T): void {
+  register(tokenizer: Tokenizer<HTMLParserEventMap>): void {
+    tokenizer.on('startTag', this.onStartTag.bind(this))
+  }
+
+  onStartTag<T extends VElement & ElementAttrMap>(element: T): void {
     if (this.options.mixAttributesMap) {
       Object.defineProperties(
         element.attributes,
         getAttributeMap(
           element.attributes,
           this.options.generateRawAttributeMap
-            ? (attr: Attr): PropertyDescriptor => ({
+            ? (attr: VAttr): PropertyDescriptor => ({
                 configurable: true,
                 writable: true,
                 value: attr,
               })
-            : (attr: Attr): PropertyDescriptor => ({
+            : (attr: VAttr): PropertyDescriptor => ({
                 configurable: true,
                 writable: true,
                 value: getAttributeScalarValue(attr),

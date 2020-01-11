@@ -1,90 +1,85 @@
-import { ErrorCodes } from './error'
+import { isArray } from 'lodash'
+import { SourceCodeRange, TokenParser } from './Token'
+import { ErrorCode, errorMessages } from './errors'
+import EventEmitter, { EventListener, EventMap } from './EventEmitter'
 
 const apply = Reflect.apply
 
-export type SourceCodeRange = {
-  __starts: number
-  __ends: number
-}
-
-export type ParseError = {
-  code: ErrorCodes
+export type ParseError<T extends ErrorCode = ErrorCode> = {
+  code: T
   message: string
+  source: string
 } & SourceCodeRange
 
-export type Token = SourceCodeRange
-
-export interface TokenIdentifier {
-  test(source: string): boolean
-  // exec(source: string): string[] | null
+export type CommonEventMap<T extends ErrorCode = ErrorCode> = {
+  error: ParseError<T>
 }
 
-// export interface TokenAnalyzer<T extends Node> {
-//   analyze(tokenChunks: string[], state: State): T | void
-// }
+export type TokenizerEventMap<T extends ErrorCode = ErrorCode> = {
+  start: string
+  end: undefined
+} & CommonEventMap<T>
 
-export interface TokenParser<
-  T extends Token,
-  U extends TokenHooks /*, V extends U = U*/
-> extends TokenIdentifier {
-  parse(source: string, tokenizer: Tokenizer<U>): T | void
+export type HookMap<T extends EventMap> = Partial<
+  {
+    [K in keyof T]: EventListener<T[K]>
+  }
+>
+
+export type Module<T extends EventMap, U extends ErrorCode = ErrorCode> = {
+  register(tokenizer: Tokenizer<CommonEventMap<U> & T>): void
 }
 
-export type StartHook = (source: string) => any
-
-export type EndHook = () => any
-
-export type ErrorHook = <T extends ParseError = ParseError>(
-  error: ParseError
-) => any
-
-export type TokenHook<T extends Token> = <U extends T>(
-  token: U,
-  ...args: any[]
-) => any
-
-// export type TokenHooks = {[tokenHookName: string]: TokenHook<Token>}
-export type TokenHooks = Partial<Record<string, TokenHook<Token>>>
-
-export type TokenizerHooks = Partial<{
-  start: StartHook
-  end: EndHook
-  error: ErrorHook
-}>
-
-export type WithErrorHook<T extends TokenHooks> = T &
-  Pick<TokenizerHooks, 'error'>
-
-export type Module<T extends TokenHooks> = TokenizerHooks & T
-// export type Plugin<HookName extends string> = TokenizerHooks & Record<HookName, TokenHook<Token>>
-// export type Plugin = TokenizerHooks
-
-export default class Tokenizer<T extends TokenHooks> implements TokenizerHooks {
-  protected readonly tokenParsers: TokenParser<Token, T>[]
-  protected readonly modules: Module<T>[] = []
+export default class Tokenizer<
+  T extends CommonEventMap<U> & EventMap,
+  U extends ErrorCode = ErrorCode
+> extends EventEmitter<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected readonly tokenParsers: TokenParser<any, U>[]
   source: string
   remainingSource: string
-  cursorPosition: number = 0
-  tokenParserIndex: number = -1
-  currentToken?: Token
+  cursorPosition = 0
+  tokenParserIndex = -1
+  currentToken?: T[keyof T]
   // // Used for raw text
   // raw?: boolean
   // // Used for conditional comment
   // conditional?: boolean
 
   constructor(
-    tokenParsers: TokenParser<Token, T>[] = [],
-    modules: Module<T>[] = [],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tokenParsers: TokenParser<any, U>[] = [],
+    modules: Module<T, U> | Module<T, U>[] = [],
     source = ''
   ) {
+    super()
     this.tokenParsers = tokenParsers
-    this.modules = modules
     this.source = this.remainingSource = source
+
+    if (!isArray(modules)) {
+      modules = [modules]
+    }
+
+    for (const module of modules) {
+      this.addModule(module)
+    }
   }
 
-  reset(): void {
-    this.source = this.remainingSource = ''
+  addModule(module: Module<T, U>): void {
+    module.register(this)
+  }
+
+  reset(source = ''): void {
+    this.source = this.remainingSource = source
     this.cursorPosition = 0
+    this.skipToken()
+  }
+
+  replaceToken(token: T[keyof T]): void {
+    this.currentToken = token
+  }
+
+  skipToken(): void {
     this.tokenParserIndex = -1
     this.currentToken = undefined
   }
@@ -93,19 +88,23 @@ export default class Tokenizer<T extends TokenHooks> implements TokenizerHooks {
     return this.remainingSource === ''
   }
 
-  advance(n: number): number {
+  consume(n = 1): number {
     this.remainingSource = this.remainingSource.slice(n)
 
     return (this.cursorPosition += n)
   }
 
-  *token(): Generator<Token> {
+  *token(): Generator<T[keyof T]> {
     for (
       this.tokenParserIndex = 0;
       this.tokenParserIndex < this.tokenParsers.length;
       ++this.tokenParserIndex
     ) {
-      this.tokenParsers[this.tokenParserIndex].parse(this.remainingSource, this)
+      this.tokenParsers[this.tokenParserIndex].parse(
+        this.remainingSource,
+        void 0,
+        this
+      )
 
       if (this.currentToken) {
         yield this.currentToken
@@ -119,70 +118,34 @@ export default class Tokenizer<T extends TokenHooks> implements TokenizerHooks {
     yield* this.token()
   }
 
-  replaceToken(token: Token): void {
-    this.currentToken = token
-  }
-
-  skipToken(): void {
-    this.tokenParserIndex = -1
-    this.currentToken = undefined
-  }
-
-  start(source: string): void {
-    this.source = this.remainingSource = source
-
-    for (const module of this.modules) {
-      // Some modules can skip start hook
-      if (!module.start) {
-        continue
-      }
-
-      module.start(source)
-    }
-  }
-
-  end(): void {
-    for (const module of this.modules) {
-      // Some modules can skip end hook
-      if (!module.end) {
-        continue
-      }
-
-      module.end()
-    }
-  }
-
-  error(error: ParseError): void {
-    for (const module of this.modules) {
-      // Some modules can skip error hook
-      if (!module.error) {
-        continue
-      }
-
-      module.error(error)
-    }
-  }
-
-  emit<HookName extends keyof T>(
-    hook: HookName,
-    ...args: Required<T>[HookName] extends (...args: any) => any
-      ? Parameters<Required<T>[HookName]>
-      : never
-  ): void {
+  emit<Name extends keyof T>(
+    event: Name,
+    ...args: Parameters<EventListener<T[Name]>>
+  ): boolean {
     this.currentToken = args[0]
 
-    for (const module of this.modules) {
-      // Some modules can skip some hooks
-      if (!module[hook]) {
-        continue
-      }
+    if (!this.listeners[event]) {
+      return false
+    }
 
+    for (const listener of this.listeners[event]) {
       // Some modules can skip the current token
       if (!this.currentToken) {
         break
       }
 
-      apply(module[hook]!, module, args)
+      apply(listener, this, args)
+    }
+
+    return true
+  }
+
+  error(code: U, sourceCodeRange: SourceCodeRange): ParseError<U> {
+    return {
+      code,
+      message: errorMessages[code],
+      source: this.source,
+      ...sourceCodeRange,
     }
   }
 }

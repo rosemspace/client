@@ -1,6 +1,38 @@
-// seq - sequence
-export const startsWithSurrogateCharSeqRegExp: RegExp = /^[\uD800-\uDFFF]+/u
+// https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream
 
-export const startsWithNonCharSeqRegExp: RegExp = /^[\uFDD0-\uFDEF\uFFFE\uFFFF\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]+/u
+import {
+  startsWithControlCharExcSpaceAndNullSeqRegExp,
+  startsWithNonCharSeqRegExp,
+  startsWithSurrogateSeqRegExp,
+} from './codePoints'
+import { ErrorCode } from './errors'
 
-export const startsWithControlCharExcSpaceAndNullSeqRegExp: RegExp = /^[\x01-\x08\x0B\x0E-\x1F\x7F-\x9F]+/u
+export function normalizeNewLines(source: string): string {
+  return source.replace(/\r\n?/, `\n`)
+}
+
+const preprocessors: [RegExp, ErrorCode][] = [
+  [startsWithSurrogateSeqRegExp, ErrorCode.SURROGATE_IN_INPUT_STREAM],
+  [startsWithNonCharSeqRegExp, ErrorCode.NONCHARACTER_IN_INPUT_STREAM],
+  [
+    startsWithControlCharExcSpaceAndNullSeqRegExp,
+    ErrorCode.CONTROL_CHARACTER_IN_INPUT_STREAM,
+  ],
+]
+
+export default function preprocess(
+  source: string,
+  error: (code: ErrorCode, offset: number) => void
+): void {
+  for (let index = 0; index < preprocessors.length; ++index) {
+    const [regExp, code] = preprocessors[index]
+    const match: RegExpExecArray | null = regExp.exec(source)
+
+    if (match === null) {
+      continue
+    }
+
+    error(code, match.index)
+    index = 0
+  }
+}

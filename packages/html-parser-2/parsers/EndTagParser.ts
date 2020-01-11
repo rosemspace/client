@@ -1,46 +1,35 @@
 import { NodeType } from '@rosemlabs/dom-api'
 import { endTagRegExp } from '@rosemlabs/xml-util'
-import {
-  Element,
-  TokenHook,
-  Tokenizer,
-  TokenParser,
-  WithErrorHook,
-} from '../index'
+import { VElement } from '../ast'
+import { TokenParser } from '../Token'
+import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
 
-export type EndTagParserHooks = Partial<{
-  onEndTag: TokenHook<Element>
-}>
+export type EndTagParserEventMap = {
+  endTag: VElement
+} & CommonEventMap
 
 export default class EndTagParser extends RegExp
-  implements TokenParser<Element, EndTagParserHooks> {
-  private hooks?: WithErrorHook<EndTagParserHooks> = {
-    //todo: remove
-    onEndTag: console.dir,
-    error: console.warn,
-  }
-
-  constructor(hooks?: WithErrorHook<EndTagParserHooks>) {
+  implements TokenParser<EndTagParserEventMap> {
+  constructor() {
     super(endTagRegExp)
-
-    this.hooks = hooks
   }
 
   parse(
     source: string,
-    tokenizer: Tokenizer<EndTagParserHooks> = new Tokenizer(
+    hooks?: Module<EndTagParserEventMap>,
+    tokenizer: Tokenizer<EndTagParserEventMap> = new Tokenizer(
       [],
-      this.hooks ? [this.hooks] : [],
+      hooks,
       source
     )
-  ): Element | void {
+  ): VElement | void {
     const match: string[] | null = this.exec(source)
 
     if (!match) {
       return
     }
 
-    tokenizer.advance(match[0].length)
+    tokenizer.consume(match[0].length)
 
     const nodeName: string = match[1]
 
@@ -103,7 +92,7 @@ export default class EndTagParser extends RegExp
     //   return this.activeProcessor.matchingStartTagMissed.call(this, {/*...*/})
     // }
 
-    const element: Element = {
+    const element: VElement = {
       nodeType: NodeType.ELEMENT_NODE,
       nodeName,
       tagName: nodeName.toLowerCase(),
@@ -118,7 +107,7 @@ export default class EndTagParser extends RegExp
       __ends: tokenizer.cursorPosition,
     }
 
-    tokenizer.emit('onEndTag', element)
+    tokenizer.emit('endTag', element)
 
     return element
   }

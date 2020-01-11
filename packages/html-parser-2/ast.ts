@@ -1,42 +1,43 @@
 import { NodeName, NodeType } from '@rosemlabs/dom-api'
-import { SourceSupportedType, Token } from './index'
+import { SourceSupportedType } from './index'
+import Token from './token'
 
-export default interface Node extends Token {
+export interface VNode extends Token {
   nodeType: NodeType
   // Not transformed
   nodeName: NodeName | string
 }
 
-export interface ChildNode extends Node {
+export interface VChildNode extends VNode {
   // AST module
-  parentElement?: Element
-  nextSibling?: Element | Text | Comment | CDATASection
-  previousSibling?: Element | Text | Comment | CDATASection
+  parentElement?: VElement
+  nextSibling?: VElement | VText | VComment | VCDATASection
+  previousSibling?: VElement | VText | VComment | VCDATASection
 }
 
-export interface ParentNode {
+export interface VParentNode {
   // AST module
-  childNodes?: (Element | Text | Comment | CDATASection)[]
+  childNodes?: (VElement | VText | VComment | VCDATASection)[]
 }
 
-export interface Document extends Node, ChildNode {
+export interface VDocument extends VNode, VChildNode {
   nodeType: NodeType.DOCUMENT_NODE
   nodeName: NodeName.DOCUMENT_NODE
 }
 
-export interface DocumentType extends Node, ChildNode {
+export interface VDocumentType extends VNode, VChildNode {
   nodeType: NodeType.DOCUMENT_TYPE_NODE
   contentType: SourceSupportedType
 }
 
-export interface DocumentFragment extends Node, ChildNode {
+export interface VDocumentFragment extends VNode, VChildNode {
   nodeType: NodeType.DOCUMENT_FRAGMENT_NODE
   nodeName: NodeName.DOCUMENT_FRAGMENT_NODE
 }
 
-export interface Element extends Node, ChildNode, ParentNode {
+export interface VElement extends VNode, VChildNode, VParentNode {
   nodeType: NodeType.ELEMENT_NODE
-  attributes: Attr[]
+  attributes: VAttr[]
   // Not transformed
   localName: string
   // Not transformed
@@ -56,12 +57,12 @@ export interface Element extends Node, ChildNode, ParentNode {
 
 //todo CustomElement and ComponentElement
 
-export interface Attr extends Node {
+export interface VAttr extends VNode {
   // Not transformed
   localName: string
   // Lowercased
   name: string
-  ownerElement: Element
+  ownerElement: VElement
   // Not transformed
   prefix?: string
   value: string
@@ -69,26 +70,26 @@ export interface Attr extends Node {
   namespaceURI?: string
 }
 
-export interface CharacterData extends Node, ChildNode {
+export interface VCharacterData extends VNode, VChildNode {
   data: string
 }
 
-export interface Text extends CharacterData {
+export interface VText extends VCharacterData {
   nodeType: NodeType.TEXT_NODE
   nodeName: NodeName.TEXT_NODE
   raw: boolean
 }
 
-export interface Comment extends CharacterData {
+export interface VComment extends VCharacterData {
   nodeType: NodeType.COMMENT_NODE
   nodeName: NodeName.COMMENT_NODE
   //todo remove "?"
   conditional?: boolean
 }
 
-export interface ProcessingInstruction extends CharacterData {}
+export type VProcessingInstruction = VCharacterData
 
-export interface CDATASection extends Omit<Text, 'nodeType' | 'nodeName'> {
+export interface VCDATASection extends Omit<VText, 'nodeType' | 'nodeName'> {
   nodeType: NodeType.CDATA_SECTION_NODE
   nodeName: NodeName.CDATA_SECTION_NODE
   raw: true

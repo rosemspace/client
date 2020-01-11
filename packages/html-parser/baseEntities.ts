@@ -57,7 +57,7 @@ const decodedBaseEntityAndTabAndNewLineRegExp: RegExp = new RegExp(
   'g'
 )
 const encodedSpecialCharCommonAliasRegExpPart: string =
-  'a(?:pos|mp)|AMP|(?:[lg]|quo)?t|(?:[LG]|QUO)?T'
+  'a(?:pos|mp)|AMP|(?:[lg]|quo)t|(?:[LG]|QUO)T'
 const encodedSpecialCharRegExp: RegExp = new RegExp(
   `^&(?:${encodedSpecialCharCommonAliasRegExpPart}|#(?:3[489]|6[02]));$`,
   'g'

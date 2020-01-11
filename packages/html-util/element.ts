@@ -26,15 +26,17 @@ export const voidElementRegExp = /^area|b(?:ase(?:font)?|r)|col|embed|frame|hr|i
 export const optionalClosingElementRegExp = /^colgroup|d[dt]|li|options|p|t(?:[dhr]|head|foot)|source$/i
 
 // <script>, <style>
+// https://html.spec.whatwg.org/multipage/syntax.html#raw-text-elements
 export const rawTextElementRegExp = /^s(?:cript|tyle)$/i
 
 // <textarea>, <title>
+// https://html.spec.whatwg.org/multipage/syntax.html#escapable-raw-text-elements
 export const escapableRawTextElementRegExp = /^t(?:extarea|itle)$/i
 
 // <math>, <svg>
 export const foreignElementRegExp = /^math|svg$/i
 
-// https://www.w3.org/TR/html5/syntax.html#restrictions-on-content-models
+// https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions
 export function shouldIgnoreFirstNewline(tag: string, html: string) {
   return '\n' === html[0] && /^pre|textarea$/i.test(tag)
 }
