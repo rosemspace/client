@@ -1,6 +1,6 @@
 import { parse, UrlWithStringQuery } from 'url'
-import { BlankModule } from '@rosemlabs/html-parser'
-import { Attr } from '@rosemlabs/html-parser/nodes'
+import { BlankModule } from '@rosemlabs/html-parser-old'
+import { Attr } from '@rosemlabs/html-parser-old/nodes'
 import { ATTR_SYNTAX_KEYWORDS } from '../index'
 
 const transformAssetUrls: { [tagName: string]: string[] } = {

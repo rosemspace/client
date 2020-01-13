@@ -37,7 +37,11 @@ const shouldIgnoreCustomBlock = (loaders: ResolvedLoader[]) => {
 }
 // pcss, postcss, css, less, sass, scss, styl, stylus
 const isStyleLang = (lang: string): boolean =>
-  /^(?:(?:(?:p(?:ost)?)?c|le|s[a|c])ss|styl(?:us)?)$/.test(lang)
+  /^(?:(?:p(?:ost)?)?c|le|s[a|c])ss|styl(?:us)?$/.test(lang)
+
+// gif, jpg, jpeg, png, svg
+const isImage = (extension: string): boolean =>
+  /^gif|(?:jpe?|pn|sv)g$/.test(extension)
 
 export default function(source: string): string {
   return source

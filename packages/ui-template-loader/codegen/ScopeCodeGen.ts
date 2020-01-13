@@ -1,8 +1,8 @@
-import { BlankModule } from '@rosemlabs/html-parser'
-import { Attr, AttrList, StartTag } from '@rosemlabs/html-parser/nodes'
+import { BlankModule } from '@rosemlabs/html-parser-old'
+import { Attr, AttrList, StartTag } from '@rosemlabs/html-parser-old/nodes'
 import { ScopeType } from '@rosemlabs/scoped-css-loader'
 
-const CLASS_ATTR_NAME: string = 'class'
+const CLASS_ATTR_NAME = 'class'
 
 const getLastAttributeOffset = (
   attrs: AttrList,

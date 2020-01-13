@@ -1,6 +1,6 @@
 import { isProduction } from '@rosemlabs/env-util'
-import HTMLParser from '@rosemlabs/html-parser'
-import { Attr } from '@rosemlabs/html-parser/nodes'
+import HTMLParser from '@rosemlabs/html-parser-old'
+import { Attr } from '@rosemlabs/html-parser-old/nodes'
 import { getScopeInfo, ScopeOptions } from '@rosemlabs/scoped-css-loader'
 import { getOptions } from 'loader-utils'
 import { format } from 'prettier'

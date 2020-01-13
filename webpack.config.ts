@@ -20,7 +20,7 @@ import SFCLoaderPlugin from '@rosemlabs/sfc-loader/SFCLoaderPlugin'
 const isProduction: boolean = 'production' === process.env.NODE_ENV
 const dir = (path: string): string => resolve(__dirname, path)
 
-const jsEntry: string = dir('packages/battle-city/index.ts')
+const jsEntry: string = dir('packages/html-parser/test.ts')
 const htmlEntry: string = dir('packages/battle-city/index.html')
 
 const babelLoader = {

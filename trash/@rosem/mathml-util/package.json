@@ -1,0 +1,26 @@
+{
+  "name": "@rosemlabs/mathml-util",
+  "version": "0.0.1",
+  "description": "MathML utilities library",
+  "keywords": [
+    "rosem",
+    "util",
+    "utils",
+    "mathml",
+    "mathml-util",
+    "mathml-utils",
+    "mathml-syntax",
+    "mathml-parser"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

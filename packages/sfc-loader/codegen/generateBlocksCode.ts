@@ -1,5 +1,5 @@
-import { getAttrMap } from '@rosemlabs/html-parser/modules/AttrMapModule'
-import { AttrMap } from '@rosemlabs/html-parser/nodes'
+import { getAttrMap } from '@rosemlabs/html-parser-old/modules/AttrMapModule'
+import { AttrMap } from '@rosemlabs/html-parser-old/nodes'
 import camelCase from 'camelcase'
 import { stringifyRequest } from 'loader-utils'
 import { escape } from 'querystring'

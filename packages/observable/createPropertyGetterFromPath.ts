@@ -1,14 +1,12 @@
 /**
  * Parse simple path.
  */
-import {pcenCharRegExp} from '@rosemlabs/html-util/customElement'
-
 const bailRE = /^[\w$](?:(?:[\w.]|\.\$)*?\w)?$/
 // const bailRE = new RegExp(`[^${pcenCharRegExp.source}.$]`)
 
 export default function createPropertyGetterFromPath(
   path: string,
-  separator: string = '.'
+  separator = '.'
 ): Function | void {
   if (!bailRE.test(path)) {
     return

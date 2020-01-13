@@ -1,17 +1,22 @@
 import { NodeType } from '@rosemlabs/dom-api'
-import { encodeBaseEntities } from '@rosemlabs/html-parser/baseEntities'
-import BlankModule from '@rosemlabs/html-parser/BlankModule'
-import { Attr, Content, EndTag, StartTag } from '@rosemlabs/html-parser/nodes'
+import { encodeBaseEntities } from '@rosemlabs/html-parser-old/baseEntities'
+import BlankModule from '@rosemlabs/html-parser-old/BlankModule'
+import {
+  Attr,
+  Content,
+  EndTag,
+  StartTag,
+} from '@rosemlabs/html-parser-old/nodes'
 import { isSyntaxAttr } from '../index'
 
 const stringify = JSON.stringify
 
 export default class VDOMCodeGen extends BlankModule {
-  protected code: string = 'const ns = "namespaceURI";return '
+  protected code = 'const ns = "namespaceURI";return '
   protected namespaces: string[] = []
-  protected depthCode: string = ''
-  protected depthLevel: number = 0
-  protected void: boolean = false
+  protected depthCode = ''
+  protected depthLevel = 0
+  protected void = false
   protected variables: string[] = []
 
   attribute<T extends Attr>(attr: T): void {
@@ -65,7 +70,7 @@ export default class VDOMCodeGen extends BlankModule {
       if (-1 === nsIndex) {
         this.namespaces.push(namespaceURI)
 
-        const nsVarName: string = `ns_${this.namespaces.length}`
+        const nsVarName = `ns_${this.namespaces.length}`
 
         this.code = `const ${nsVarName}=${stringify(namespaceURI)};${this.code}`
         this.code += `[ns]:${nsVarName},`
