@@ -60,9 +60,10 @@ export default class HTMLParser<T extends HTMLParserEventMap> extends Tokenizer<
     this.on('start', this.reset.bind(this))
     // https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream
     this.on('start', normalizeNewlines)
+    this.on('error', console.warn)
   }
 
-  parseFromString(
+  async parseFromString(
     source: string
     // hooks: Module<T | HTMLParserEventMap, U> = {
     //   // todo: remove
@@ -72,7 +73,7 @@ export default class HTMLParser<T extends HTMLParserEventMap> extends Tokenizer<
     //   onError: console.warn,
     // },
     // type: SourceSupportedType = 'text/html'
-  ): HTMLParser<T> {
+  ): Promise<HTMLParser<T>> {
     if (!source) {
       return this
     }
@@ -81,7 +82,7 @@ export default class HTMLParser<T extends HTMLParserEventMap> extends Tokenizer<
     // this.modules.push(hooks)
     this.emit('start', source) //, type)
 
-    for (const token of this.token()) {
+    for await (const token of this.token()) {
       this.tokens.push(token)
       console.log(token)
     }
@@ -89,6 +90,22 @@ export default class HTMLParser<T extends HTMLParserEventMap> extends Tokenizer<
     this.emit('end', undefined)
     // this.tokenParsers.pop()
     // this.modules.pop()
+
+    return this
+  }
+
+  parseFromStringSync(source: string): HTMLParser<T> {
+    if (!source) {
+      return this
+    }
+
+    this.emit('start', source) //, type)
+
+    for (const token of this.token()) {
+      this.tokens.push(token)
+    }
+
+    this.emit('end', undefined)
 
     return this
   }

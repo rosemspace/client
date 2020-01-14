@@ -28,7 +28,7 @@ export default function preprocess(
       continue
     }
 
-    error(code, match.index)
+    error(code, match.index + match[0].length)
     index = 0
   }
 }
