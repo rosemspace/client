@@ -9,8 +9,13 @@ export type BounceParams = Partial<{
 // http://www.sosmath.com/calculus/geoser/bounce/bounce.html
 // https://physics.stackexchange.com/questions/291803/calculating-height-of-a-ball-formula-based-on-bounce
 // https://physics.stackexchange.com/questions/245791/explicit-function-for-bouncing-ball
+// Gravitational acceleration
+// https://en.wikipedia.org/wiki/Gravitational_acceleration
 // Coefficient of restitution:
 // https://en.wikipedia.org/wiki/Coefficient_of_restitution
+// Logarithm
+// https://en.wikipedia.org/wiki/Logarithm
+// https://stackoverflow.com/questions/3019278/how-can-i-specify-the-base-for-math-log-in-javascript
 export function bounceIn(
   timeFraction: number,
   { restitution = 0.25 }: BounceParams = {}

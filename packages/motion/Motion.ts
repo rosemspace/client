@@ -1,5 +1,4 @@
 import { isNumber } from 'lodash'
-import { MS_PER_FRAME } from '@rosemlabs/web-util'
 import {
   easeInExpo,
   bounceIn,
@@ -15,9 +14,6 @@ import {
   TimingFunction,
   TimingFunction2D,
 } from './timingFunction'
-
-const { pow, round } = Math
-const { isFinite } = Number
 
 export type MotionOptions = Partial<{
   // value: number | string | any[]
@@ -105,11 +101,11 @@ export default class Motion {
       ? this.options.precision
       : Infinity
 
-    if (isFinite(this.precision)) {
-      const precisionFactor: number = pow(10, this.precision)
+    if (Number.isFinite(this.precision)) {
+      const precisionFactor: number = Math.pow(10, this.precision)
 
       this.approximate = (value: number): number =>
-        round(value * precisionFactor) / precisionFactor
+        Math.round(value * precisionFactor) / precisionFactor
     } else {
       this.approximate = (value: number): number => value
     }
@@ -136,26 +132,16 @@ export default class Motion {
   }
 
   run() {
-    this.cancel()
+    this.pause()
     this.running = true
     this.lowestFps = 0
-    this.startTime =
-      globalThis.performance.now() + globalThis.performance.timeOrigin
     this.animationId = requestAnimationFrame((time: number): void => {
-      this.startTime = time - MS_PER_FRAME
+      this.startTime = time
       this.timePassed = this.progress = 0
       this.oscillation = [0] //todo need?
       this.emit('start', this.getData())
       this.computeFrame(time)
     })
-  }
-
-  cancel() {
-    if (this.running) {
-      cancelAnimationFrame(this.animationId)
-      this.running = false
-      this.emit('cancelled', this.getData())
-    }
   }
 
   pause() {
@@ -167,14 +153,14 @@ export default class Motion {
   }
 
   stop() {
-    this.cancel()
+    this.pause()
     this.value = this.startValue
   }
 
   computeFrame(time: number) {
     const timePassed = time - this.startTime
 
-    this.fps = 1000 / (timePassed - this.timePassed)
+    this.fps = Math.floor(1_000 / ((timePassed || Infinity) - this.timePassed))
 
     if (this.fps < this.lowestFps || this.lowestFps <= 0) {
       this.lowestFps = this.fps
@@ -187,8 +173,8 @@ export default class Motion {
       )
     } else {
       this.timePassed = this.duration
+      this.running = false
       queueMicrotask(() => {
-        this.running = false
         this.emit('end', this.getData())
       })
     }
