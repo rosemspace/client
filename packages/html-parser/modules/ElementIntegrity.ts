@@ -1,11 +1,12 @@
 import { VElement } from '../ast'
 import { ErrorCode } from '../errors'
 import { HTMLParserEventMap } from '../HTMLParser'
-import Tokenizer, { Module } from '../Tokenizer'
+import { EndTagParserEventMap } from '../parsers/EndTagParser'
+import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
 
 const assign = Object.assign
 
-export function matchingStartTagMissed<T extends HTMLParserEventMap>(
+export function matchingStartTagMissed<T extends CommonEventMap>(
   tokenizer: Tokenizer<T>,
   element: VElement
 ): void {
@@ -24,7 +25,7 @@ export function matchingStartTagMissed<T extends HTMLParserEventMap>(
   tokenizer.skipToken()
 }
 
-export function matchingEndTagMissed<T extends HTMLParserEventMap>(
+export function matchingEndTagMissed<T extends EndTagParserEventMap>(
   tokenizer: Tokenizer<T>,
   element: VElement
 ): void {

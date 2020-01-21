@@ -1,7 +1,8 @@
 import { isArray } from 'lodash'
-import { SourceCodeRange, TokenParser } from './Token'
 import { ErrorCode, errorMessages } from './errors'
 import EventEmitter, { EventListener, EventMap } from './EventEmitter'
+import TokenParser from './parsers/TokenParser'
+import { SourceCodeRange } from './Token'
 
 export type ParseError<T extends ErrorCode = ErrorCode> = {
   code: T

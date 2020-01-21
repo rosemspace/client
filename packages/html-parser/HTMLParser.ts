@@ -13,7 +13,7 @@ import {
   TextParser,
   TextParserEventMap,
 } from './parsers'
-import { TokenParser } from './Token'
+import TokenParser from './parsers/TokenParser'
 import Tokenizer, { TokenizerEventMap } from './Tokenizer'
 import { normalizeNewlines } from './utils/infra/strings'
 

@@ -1,4 +1,4 @@
-import { XLINK_NAMESPACE, XML_NAMESPACE, XMLNS_NAMESPACE } from './syntax'
+import { XLINK_NAMESPACE, XML_NAMESPACE, XMLNS_NAMESPACE } from './namespaces'
 
 // // https://html.spec.whatwg.org/multipage/parsing.html#adjust-foreign-attributes
 export const XML_ATTRS_ADJUSTMENT_MAP = {

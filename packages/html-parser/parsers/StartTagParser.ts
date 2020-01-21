@@ -1,13 +1,13 @@
 import { NodeType } from '@rosemlabs/dom-api'
 import { VAttr, VElement } from '../ast'
 import { ErrorCode } from '../errors'
-import { TokenParser } from '../Token'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
 import {
   attributeRegExp,
   startTagCloseRegExp,
   startTagOpenRegExp,
 } from '../utils/xml'
+import TokenParser from './TokenParser'
 
 export type StartTagParserEventMap = {
   startTagOpen: VElement
@@ -15,12 +15,13 @@ export type StartTagParserEventMap = {
   startTag: VElement
 } & CommonEventMap
 
-export default class StartTagParser extends RegExp
-  implements TokenParser<StartTagParserEventMap> {
-  readonly delimiter = '<'
+export default class StartTagParser extends TokenParser<
+  StartTagParserEventMap
+> {
+  protected readonly startDelimiter: string = '<'
 
-  constructor() {
-    super(startTagOpenRegExp)
+  test(source: string): boolean {
+    return startTagOpenRegExp.test(source)
   }
 
   parse(
@@ -32,7 +33,7 @@ export default class StartTagParser extends RegExp
       source
     )
   ): VElement | void {
-    const match: string[] | null = this.exec(source)
+    const match: string[] | null = source.match(startTagOpenRegExp)
 
     if (!match) {
       return

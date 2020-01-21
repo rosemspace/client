@@ -2,9 +2,9 @@ import { NodeName, NodeType } from '@rosemlabs/dom-api'
 import { VText } from '../ast'
 import { ErrorCode } from '../errors'
 import preprocess from '../preprocess'
-import { TokenIdentifier, TokenParser } from '../Token'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
 import { endTagRegExp, startTagOpenRegExp } from '../utils/xml'
+import TokenParser, { TokenIdentifier } from './TokenParser'
 
 export type TextParserEventMap = {
   whitespaceSequence: VText
@@ -42,6 +42,27 @@ export enum CharType {
   REFERENCE,
 }
 
+export function replaceNullChars<T extends CommonEventMap>(
+  source: string,
+  tokenizer: Tokenizer<T>
+): string {
+  // eslint-disable-next-line no-control-regex
+  return source.replace(/\u0000+/g, (match: string, offset: number): string => {
+    const __starts = tokenizer.cursorPosition + offset
+
+    tokenizer.emit(
+      'error',
+      tokenizer.error(ErrorCode.UNEXPECTED_NULL_CHARACTER, {
+        __starts,
+        __ends: __starts + match.length,
+      })
+    )
+
+    // \uFFFD
+    return ``.padEnd(match.length, `�`)
+  })
+}
+
 // OPTIMIZATION: specification uses only one type of character tokens (one token
 // per character). This causes a huge memory overhead and a lot of unnecessary
 // parser loops. We use 3 groups of characters. If we have a sequence of
@@ -53,7 +74,9 @@ export enum CharType {
 // (e.g. '\n  \r\t   \f')
 // 3) CHARACTER_TOKEN - any character sequence which don't belong to groups 1
 // and 2 (e.g. 'abcdef1234@@#$%^')
-export default class TextParser implements TokenParser<TextParserEventMap> {
+export default class TextParser extends TokenParser<TextParserEventMap> {
+  protected readonly startDelimiter: string = ''
+
   private nonTextTokenIdentifiers: TokenIdentifier[]
 
   constructor(
@@ -63,6 +86,7 @@ export default class TextParser implements TokenParser<TextParserEventMap> {
       startTagOpenRegExp,
     ]
   ) {
+    super()
     this.nonTextTokenIdentifiers = nonTextTokenIdentifiers
   }
 
@@ -92,7 +116,7 @@ export default class TextParser implements TokenParser<TextParserEventMap> {
     let data: string | undefined
 
     if (textEndTokenIndex >= 0) {
-      let rest = source.slice(textEndTokenIndex)
+      let remainingSource = source.slice(textEndTokenIndex)
       let ignoreCharIndex
 
       // Do not treat character "<" in plain text as a parser instruction
@@ -100,12 +124,12 @@ export default class TextParser implements TokenParser<TextParserEventMap> {
         // !state.isMarkedUp(rest) &&
         !this.nonTextTokenIdentifiers.some(
           (tokenIdentifier: TokenIdentifier): boolean =>
-            tokenIdentifier.test(rest)
+            tokenIdentifier.test(remainingSource)
         ) &&
-        (ignoreCharIndex = rest.indexOf('<', 1)) >= 0
+        (ignoreCharIndex = remainingSource.indexOf('<', 1)) >= 0
       ) {
         textEndTokenIndex += ignoreCharIndex
-        rest = source.slice(textEndTokenIndex)
+        remainingSource = remainingSource.slice(ignoreCharIndex)
       }
 
       data = source.slice(0, textEndTokenIndex)
@@ -122,6 +146,8 @@ export default class TextParser implements TokenParser<TextParserEventMap> {
     if (!data) {
       return
     }
+
+    data = replaceNullChars(data, tokenizer)
 
     const text: VText = {
       nodeType: NodeType.TEXT_NODE,

@@ -11,14 +11,13 @@ export const data = (source: string): Iterable<number> =>
 
 export const parse = htmlParser.parseFromString.bind(htmlParser)
 
-export function parseError(source: string): ErrorCode | undefined {
-  let errorCode: ErrorCode | undefined = undefined
+export function parseError(source: string): ErrorCode[] {
+  const errorCodes: ErrorCode[] = []
 
   htmlParser.on('error', (error: ParseError): void => {
-    // console.log('ERRRRORRR' + error.code)
-    errorCode = error.code
+    errorCodes.push(error.code)
   })
   htmlParser.parseFromStringSync(source)
 
-  return errorCode
+  return errorCodes
 }
