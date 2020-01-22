@@ -3,8 +3,14 @@ import { VText } from '../ast'
 import { ErrorCode } from '../errors'
 import preprocess from '../preprocess'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
-import { endTagRegExp, startTagOpenRegExp } from '../utils/xml'
-import TokenParser, { TokenIdentifier } from './TokenParser'
+import {
+  startsWithEndTagRegExp,
+  startsWithStartTagOpenRegExp,
+} from '../utils/xml'
+import TokenParser, {
+  TokenIdentifier,
+  TokenIdentifierExecArray,
+} from './TokenParser'
 
 export type TextParserEventMap = {
   whitespaceSequence: VText
@@ -74,24 +80,22 @@ export function replaceNullChars<T extends CommonEventMap>(
 // (e.g. '\n  \r\t   \f')
 // 3) CHARACTER_TOKEN - any character sequence which don't belong to groups 1
 // and 2 (e.g. 'abcdef1234@@#$%^')
-export default class TextParser extends TokenParser<TextParserEventMap> {
-  protected readonly startDelimiter: string = ''
-
+// https://html.spec.whatwg.org/multipage/parsing.html#data-state
+export default class TextParser implements TokenParser<TextParserEventMap> {
   private nonTextTokenIdentifiers: TokenIdentifier[]
 
   constructor(
     nonTextTokenIdentifiers: TokenIdentifier[] = [
       // todo: add all identifiers
-      endTagRegExp,
-      startTagOpenRegExp,
+      startsWithEndTagRegExp,
+      startsWithStartTagOpenRegExp,
     ]
   ) {
-    super()
     this.nonTextTokenIdentifiers = nonTextTokenIdentifiers
   }
 
-  test(source: string): boolean {
-    return Boolean(source)
+  exec(source: string): TokenIdentifierExecArray {
+    return Object.assign([source], { index: 0 })
   }
 
   parse(
@@ -112,25 +116,25 @@ export default class TextParser extends TokenParser<TextParserEventMap> {
       }
     )
 
-    let textEndTokenIndex: number = source.indexOf('<')
     let data: string | undefined
+    const textEndTokenIndex: number = this.getTokenEndIndex(source)
 
     if (textEndTokenIndex >= 0) {
-      let remainingSource = source.slice(textEndTokenIndex)
-      let ignoreCharIndex
-
-      // Do not treat character "<" in plain text as a parser instruction
-      while (
-        // !state.isMarkedUp(rest) &&
-        !this.nonTextTokenIdentifiers.some(
-          (tokenIdentifier: TokenIdentifier): boolean =>
-            tokenIdentifier.test(remainingSource)
-        ) &&
-        (ignoreCharIndex = remainingSource.indexOf('<', 1)) >= 0
-      ) {
-        textEndTokenIndex += ignoreCharIndex
-        remainingSource = remainingSource.slice(ignoreCharIndex)
-      }
+      // let remainingSource = source.slice(textEndTokenIndex)
+      // let ignoreCharIndex
+      //
+      // // Do not treat character "<" in plain text as a parser instruction
+      // while (
+      //   // !state.isMarkedUp(rest) &&
+      //   !this.nonTextTokenIdentifiers.some(
+      //     (tokenIdentifier: TokenIdentifier): boolean =>
+      //       tokenIdentifier.test(remainingSource)
+      //   ) &&
+      //   (ignoreCharIndex = remainingSource.indexOf('<', 1)) >= 0
+      // ) {
+      //   textEndTokenIndex += ignoreCharIndex
+      //   remainingSource = remainingSource.slice(ignoreCharIndex)
+      // }
 
       data = source.slice(0, textEndTokenIndex)
     } else {
@@ -166,5 +170,19 @@ export default class TextParser extends TokenParser<TextParserEventMap> {
 
   addNonTextTokenIdentifier(nonTextTokenIdentifier: TokenIdentifier): void {
     this.nonTextTokenIdentifiers.push(nonTextTokenIdentifier)
+  }
+
+  private getTokenEndIndex(source: string): number {
+    let endTokenIndex: number = source.length
+
+    this.nonTextTokenIdentifiers.forEach((tokenIdentifier) => {
+      //todo optimize it by reducing search range of tokens
+      endTokenIndex = Math.min(
+        endTokenIndex,
+        tokenIdentifier.exec(source)?.index ?? endTokenIndex
+      )
+    })
+
+    return endTokenIndex
   }
 }

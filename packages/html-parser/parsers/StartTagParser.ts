@@ -4,7 +4,8 @@ import { ErrorCode } from '../errors'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
 import {
   attributeRegExp,
-  startTagCloseRegExp,
+  startsWithStartTagCloseRegExp,
+  startsWithStartTagOpenRegExp,
   startTagOpenRegExp,
 } from '../utils/xml'
 import TokenParser from './TokenParser'
@@ -15,14 +16,9 @@ export type StartTagParserEventMap = {
   startTag: VElement
 } & CommonEventMap
 
-export default class StartTagParser extends TokenParser<
-  StartTagParserEventMap
-> {
-  protected readonly startDelimiter: string = '<'
-
-  test(source: string): boolean {
-    return startTagOpenRegExp.test(source)
-  }
+export default class StartTagParser
+  implements TokenParser<StartTagParserEventMap> {
+  exec = startTagOpenRegExp.exec.bind(startTagOpenRegExp)
 
   parse(
     source: string,
@@ -33,7 +29,7 @@ export default class StartTagParser extends TokenParser<
       source
     )
   ): VElement | void {
-    const match: string[] | null = source.match(startTagOpenRegExp)
+    const match: string[] | null = startsWithStartTagOpenRegExp.exec(source)
 
     if (!match) {
       return
@@ -72,7 +68,7 @@ export default class StartTagParser extends TokenParser<
 
     // Parse attributes while tag is open
     while (
-      !(startTagCloseTagMatch = source.match(startTagCloseRegExp)) &&
+      !(startTagCloseTagMatch = source.match(startsWithStartTagCloseRegExp)) &&
       //todo: attributeRegExp is wrong
       (attrMatch = source.match(attributeRegExp))
     ) {

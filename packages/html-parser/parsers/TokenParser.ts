@@ -3,21 +3,19 @@ import { EventMap } from '../EventEmitter'
 import Token from '../Token'
 import Tokenizer, { CommonEventMap, HookMap, Module } from '../Tokenizer'
 
-export interface TokenIdentifier {
-  test(source: string): boolean
+export interface TokenIdentifierExecArray extends Array<string> {
+  index: number
 }
 
-export default abstract class TokenParser<
+export interface TokenIdentifier {
+  exec(source: string): TokenIdentifierExecArray | null
+}
+
+export default interface TokenParser<
   T extends CommonEventMap<U> & EventMap,
   U extends ErrorCode = ErrorCode
-> implements TokenIdentifier {
-  protected abstract readonly startDelimiter: string
-
-  test(source: string): boolean {
-    return source.startsWith(this.startDelimiter)
-  }
-
-  abstract parse(
+> extends TokenIdentifier {
+  parse(
     source: string,
     hooks?: HookMap<T> | Module<T, U>,
     tokenizer?: Tokenizer<T, U>

@@ -1,19 +1,15 @@
 import { NodeType } from '@rosemlabs/dom-api'
 import { VElement } from '../ast'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
-import { endTagRegExp } from '../utils/xml'
+import { endTagRegExp, startsWithEndTagRegExp } from '../utils/xml'
 import TokenParser from './TokenParser'
 
 export type EndTagParserEventMap = {
   endTag: VElement
 } & CommonEventMap
 
-export default class EndTagParser extends TokenParser<EndTagParserEventMap> {
-  protected readonly startDelimiter: string = '</'
-
-  test(source: string): boolean {
-    return endTagRegExp.test(source)
-  }
+export default class EndTagParser implements TokenParser<EndTagParserEventMap> {
+  exec = endTagRegExp.exec.bind(endTagRegExp)
 
   parse(
     source: string,
@@ -24,7 +20,7 @@ export default class EndTagParser extends TokenParser<EndTagParserEventMap> {
       source
     )
   ): VElement | void {
-    const match: string[] | null = source.match(endTagRegExp)
+    const match: string[] | null = startsWithEndTagRegExp.exec(source)
 
     if (!match) {
       return

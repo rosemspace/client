@@ -41,14 +41,22 @@ export const qualifiedNameRegExp = regExp(
 
 const qualifiedNameRegExpCapturePart = `((?:(${ncNameRegExpPart}):)?(${ncNameRegExpPart}))`
 
-export const startTagOpenRegExp = regExp(`^<${qualifiedNameRegExpCapturePart}`)
+export const startTagOpenRegExp = regExp(`<${qualifiedNameRegExpCapturePart}`)
 
-export const startTagCloseRegExp = /^\s*(\/?)>/
+export const startsWithStartTagOpenRegExp = regExp(
+  `^<${qualifiedNameRegExpCapturePart}`
+)
+
+export const startsWithStartTagCloseRegExp = /^\s*(\/?)>/
 
 // Regular expression for parsing attributes
 export const attributeRegExp = /^\s*([^\s"'<>/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 
 export const endTagRegExp = regExp(
+  `<\\/(?:${qualifiedNameRegExpCapturePart})?[^>]*>`
+)
+
+export const startsWithEndTagRegExp = regExp(
   `^<\\/(?:${qualifiedNameRegExpCapturePart})?[^>]*>`
 )
 

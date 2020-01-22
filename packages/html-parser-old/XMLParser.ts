@@ -19,11 +19,11 @@ import {
   commentStartRegExp,
   declarationRegExp,
   declarationStartRegExp,
-  endTagRegExp,
+  startsWithEndTagRegExp,
   processingInstructionRegExp,
   processingInstructionStartRegExp,
-  startTagCloseRegExp,
-  startTagOpenRegExp,
+  startsWithStartTagCloseRegExp,
+  startsWithStartTagOpenRegExp,
 } from '@rosemlabs/html-parser/utils/xml'
 import { decodeBaseEntities } from './baseEntities'
 import HookList from './HookList'
@@ -213,8 +213,8 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
       declarationStartRegExp.test(source) ||
       commentStartRegExp.test(source) ||
       cDataSectionStartRegExp.test(source) ||
-      endTagRegExp.test(source) ||
-      startTagOpenRegExp.test(source)
+      startsWithEndTagRegExp.test(source) ||
+      startsWithStartTagOpenRegExp.test(source)
     )
   }
 
@@ -273,7 +273,7 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
 
   parseStartTag(): StartTag | void {
     const startTagOpenMatch: RegExpMatchArray | null = this.source.match(
-      startTagOpenRegExp
+      startsWithStartTagOpenRegExp
     )
 
     if (!startTagOpenMatch) {
@@ -310,7 +310,9 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
 
     // Parse attributes while tag is open
     while (
-      !(startTagCloseTagMatch = this.source.match(startTagCloseRegExp)) &&
+      !(startTagCloseTagMatch = this.source.match(
+        startsWithStartTagCloseRegExp
+      )) &&
       (attrMatch = this.source.match(attributeRegExp))
     ) {
       // Qualified name of an attribute, i. e. "xlink:href"
@@ -439,7 +441,9 @@ export default class XMLParser<T extends XMLParserOptions = XMLParserOptions>
   }
 
   parseEndTag(): EndTag | void {
-    const endTagMatch: RegExpMatchArray | null = this.source.match(endTagRegExp)
+    const endTagMatch: RegExpMatchArray | null = this.source.match(
+      startsWithEndTagRegExp
+    )
 
     if (!endTagMatch) {
       return
