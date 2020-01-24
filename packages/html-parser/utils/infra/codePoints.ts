@@ -13,7 +13,7 @@ export function startsWithCharSequence(
 // HTML Entity (hex)     - &#xfffd;
 // UTF-8 (hex)           - \xEF\xBF\xBD
 // UTF-16 (hex)          - \uFFFD
-export const replacementChar = '\uFFFD'
+export const replacementChar = `\uFFFD`
 
 // https://infra.spec.whatwg.org/#code-points
 // Legend:
@@ -23,7 +23,7 @@ export const startsWithSurrogateSeqRegExp = /[\uD800-\uDFFF]+/u
 
 export const startsWithScalarValueSeqRegExp = /[^\uD800-\uDFFF]+/u
 
-export const startsWithNonCharSeqRegExp = /[\uFDD0-\uFDEF\uFFFE\uFFFF\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]+/u
+export const startsWithNonCharRegExp = /[\uFDD0-\uFDEF\uFFFE\uFFFF\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]+/u
 
 // Newline can be one of
 // - Carriage Return (CR, \r, on older Macs)
@@ -33,17 +33,17 @@ export const asciiNewlineSeq = `\\r?\\n|\\r` as CharSequence
 
 export const asciiTabOrNewLineSeq = `\\t|${asciiNewlineSeq}` as CharSequence
 
-export const asciiWhitespace = `\\t\\n\\f\\r ` as CharSequence
+export const asciiWhitespaceSeq = ` \\t\\n\\f\\r` as CharSequence
 
-export const asciiWhitespaceRegExp = new RegExp(`[${asciiWhitespace}]+`)
+export const asciiWhitespaceRegExp = new RegExp(`[${asciiWhitespaceSeq}]+`)
 
 export const startsWithASCIIWhitespaceRegExp = new RegExp(
-  `^[${asciiWhitespace}]+`
+  `^[${asciiWhitespaceSeq}]+`
 )
 
 export const endsWithASCIIWhitespaceRegExp = new RegExp(
-  `[${asciiWhitespace}]+$`
+  `[${asciiWhitespaceSeq}]+$`
 )
 
 // eslint-disable-next-line no-control-regex
-export const startsWithControlCharExcSpaceAndNullSeqRegExp = /^[\x01-\x08\x0B\x0E-\x1F\x7F-\x9F]+/u
+export const startsWithControlCharExcSpaceAndNullRegExp = /^[\x01-\x08\x0B\x0E-\x1F\x7F-\x9F]+/u

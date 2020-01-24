@@ -1,17 +1,17 @@
 // https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream
 
 import {
-  startsWithControlCharExcSpaceAndNullSeqRegExp,
-  startsWithNonCharSeqRegExp,
+  startsWithControlCharExcSpaceAndNullRegExp,
+  startsWithNonCharRegExp,
   startsWithSurrogateSeqRegExp,
 } from './utils/infra/codePoints'
 import { ErrorCode } from './errors'
 
 const preprocessors: [RegExp, ErrorCode][] = [
   [startsWithSurrogateSeqRegExp, ErrorCode.SURROGATE_IN_INPUT_STREAM],
-  [startsWithNonCharSeqRegExp, ErrorCode.NONCHARACTER_IN_INPUT_STREAM],
+  [startsWithNonCharRegExp, ErrorCode.NONCHARACTER_IN_INPUT_STREAM],
   [
-    startsWithControlCharExcSpaceAndNullSeqRegExp,
+    startsWithControlCharExcSpaceAndNullRegExp,
     ErrorCode.CONTROL_CHARACTER_IN_INPUT_STREAM,
   ],
 ]

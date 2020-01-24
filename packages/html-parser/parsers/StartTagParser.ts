@@ -96,6 +96,7 @@ export default class StartTagParser
       source = tokenizer.remainingSource
 
       // NAMESPACE PLUGIN
+      // https://dom.spec.whatwg.org/#validate
       // // Add namespace
       // if ('xmlns' === prefix) {
       //   // if (attr.value) {

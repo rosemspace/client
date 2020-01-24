@@ -1,6 +1,10 @@
-import { XLINK_NAMESPACE, XML_NAMESPACE, XMLNS_NAMESPACE } from './namespaces'
+import {
+  XLINK_NAMESPACE,
+  XML_NAMESPACE,
+  XMLNS_NAMESPACE,
+} from '../../infra/namespaces'
 
-// // https://html.spec.whatwg.org/multipage/parsing.html#adjust-foreign-attributes
+// https://html.spec.whatwg.org/multipage/parsing.html#adjust-foreign-attributes
 export const XML_ATTRS_ADJUSTMENT_MAP = {
   'xlink:actuate': XLINK_NAMESPACE,
   'xlink:arcrole': XLINK_NAMESPACE,

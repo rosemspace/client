@@ -2,4 +2,6 @@
 export * from './element'
 export * from './attr'
 export * from './mimeTypes'
-export * from './namespaces'
+
+// <foreignObject>
+export const foreignElementRegExp = /^foreignObject$/i
