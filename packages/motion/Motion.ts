@@ -1,4 +1,5 @@
 import { isNumber } from 'lodash'
+import queueMicrotask from '@rosemlabs/web-util/queueMicrotask'
 import {
   easeInExpo,
   bounceIn,

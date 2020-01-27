@@ -5,12 +5,12 @@
 // - add middleware functionality
 // - migrate extension from mime types to namespaces
 
+import { APPLICATION_XML_MIME_TYPE } from '@rosemlabs/html-parser/utils/html'
 import {
-  APPLICATION_XML_MIME_TYPE,
   XLINK_NAMESPACE,
   XML_NAMESPACE,
   XMLNS_NAMESPACE,
-} from '@rosemlabs/html-parser/utils/html'
+} from '@rosemlabs/html-parser/utils/infra/namespaces'
 import {
   attributeRegExp,
   cDataSectionRegExp,
@@ -19,9 +19,9 @@ import {
   commentStartRegExp,
   declarationRegExp,
   declarationStartRegExp,
-  startsWithEndTagRegExp,
   processingInstructionRegExp,
   processingInstructionStartRegExp,
+  startsWithEndTagRegExp,
   startsWithStartTagCloseRegExp,
   startsWithStartTagOpenRegExp,
 } from '@rosemlabs/html-parser/utils/xml'

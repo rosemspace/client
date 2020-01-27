@@ -12,6 +12,7 @@ import {
   HotModuleReplacementPlugin,
   ProgressPlugin,
 } from 'webpack'
+// const VueLoaderPlugin = require('vue-loader/lib/plugin')
 // import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 // import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 // import { isProduction } from '@rosemlabs/env-util'
@@ -111,7 +112,7 @@ export default {
             options: {
               // todo use isProduction instead of true
               // transpileOnly: true, // false by default
-              appendTsSuffixTo: ['\\.sfc$', '\\.glsl$'],
+              appendTsSuffixTo: ['\\.vue$', '\\.sfc$', '\\.glsl$'],
               // happyPackMode: false // false by default
             },
           },
@@ -219,6 +220,10 @@ export default {
         test: /\.glsl$/,
         use: 'webpack-glsl-loader',
       },
+      {
+        test: /\.vue$/,
+        use: 'vue-loader',
+      },
     ],
   },
   devServer: {
@@ -229,6 +234,7 @@ export default {
     port: 8080,
   },
   plugins: [
+    // new VueLoaderPlugin(),
     new SFCLoaderPlugin({
       fileExtension: 'sfc',
       // blockLangMap: {

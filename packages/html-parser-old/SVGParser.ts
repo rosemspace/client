@@ -1,6 +1,9 @@
+import {
+  foreignElementRegExp,
+  IMAGE_SVG_MIME_TYPE,
+} from '@rosemlabs/html-parser/utils/html'
+import { SVG_NAMESPACE } from '@rosemlabs/html-parser/utils/infra/namespaces'
 import { getExactDisjunctionRegExpFromArray } from '@rosemlabs/regexp-util'
-import { foreignElementRegExp } from '@rosemlabs/html-parser/utils/svg'
-import { IMAGE_SVG_MIME_TYPE, SVG_NAMESPACE } from '@rosemlabs/html-parser/utils/html'
 import isArray from 'lodash/isArray'
 import { XMLProcessorMap } from './index'
 import { StartTag } from './nodes'
@@ -50,17 +53,10 @@ export default class SVGParser<T extends SVGParserOptions> extends XMLParser<T>
     )
 
     Object.assign(this.defaultNamespaceMap, defaultNamespaceMap)
-    this.addProcessor(
-      IMAGE_SVG_MIME_TYPE,
-      SVG_NAMESPACE,
-      SVGParser.prototype
-    )
+    this.addProcessor(IMAGE_SVG_MIME_TYPE, SVG_NAMESPACE, SVGParser.prototype)
   }
 
-  parseFromString(
-    source: string,
-    type: string = IMAGE_SVG_MIME_TYPE
-  ): void {
+  parseFromString(source: string, type: string = IMAGE_SVG_MIME_TYPE): void {
     super.parseFromString(source, type)
   }
 

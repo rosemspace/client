@@ -1,6 +1,6 @@
 type StackedTagRegExpCache = { [stackTag: string]: RegExp }
 
-let stackedTagRegExpCache: StackedTagRegExpCache = {}
+const stackedTagRegExpCache: StackedTagRegExpCache = {}
 
 export default function getStackedTagRegExp(tagName: string): RegExp {
   return (

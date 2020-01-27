@@ -1,4 +1,5 @@
 import {
+  APPLICATION_MATHML_MIME_TYPE,
   conditionalCommentRegExp,
   conditionalCommentStartRegExp,
   escapableRawTextElementRegExp,
@@ -8,23 +9,22 @@ import {
   rawTextElementRegExp,
   reservedAttributeRegExp,
   shouldIgnoreFirstNewline,
+  TEXT_HTML_MIME_TYPE,
   voidElementRegExp,
 } from '@rosemlabs/html-parser/utils/html'
+import {
+  HTML_NAMESPACE,
+  MATHML_NAMESPACE,
+} from '@rosemlabs/html-parser/utils/infra/namespaces'
+import getStackedTagRegExp from './getStackedTagRegExp'
+import HTMLProcessor from './HTMLProcessor'
+import { NamespaceMap, XMLProcessorMap } from './index'
+import { Attr, Content, EndTag, StartTag } from './nodes'
 import SVGParser, {
   convertElementArrayToRegExp,
   SVGParserOptions,
 } from './SVGParser'
-import {
-  APPLICATION_MATHML_MIME_TYPE,
-  HTML_NAMESPACE,
-  MATHML_NAMESPACE,
-  TEXT_HTML_MIME_TYPE,
-} from '@rosemlabs/html-parser/utils/html'
 import XMLParser from './XMLParser'
-import { NamespaceMap, XMLProcessorMap } from './index'
-import { Attr, Content, EndTag, StartTag } from './nodes'
-import getStackedTagRegExp from './getStackedTagRegExp'
-import HTMLProcessor from './HTMLProcessor'
 
 export type SourceSupportedType =
   | 'application/mathml+xml'

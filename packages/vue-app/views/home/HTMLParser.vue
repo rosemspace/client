@@ -18,17 +18,18 @@
 </template>
 
 <script lang="ts">
-import isObject from 'lodash/isObject'
-import { Vue, Component } from 'vue-property-decorator'
-import { qualifiedNameRegExp } from '@rosemlabs/xml-util'
-import HTMLParser from '@rosemlabs/html-parser'
+import HTMLParser, {
+  HTMLParserOptions,
+} from '@rosemlabs/html-parser-old/HTMLParser'
+import { qualifiedNameRegExp } from '@rosemlabs/html-parser/utils/xml'
 import TemplateCompiler from '@rosemlabs/template-compiler/TemplateCompiler'
 import { VDOMRenderer } from '@rosemlabs/virtual-dom'
-import WebDOMRenderer from '@rosemlabs/web-ui/WebDOMRenderer'
+import isObject from 'lodash/isObject'
+import { Component, Vue } from 'vue-property-decorator'
 
 const htmlParser = new HTMLParser({
   rawTextElement: new RegExp(qualifiedNameRegExp.source, 'i'),
-})
+} as HTMLParserOptions)
 const templateCompiler = new TemplateCompiler(new VDOMRenderer())
 
 htmlParser.addModule(templateCompiler)

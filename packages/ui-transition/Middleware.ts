@@ -9,7 +9,7 @@ export class Middleware<T extends StageDispatcherDetail>
   implements MiddlewareInterface<T> {
   private readonly module: Module<any, T>
 
-  private successor: MiddlewareInterface<T> = { process: () => void 0 }
+  private successor: MiddlewareInterface<T> = { process: () => undefined }
 
   constructor(module: Module<any, T>, predecessor?: Middleware<T>) {
     this.module = module
