@@ -1,0 +1,149 @@
+.app {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  color: #294766;
+}
+
+.nav {
+  padding: 30px;
+  text-align: center;
+
+  & a {
+    padding: 4px 10px;
+    font-size: 1.6rem;
+    font-weight: bold;
+    line-height: 1.25;
+    color: #2c3e50;
+    border-left: solid 1px #2c3e50;
+
+    &:hover {
+      border-bottom: none;
+    }
+
+    &:first-of-type {
+      border: none;
+    }
+
+    &.exactActive {
+      color: #ffb0e7;
+    }
+  }
+}
+
+.hello {
+  padding: 20px 40px;
+
+  & a {
+    font-weight: 600;
+  }
+
+  & p {
+    margin: 30px;
+  }
+}
+
+.social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0;
+  margin: 10px;
+  font-size: 1.2rem;
+  color: #e8f2ff;
+  background: linear-gradient(to right, transparent 20%, #9b71a545, transparent 80%);
+
+  & li {
+    margin: 0 12px;
+
+    &:first-child {
+      list-style: none;
+    }
+  }
+
+  & a {
+    display: block;
+    padding: 4px;
+    border-bottom: solid 1px transparent;
+  }
+}
+
+.greeting {
+  position: relative;
+  flex-grow: 1;
+  min-height: calc(100vh - 82px);
+  padding-bottom: 20px;
+  font-size: 1.6rem;
+  text-align: center;
+
+  & a {
+    &:hover {
+      border-bottom: solid 1px;
+    }
+  }
+}
+
+.logo,
+.ava {
+  width: 34vw;
+  min-width: 126px;
+  max-width: 242px;
+  border: solid 0 #333;
+  border-radius: 5%;
+  box-shadow: 0 14px 20px #13131380;
+  transition: all .1s;
+}
+
+.ava {
+  border: solid 6px #eaf0f9;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(19, 19, 19, .4);
+}
+
+.title {
+  font-size: 3.2rem;
+}
+
+.brand {
+  font-size: 5rem;
+  color: #fde;
+  white-space: nowrap;
+}
+
+.r {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    display: block;
+    width: 3.8rem;
+    height: 3.8rem;
+    content: '';
+    border: solid 1px;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+.bg {
+  position: absolute;
+
+  /* nav height */
+  top: -80px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  display: block;
+  overflow: hidden;
+
+  & > img {
+    width: 100%;
+    height: 100%;
+    filter: blur(30px);
+    image-rendering: pixelated;
+    object-fit: cover;
+    transform: scale(1.4);
+  }
+}

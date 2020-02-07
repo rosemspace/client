@@ -8,7 +8,7 @@
     <div class="hello">
       <h1 v-if="isHome" class="title">
         Welcome to
-        <span class="brand"><span class="r">R</span>osem</span> laboratory
+        <span class="brand"><span class="r">R</span>osem</span> laboratories
       </h1>
       <h1 v-else class="title"><span class="brand"><span class="r">R</span>oshe</span></h1>
       <ul class="social">
@@ -17,6 +17,7 @@
         <li><a href="https://www.instagram.com/roshephoto" target="_blank">instagram</a></li>
         <li><a href="https://www.facebook.com/rosheface" target="_blank">facebook</a></li>
         <li><a href="https://twitter.com/roshenews" target="_blank">twitter</a></li>
+        <li><a href="https://disqus.com/by/roshediscuss" target="_blank">disqus</a></li>
         <li><a href="https://www.patreon.com/roshe" target="_blank">patreon</a></li>
         <li><a href="https://github.com/roshecode" target="_blank">github</a></li>
       </ul>

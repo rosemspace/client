@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Welcome to Rosem laboratories</title>
+  <link rel="icon" href="./favicon-32x32.png">
+  <link
+    href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700"
+    rel="stylesheet"
+  />
+<!--  <link rel="stylesheet" href="./styles.pcss">-->
+</head>
+<body>
+<noscript>
+  <strong>We're sorry but <span><%= htmlWebpackPlugin.options.title.split('|')[0].trim() %></span> application doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+</noscript>
+<div class="app">
+  <div class="nav">
+    <a data-href="/">Home</a>
+    <a data-href="/about">About</a>
+  </div>
+  <div class="greeting">
+    <div class="bg">
+      <img src="./assets/bg.jpg" alt="Background image" />
+    </div>
+    <img class="logo" src="./assets/logo.png" alt="Logo" />
+<!--    <img class="ava" src="./assets/ava.jpg" alt="Photo" />-->
+    <div class="hello">
+      <h1 class="title">
+        Welcome to
+        <span class="brand"><span class="r">R</span>osem</span> laboratories
+      </h1>
+<!--      <h1 class="title"><span class="brand"><span class="r">R</span>oshe</span></h1>-->
+      <ul class="social">
+        <li><a href="https://www.linkedin.com/in/roshejob" target="_blank">linkedin</a></li>
+        <li><a href="https://medium.com/@roshestory" target="_blank">medium</a></li>
+        <li><a href="https://www.instagram.com/roshephoto" target="_blank">instagram</a></li>
+        <li><a href="https://www.facebook.com/rosheface" target="_blank">facebook</a></li>
+        <li><a href="https://twitter.com/roshenews" target="_blank">twitter</a></li>
+        <li><a href="https://disqus.com/by/roshediscuss" target="_blank">disqus</a></li>
+        <li><a href="https://www.patreon.com/roshe" target="_blank">patreon</a></li>
+        <li><a href="https://github.com/roshecode" target="_blank">github</a></li>
+      </ul>
+      <p>
+        Forward-looking web packages based on modern standards<br>
+        for complex and modular applications written mainly in PHP and TypeScript.<br>
+        <small>Documentation of packages will be added soon.</small>
+      </p>
+<!--      <p>-->
+<!--        Hello! My name is <strong>Roman Shevchenko</strong>. I was born in Ukraine.<br>-->
+<!--        I love PHP, TypeScript, Vue, the Earth and almost all people living here.<br>-->
+<!--        But most of all I ❤ <a href="https://github.com/rosemdev" target="_blank">rosem</a>.-->
+<!--      </p>-->
+    </div>
+  </div>
+</div>
+<!--
+Serves a polyfill with only the browser features
+not supported in the current browser.
+https://polyfill.io/v2/docs/features/
+-->
+<!--<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>-->
+<!-- Built files will be auto injected here. -->
+</body>
+</html>

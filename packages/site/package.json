@@ -1,0 +1,65 @@
+{
+  "name": "@rosemlabs/site",
+  "version": "0.0.1",
+  "description": "Rosem laboratories site",
+  "keywords": [
+    "rosem",
+    "rosemlabs",
+    "site"
+  ],
+  "author": "Roman Shevchenko <iroman.via@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "yarn serve",
+    "lint:eslint": "todo",
+    "lint:stylelint": "stylelint --fix",
+    "lint:markdownlint": "markdownlint",
+    "lint:prettier": "prettier --write --loglevel warn",
+    "lint:all:eslint": "yarn lint:eslint --ext .js,.vue .",
+    "lint:all:stylelint": "yarn lint:stylelint \"packages/**/*.{vue,scss}\"",
+    "lint:all:markdownlint": "yarn lint:markdownlint \"docs/*.md\" \"*.md\"",
+    "lint:all:prettier": "yarn lint:prettier \"**/*.{js,json,css,scss,vue,html,md}\"",
+    "lint": "run-s lint:all:*",
+    "test:unit": "todo",
+    "test:unit:file": "yarn test:unit --bail --findRelatedTests",
+    "test:unit:watch": "yarn test:unit --watch --notify --notifyMode change",
+    "test:unit:ci": "yarn test:unit --coverage --ci",
+    "test": "yarn test:unit",
+    "test:ci": "yarn test:unit:ci",
+    "tsc": "tsc"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "1.2.26",
+    "@fortawesome/free-solid-svg-icons": "5.12.0",
+    "@fortawesome/vue-fontawesome": "0.1.8",
+    "axios": "0.19.0",
+    "lodash": "^4.17.15",
+    "nanoid": "^2.1.7",
+    "normalize.css": "8.0.1",
+    "nprogress": "0.2.0",
+    "popper.js": "^1.16.0"
+  },
+  "devDependencies": {
+    "babel-loader": "^8.0.6",
+    "cache-loader": "^4.1.0",
+    "css-loader": "^3.4.2",
+    "file-loader": "^5.0.2",
+    "html-loader": "^1.0.0-alpha.0",
+    "markdownlint-cli": "^0.20.0",
+    "postcss-loader": "^3.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "stylelint": "^12.0.1",
+    "stylelint-config-css-modules": "^2.1.0",
+    "stylelint-config-prettier": "^8.0.0",
+    "stylelint-config-recess-order": "^2.0.3",
+    "stylelint-config-standard": "^19.0.0",
+    "style-loader": "^1.1.3",
+    "ts-loader": "^6.2.1",
+    "url-loader": "^3.0.0"
+  }
+}
