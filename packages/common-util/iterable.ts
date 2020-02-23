@@ -11,7 +11,7 @@ export function* objectIterator<T extends object>(
   this: T
 ): Generator<[keyof T, T[keyof T]]> {
   for (const key in this) {
-    if (!this.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(this, key)) {
       continue
     }
 
