@@ -3,12 +3,18 @@ import {
   IMAGE_SVG_MIME_TYPE,
 } from '@rosemlabs/html-parser/utils/html'
 import { SVG_NAMESPACE } from '@rosemlabs/html-parser/utils/infra/namespaces'
-import { getExactDisjunctionRegExpFromArray } from '@rosemlabs/regexp-util'
 import isArray from 'lodash/isArray'
 import { XMLProcessorMap } from './index'
 import { StartTag } from './nodes'
 import SVGProcessor from './SVGProcessor'
 import XMLParser, { XMLParserOptions } from './XMLParser'
+
+export function getExactDisjunctionRegExpFromArray(
+  list: string[],
+  flags?: string
+): RegExp {
+  return new RegExp(`^${list.join('|')}$`, flags)
+}
 
 export function convertElementArrayToRegExp(list: RegExp | string[]): RegExp {
   if (isArray(list)) {

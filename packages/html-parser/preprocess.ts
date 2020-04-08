@@ -18,7 +18,7 @@ const preprocessors: [RegExp, ErrorCode][] = [
 
 export default function preprocess(
   source: string,
-  error: (code: ErrorCode, offset: number) => void
+  onError: (code: ErrorCode, offset: number) => void
 ): void {
   for (let index = 0; index < preprocessors.length; ++index) {
     const [regExp, code] = preprocessors[index]
@@ -28,7 +28,7 @@ export default function preprocess(
       continue
     }
 
-    error(code, match.index + match[0].length)
+    onError(code, match.index + match[0].length)
     index = 0
   }
 }

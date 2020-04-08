@@ -22,7 +22,7 @@ export default class EventEmitter<
     event: Name,
     listener: EventListener<Map[Name]>
   ): this {
-    if (this.listeners[event] === void 0) {
+    if (this.listeners[event] === undefined) {
       this.listeners[event] = []
     }
 

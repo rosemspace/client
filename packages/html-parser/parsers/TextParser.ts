@@ -3,14 +3,8 @@ import { VText } from '../ast'
 import { ErrorCode } from '../errors'
 import preprocess from '../preprocess'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
-import {
-  startsWithEndTagRegExp,
-  startsWithStartTagOpenRegExp,
-} from '../utils/xml'
-import TokenParser, {
-  TokenIdentifier,
-  TokenIdentifierExecArray,
-} from './TokenParser'
+import { endTagRegExp, startTagOpenRegExp } from '../utils/xml'
+import TokenParser from './TokenParser'
 
 export type TextParserEventMap = {
   whitespaceSequence: VText
@@ -23,14 +17,14 @@ export enum TextMode {
   // <title>, <textarea>
   RCDATA,
   // <style>, <xmp>, <iframe>, <noembed>, <noframes>
-  // [<noscript> (if scripting flag is enabled)]
+  // [+ <noscript> (if scripting flag is enabled)]
   RAWTEXT,
   // <script>
   SCRIPT_DATA,
   // <plaintext> (deprecated)
   PLAINTEXT,
   // all other elements
-  // [<noscript> (if scripting flag is disabled)]
+  // [+ <noscript> (if scripting flag is disabled)]
   DATA,
   // in foreign elements
   CDATA,
@@ -82,20 +76,32 @@ export function replaceNullChars<T extends CommonEventMap>(
 // and 2 (e.g. 'abcdef1234@@#$%^')
 // https://html.spec.whatwg.org/multipage/parsing.html#data-state
 export default class TextParser implements TokenParser<TextParserEventMap> {
-  private nonTextTokenIdentifiers: TokenIdentifier[]
+  private nonTextTokenPatterns: RegExp[]
+
+  // (?=...|...)
+  readonly pattern = /[\s\S]+?/
+  private textEndIndexRegExp: RegExp
 
   constructor(
-    nonTextTokenIdentifiers: TokenIdentifier[] = [
+    nonTextTokenPatterns: RegExp[] = [
       // todo: add all identifiers
-      startsWithEndTagRegExp,
-      startsWithStartTagOpenRegExp,
+      endTagRegExp,
+      startTagOpenRegExp,
     ]
   ) {
-    this.nonTextTokenIdentifiers = nonTextTokenIdentifiers
-  }
-
-  exec(source: string): TokenIdentifierExecArray {
-    return Object.assign([source], { index: 0 })
+    this.nonTextTokenPatterns = nonTextTokenPatterns
+    // this.textEndIndexRegExp = new RegExp(
+    //   `(?=(?:${nonTextTokenPatterns
+    //     .map((pattern): string => pattern.source)
+    //     .join(')|(?:')}))`,
+    //   'i'
+    // )
+    this.textEndIndexRegExp = new RegExp(
+      `(?:${nonTextTokenPatterns
+        .map((pattern): string => pattern.source)
+        .join(')|(?:')})`,
+      'i'
+    )
   }
 
   parse(
@@ -103,21 +109,22 @@ export default class TextParser implements TokenParser<TextParserEventMap> {
     hooks?: Module<TextParserEventMap>,
     tokenizer: Tokenizer<TextParserEventMap> = new Tokenizer([], hooks, source)
   ): VText | void {
-    preprocess(
-      tokenizer.remainingSource,
-      (code: ErrorCode, offset: number): void => {
-        tokenizer.emit(
-          'error',
-          tokenizer.error(code, {
-            __starts: tokenizer.cursorPosition,
-            __ends: tokenizer.consume(offset),
-          })
-        )
-      }
-    )
+    // preprocess(
+    //   tokenizer.remainingSource,
+    //   (code: ErrorCode, offset: number): void => {
+    //     tokenizer.emit(
+    //       'error',
+    //       tokenizer.error(code, {
+    //         __starts: tokenizer.cursorPosition,
+    //         __ends: tokenizer.consume(offset),
+    //       })
+    //     )
+    //   }
+    // )
 
     let data: string | undefined
-    const textEndTokenIndex: number = this.getTokenEndIndex(source)
+    const textEndTokenIndex: number =
+      this.textEndIndexRegExp.exec(source)?.index ?? source.length
 
     if (textEndTokenIndex >= 0) {
       // let remainingSource = source.slice(textEndTokenIndex)
@@ -168,14 +175,14 @@ export default class TextParser implements TokenParser<TextParserEventMap> {
     return text
   }
 
-  addNonTextTokenIdentifier(nonTextTokenIdentifier: TokenIdentifier): void {
-    this.nonTextTokenIdentifiers.push(nonTextTokenIdentifier)
+  addNonTextTokenPattern(nonTextTokenIdentifier: RegExp): void {
+    this.nonTextTokenPatterns.push(nonTextTokenIdentifier)
   }
 
   private getTokenEndIndex(source: string): number {
     let endTokenIndex: number = source.length
 
-    this.nonTextTokenIdentifiers.forEach((tokenIdentifier) => {
+    this.nonTextTokenPatterns.forEach((tokenIdentifier) => {
       //todo optimize it by reducing search range of tokens
       endTokenIndex = Math.min(
         endTokenIndex,

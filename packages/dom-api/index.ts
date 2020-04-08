@@ -21,7 +21,8 @@ export enum NodeName {
   CDATA_SECTION_NODE = '#cdata-section',
   COMMENT_NODE = '#comment',
   DOCUMENT_NODE = '#document',
-  // DOCUMENT_TYPE_NODE = '#document-type',
+  DOCUMENT_TYPE_NODE = '#document-type',
   DOCUMENT_FRAGMENT_NODE = '#document-fragment',
   XML_DECLARATION_NODE = '#xml-declaration',
+  PROCESSING_INSTRUCTION = '#processing-instruction',
 }

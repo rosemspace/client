@@ -1,7 +1,8 @@
 import { NodeType } from '@rosemlabs/dom-api'
+import { startsWithRegExp } from '../utils'
 import { VElement } from '../ast'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
-import { endTagRegExp, startsWithEndTagRegExp } from '../utils/xml'
+import { endTagRegExp } from '../utils/xml'
 import TokenParser from './TokenParser'
 
 export type EndTagParserEventMap = {
@@ -9,7 +10,8 @@ export type EndTagParserEventMap = {
 } & CommonEventMap
 
 export default class EndTagParser implements TokenParser<EndTagParserEventMap> {
-  exec = endTagRegExp.exec.bind(endTagRegExp)
+  readonly pattern = endTagRegExp
+  private startsWithEndTagRegExp = startsWithRegExp(endTagRegExp)
 
   parse(
     source: string,
@@ -20,7 +22,7 @@ export default class EndTagParser implements TokenParser<EndTagParserEventMap> {
       source
     )
   ): VElement | void {
-    const match: string[] | null = startsWithEndTagRegExp.exec(source)
+    const match: string[] | null = this.startsWithEndTagRegExp.exec(source)
 
     if (!match) {
       return

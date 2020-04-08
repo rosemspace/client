@@ -1,16 +1,21 @@
 import { NodeName, NodeType } from '@rosemlabs/dom-api'
-import { Except } from 'type-fest'
 import { SourceSupportedType } from './index'
 import { ElementAttrMap } from './modules'
 import Token from './token'
 
-export interface VNode extends Token {
-  nodeType: NodeType
+export interface VNode<
+  T extends NodeType = NodeType,
+  U extends NodeName = NodeName
+> extends Token {
+  nodeType: T
   // Not transformed
-  nodeName: NodeName | string
+  nodeName: U | string
 }
 
-export interface VChildNode extends VNode {
+export interface VChildNode<
+  T extends NodeType = NodeType,
+  U extends NodeName = NodeName
+> extends VNode<T, U> {
   parentElement?: VElement
   nextSibling?: VElement | VText | VComment | VCDATASection
   previousSibling?: VElement | VText | VComment | VCDATASection
@@ -20,13 +25,13 @@ export interface VParentNode {
   childNodes?: (VElement | VText | VComment | VCDATASection)[]
 }
 
-export interface VDocument extends VNode, VChildNode {
-  nodeType: NodeType.DOCUMENT_NODE
-  nodeName: NodeName.DOCUMENT_NODE
-}
+export interface VDocument
+  extends VNode<NodeType.DOCUMENT_NODE, NodeName.DOCUMENT_NODE>,
+    VChildNode<NodeType.DOCUMENT_NODE, NodeName.DOCUMENT_NODE> {}
 
-export interface VDocumentType extends VNode, VChildNode {
-  nodeType: NodeType.DOCUMENT_TYPE_NODE
+export interface VDocumentType
+  extends VNode<NodeType.DOCUMENT_TYPE_NODE, NodeName.DOCUMENT_TYPE_NODE>,
+    VChildNode<NodeType.DOCUMENT_TYPE_NODE, NodeName.DOCUMENT_TYPE_NODE> {
   contentType: SourceSupportedType
 }
 
@@ -36,11 +41,10 @@ export interface VDocumentFragment extends VNode, VChildNode {
 }
 
 export interface VElement
-  extends VNode,
-    VChildNode,
+  extends VNode<NodeType.ELEMENT_NODE>,
+    VChildNode<NodeType.ELEMENT_NODE>,
     VParentNode,
     ElementAttrMap {
-  nodeType: NodeType.ELEMENT_NODE
   attributes: VAttr[]
   // Not transformed
   localName: string
@@ -58,7 +62,7 @@ export interface VElement
 
 //todo VCustomElement and VComponent
 
-export interface VAttr extends VNode {
+export interface VAttr extends VNode<NodeType.ATTRIBUTE_NODE> {
   // Not transformed
   localName: string
   // Lowercased
@@ -71,27 +75,52 @@ export interface VAttr extends VNode {
   namespaceURI?: string
 }
 
-export interface VCharacterData extends VNode, VChildNode {
+export interface VCharacterData<
+  T extends
+    | NodeType.TEXT_NODE
+    | NodeType.COMMENT_NODE
+    | NodeType.CDATA_SECTION_NODE
+    | NodeType.PROCESSING_INSTRUCTION_NODE =
+    | NodeType.TEXT_NODE
+    | NodeType.COMMENT_NODE
+    | NodeType.CDATA_SECTION_NODE
+    | NodeType.PROCESSING_INSTRUCTION_NODE,
+  U extends
+    | NodeName.TEXT_NODE
+    | NodeName.COMMENT_NODE
+    | NodeName.CDATA_SECTION_NODE
+    | NodeName.PROCESSING_INSTRUCTION =
+    | NodeName.TEXT_NODE
+    | NodeName.COMMENT_NODE
+    | NodeName.CDATA_SECTION_NODE
+    | NodeName.PROCESSING_INSTRUCTION
+> extends VNode<T, U>, VChildNode<T, U> {
   data: string
 }
 
-export interface VText extends VCharacterData {
-  nodeType: NodeType.TEXT_NODE
-  nodeName: NodeName.TEXT_NODE
+export interface VText<
+  T extends
+    | NodeType.TEXT_NODE
+    | NodeType.CDATA_SECTION_NODE = NodeType.TEXT_NODE,
+  U extends
+    | NodeName.TEXT_NODE
+    | NodeName.CDATA_SECTION_NODE = NodeName.TEXT_NODE
+> extends VCharacterData<T, U> {
   raw: boolean
 }
 
-export interface VComment extends VCharacterData {
-  nodeType: NodeType.COMMENT_NODE
-  nodeName: NodeName.COMMENT_NODE
+export interface VComment
+  extends VCharacterData<NodeType.COMMENT_NODE, NodeName.COMMENT_NODE> {
   //todo remove "?"
   conditional?: boolean
 }
 
-export type VProcessingInstruction = VCharacterData
+export type VProcessingInstruction = VCharacterData<
+  NodeType.PROCESSING_INSTRUCTION_NODE,
+  NodeName.PROCESSING_INSTRUCTION
+>
 
-export interface VCDATASection extends Except<VText, 'nodeType' | 'nodeName'> {
-  nodeType: NodeType.CDATA_SECTION_NODE
-  nodeName: NodeName.CDATA_SECTION_NODE
+export interface VCDATASection
+  extends VText<NodeType.CDATA_SECTION_NODE, NodeName.CDATA_SECTION_NODE> {
   raw: true
 }

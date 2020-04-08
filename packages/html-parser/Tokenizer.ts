@@ -101,7 +101,7 @@ export default class Tokenizer<
     ) {
       this.tokenParsers[this.tokenParserIndex].parse(
         this.remainingSource,
-        void 0,
+        undefined,
         this
       )
 

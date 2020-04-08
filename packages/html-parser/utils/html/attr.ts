@@ -4,22 +4,20 @@
 import { isNaN } from 'lodash'
 import { LiteralUnion } from 'type-fest'
 import { isWaiAriaAttribute } from '../wai-aria'
-
-const regExpExactInsensitive = (pattern: string): RegExp =>
-  new RegExp(`^(?:${pattern})$`, 'i')
+import { regExpExactI as r } from '../../utils'
 
 const linkElementAttrRegExpPart = `referrerpolicy|rel|href`
 const hyperlinkElementAttrRegExpPart = `download|${linkElementAttrRegExpPart}`
 const mediaElementAttrRegExpPart = `autoplay|controls|crossorigin|loop|muted|preload|src`
 const tableCellElementAttrRegExpPart = `(?:col|row)span|headers`
 const optionElementAttrRegExpPart = `disabled|label`
-const interactiveElementAttrRegExp = regExpExactInsensitive('open')
-const quoteElementAttrRegExp = regExpExactInsensitive('cite')
-const editElementAttrRegExp = regExpExactInsensitive('cite|datetime')
+const interactiveElementAttrRegExp = r('open')
+const quoteElementAttrRegExp = r('cite')
+const editElementAttrRegExp = r('cite|datetime')
 const boundedElementAttrRegExpPart = `height|width`
 const referElementAttrRegExpPart = `referrerpolicy|src`
 const crossReferElementAttrRegExpPart = `crossorigin|integrity|type`
-const colElementAttrRegExp = regExpExactInsensitive('span')
+const colElementAttrRegExp = r('span')
 const formAssociatedElementAttrRegExpPart = `name|disabled|form`
 const formAssociatedAutoElementAttrRegExpPart = `auto(?:complete|focus)`
 const buttonElementAttrRegExpPart = `${formAssociatedElementAttrRegExpPart}(?:action|enctype|method|novalidate|target)?|type|value`
@@ -48,7 +46,9 @@ export const isReservedAttribute = (name: string): boolean =>
 // class, id, slot
 // Global attributes (ARIA Standard)
 // role, aria-*
-export const htmlElementCommonAttributeRegExp = /^accesskey|autocapitalize|class|contenteditable|dir|draggable|enterkeyhint|hidden|i[ds]|inputmode|item(?:id|prop|ref|scope|type)|lang|nonce|role|slot|spellcheck|style|tabindex|title|translate$/
+export const htmlElementCommonAttributeRegExp = r(
+  'accesskey|autocapitalize|class|contenteditable|dir|draggable|enterkeyhint|hidden|i[ds]|inputmode|item(?:id|prop|ref|scope|type)|lang|nonce|role|slot|spellcheck|style|tabindex|title|translate'
+)
 
 export const isHTMLElementCommonAttribute = (name: string): boolean =>
   htmlElementCommonAttributeRegExp.test(name)
@@ -79,7 +79,7 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   base: /^href|target$/i,
   // as, color, crossorigin, href, hreflang, imagesizes, imagesrcset, integrity,
   // media, referrerpolicy, rel, sizes, type
-  link: regExpExactInsensitive(
+  link: r(
     `as|color|${crossReferElementAttrRegExpPart}|${linkElementAttrRegExpPart}(?:lang)?|image(?:sizes|srcset)|media|sizes`
   ),
   // charset, content, http-equiv, name
@@ -105,7 +105,7 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   // Text-level semantics
   // Uses mixin HTMLHyperlinkElementUtils
   // download, href, hreflang, ping, referrerpolicy, rel, target, type
-  a: regExpExactInsensitive(
+  a: r(
     `${hyperlinkElementAttrRegExpPart}(?:lang)?|ping|target|type`
   ),
   // Ignore <em>, <strong>, <small>, <s>, <cite>
@@ -131,18 +131,18 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   source: /^media|sizes|src(?:set)?|type$/i,
   // alt, crossorigin, decoding, height (ulong), ismap (boolean),
   // referrerpolicy, sizes, src, srcset, usemap, width (ulong)
-  img: regExpExactInsensitive(
+  img: r(
     `alt|crossorigin|decoding|${boundedElementAttrRegExpPart}|(?:is|use)map|${referElementAttrRegExpPart}(?:set)?|sizes`
   ),
   // allow, allowfullscreen (boolean), allowpaymentrequest (boolean), height,
   // name, referrerpolicy, src, srcdoc, sandbox, width
-  iframe: regExpExactInsensitive(
+  iframe: r(
     `allow(?:fullscreen|paymentrequest)?|${boundedElementAttrRegExpPart}|name|${referElementAttrRegExpPart}(?:doc)?|sandbox`
   ),
   // height, src, type, width
-  embed: regExpExactInsensitive(`${boundedElementAttrRegExpPart}|src|type`),
+  embed: r(`${boundedElementAttrRegExpPart}|src|type`),
   // data, form, height, name, type, usemap, width
-  object: regExpExactInsensitive(
+  object: r(
     `data|form|${boundedElementAttrRegExpPart}|name|type|usemap`
   ),
   // name, value
@@ -150,18 +150,18 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   // Extends HTMLMediaElement
   // autoplay, controls, crossorigin, height, loop, muted,
   // playsinline (boolean), poster, preload, src, width
-  video: regExpExactInsensitive(
+  video: r(
     `${mediaElementAttrRegExpPart}|${boundedElementAttrRegExpPart}|playsinline|poster`
   ),
   // Extends HTMLMediaElement
   // autoplay, controls, crossorigin, loop, muted, preload, src
-  audio: regExpExactInsensitive(mediaElementAttrRegExpPart),
+  audio: r(mediaElementAttrRegExpPart),
   // default (boolean), kind, label, src, srclang
   track: /^default|kind|label|src(?:lang)?$/i,
   map: /^name$/i,
   // Uses mixin HTMLHyperlinkElementUtils
   // alt, coords, download, href, name, ping, referrerpolicy, rel, shape, target
-  area: regExpExactInsensitive(
+  area: r(
     `alt|coords|${hyperlinkElementAttrRegExpPart}|name|ping|shape|target`
   ),
 
@@ -173,9 +173,9 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   col: colElementAttrRegExp,
   // Ignore <tbody>, <thead>, <tfoot>, <tr>
   // colspan (number), headers, rowspan (number)
-  td: regExpExactInsensitive(tableCellElementAttrRegExpPart),
+  td: r(tableCellElementAttrRegExpPart),
   // abbr, colspan (number), headers, rowspan (number), scope
-  th: regExpExactInsensitive(`abbr|${tableCellElementAttrRegExpPart}|scope`),
+  th: r(`abbr|${tableCellElementAttrRegExpPart}|scope`),
 
   // Forms
   // accept-charset, action, autocomplete, enctype, method, name,
@@ -189,28 +189,28 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   // maxlength (number), min, minlength (number), multiple (boolean), name,
   // pattern, placeholder, readonly (boolean), required (boolean),
   // size (number), src, step, type, value, width
-  input: regExpExactInsensitive(
+  input: r(
     `accept|alt|${formAssociatedAutoElementAttrRegExpPart}|checked|${textInputElementAttrRegExpPart}|${buttonElementAttrRegExpPart}|${boundedElementAttrRegExpPart}|list|m(?:ax|in)(?:length)?|${multipleInputElementAttrRegExpPart}|pattern|src|step`
   ),
   // autofocus (boolean), disabled (boolean), form, formaction, formenctype,
   // formmethod, formnovalidate (boolean), formtarget, name, type, value
-  button: regExpExactInsensitive(`autofocus|${buttonElementAttrRegExpPart}`),
+  button: r(`autofocus|${buttonElementAttrRegExpPart}`),
   // autocomplete, autofocus (boolean), disabled (boolean), form,
   // multiple (boolean), name, required (boolean), size (number)
-  select: regExpExactInsensitive(
+  select: r(
     `${formAssociatedAutoElementAttrRegExpPart}|${formAssociatedElementAttrRegExpPart}|${multipleInputElementAttrRegExpPart}`
   ),
   // Ignore <datalist>
   // disabled (boolean), label
-  optgroup: regExpExactInsensitive(optionElementAttrRegExpPart),
+  optgroup: r(optionElementAttrRegExpPart),
   // disabled, label, selected, value
-  option: regExpExactInsensitive(
+  option: r(
     `${optionElementAttrRegExpPart}|selected|value`
   ),
   // autocomplete, autofocus (boolean), cols (number), dirname,
   // disabled (boolean), form, maxlength (number), minlength (number), name,
   // placeholder, readonly (boolean), required (boolean), rows (number), wrap
-  textarea: regExpExactInsensitive(
+  textarea: r(
     `${formAssociatedAutoElementAttrRegExpPart}|(?:col|row)s|${textInputElementAttrRegExpPart}|${formAssociatedElementAttrRegExpPart}|m(?:ax|in)length|required|wrap`
   ),
   // for, form, name
@@ -221,7 +221,7 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   // value (double)
   meter: /^high|low|min|max|optimum|value$/i,
   // disabled (boolean), form, name
-  fieldset: regExpExactInsensitive(formAssociatedElementAttrRegExpPart),
+  fieldset: r(formAssociatedElementAttrRegExpPart),
   // Ignore <legend>
 
   // Interactive elements
@@ -234,14 +234,14 @@ export const htmlElementLocalAttributeMap: HTMLElementAttrRegExpMap = {
   // Scripting
   // async (boolean), crossorigin, defer (boolean), integrity,
   // nomodule (boolean), referrerpolicy, src, type
-  script: regExpExactInsensitive(
+  script: r(
     `async|${crossReferElementAttrRegExpPart}|defer|nomodule|${referElementAttrRegExpPart}`
   ),
   // Ignore <noscript>, <template>
   // name
   slot: /^name$/i,
   // height (ulong), width (ulong)
-  canvas: regExpExactInsensitive(boundedElementAttrRegExpPart),
+  canvas: r(boundedElementAttrRegExpPart),
 }
 
 export const isHTMLElementLocalAttribute = (

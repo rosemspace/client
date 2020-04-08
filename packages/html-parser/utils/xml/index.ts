@@ -4,10 +4,12 @@ function regExp(string: string, flags?: string): RegExp {
 
 export const anyCharCapturePart = '([\\s\\S]*?)'
 
-export const processingInstructionStartRegExp = /^<\?/
+export const processingInstructionStartRegExp = /<\?/
+
+export const processingInstructionEndRegExp = /\?>/
 
 export const processingInstructionRegExp = regExp(
-  `${processingInstructionStartRegExp.source}${anyCharCapturePart}\\?>`,
+  `${processingInstructionStartRegExp.source}${anyCharCapturePart}${processingInstructionEndRegExp}`,
   'i'
 )
 
@@ -43,32 +45,40 @@ const qualifiedNameRegExpCapturePart = `((?:(${ncNameRegExpPart}):)?(${ncNameReg
 
 export const startTagOpenRegExp = regExp(`<${qualifiedNameRegExpCapturePart}`)
 
-export const startsWithStartTagOpenRegExp = regExp(
-  `^<${qualifiedNameRegExpCapturePart}`
-)
-
-export const startsWithStartTagCloseRegExp = /^\s*(\/?)>/
-
 // Regular expression for parsing attributes
 export const attributeRegExp = /^\s*([^\s"'<>/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+
+export const startTagCloseRegExp = /\s*(\/?)>/
 
 export const endTagRegExp = regExp(
   `<\\/(?:${qualifiedNameRegExpCapturePart})?[^>]*>`
 )
 
-export const startsWithEndTagRegExp = regExp(
-  `^<\\/(?:${qualifiedNameRegExpCapturePart})?[^>]*>`
-)
-
 // Used {2} to avoid being passed as HTML comment when inlined in a page
-export const commentStartRegExp = /^<!-{2}/
+export const commentStartRegExp = /<!-{2}/
+
+export const commentEndRegExp = /-{2}>/
 
 export const commentRegExp = regExp(
-  `${commentStartRegExp.source}${anyCharCapturePart}-{2}>`
+  `${commentStartRegExp.source}${anyCharCapturePart}${commentEndRegExp}`
 )
 
-export const cDataSectionStartRegExp = /^<!\[CDATA\[/
+export const cDataSectionStartRegExp = /<!\[CDATA\[/
+
+export const cDataSectionEndRegExp = /]{2}>/
 
 export const cDataSectionRegExp = regExp(
-  `${cDataSectionStartRegExp.source}${anyCharCapturePart}]{2}>`
+  `${cDataSectionStartRegExp.source}${anyCharCapturePart}${cDataSectionEndRegExp.source}`
+)
+
+//todo remove
+export const startsWithStartTagOpenRegExp = regExp(
+  `^<${qualifiedNameRegExpCapturePart}`
+)
+// todo remove
+export const startsWithStartTagCloseRegExp = /^\s*(\/?)>/
+
+// todo remove
+export const startsWithEndTagRegExp = regExp(
+  `^<\\/(?:${qualifiedNameRegExpCapturePart})?[^>]*>`
 )

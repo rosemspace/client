@@ -47,7 +47,9 @@ export default class HTMLParser<T extends HTMLParserEventMap> extends Tokenizer<
     )
 
     this.tokenParsers.push(
-      (this.textParser = new TextParser(this.tokenParsers.slice()))
+      (this.textParser = new TextParser(
+        this.tokenParsers.map((tokenParser): RegExp => tokenParser.pattern)
+      ))
     )
 
     if (options.generateAttributeMap) {
@@ -112,7 +114,7 @@ export default class HTMLParser<T extends HTMLParserEventMap> extends Tokenizer<
 
   addTokenParser(tokenParser: TokenParser<T>): void {
     this.tokenParsers.unshift(tokenParser)
-    this.textParser.addNonTextTokenIdentifier(tokenParser)
+    this.textParser.addNonTextTokenPattern(tokenParser.pattern)
   }
 
   reset(source = ''): void {

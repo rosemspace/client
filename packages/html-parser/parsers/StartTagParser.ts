@@ -1,11 +1,11 @@
 import { NodeType } from '@rosemlabs/dom-api'
+import { startsWithRegExp } from '../utils'
 import { VAttr, VElement } from '../ast'
 import { ErrorCode } from '../errors'
 import Tokenizer, { CommonEventMap, Module } from '../Tokenizer'
 import {
   attributeRegExp,
-  startsWithStartTagCloseRegExp,
-  startsWithStartTagOpenRegExp,
+  startTagCloseRegExp,
   startTagOpenRegExp,
 } from '../utils/xml'
 import TokenParser from './TokenParser'
@@ -18,7 +18,9 @@ export type StartTagParserEventMap = {
 
 export default class StartTagParser
   implements TokenParser<StartTagParserEventMap> {
-  exec = startTagOpenRegExp.exec.bind(startTagOpenRegExp)
+  readonly pattern = startTagOpenRegExp
+  private startsWithStartTagOpenRegExp = startsWithRegExp(startTagOpenRegExp)
+  private startsWithStartTagCloseRegExp = startsWithRegExp(startTagCloseRegExp)
 
   parse(
     source: string,
@@ -29,7 +31,9 @@ export default class StartTagParser
       source
     )
   ): VElement | void {
-    const match: string[] | null = startsWithStartTagOpenRegExp.exec(source)
+    const match: string[] | null = this.startsWithStartTagOpenRegExp.exec(
+      source
+    )
 
     if (!match) {
       return
@@ -68,7 +72,9 @@ export default class StartTagParser
 
     // Parse attributes while tag is open
     while (
-      !(startTagCloseTagMatch = source.match(startsWithStartTagCloseRegExp)) &&
+      !(startTagCloseTagMatch = source.match(
+        this.startsWithStartTagCloseRegExp
+      )) &&
       //todo: attributeRegExp is wrong
       (attrMatch = source.match(attributeRegExp))
     ) {

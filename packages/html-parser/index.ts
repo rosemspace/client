@@ -1,4 +1,4 @@
-import getStackedTokenRegExp from '@rosemlabs/regexp-util'
+import { XMLNS_NAMESPACE } from './utils/infra/namespaces'
 
 export { default } from './HTMLParser'
 // export * from './ast'
@@ -7,6 +7,24 @@ export { default } from './HTMLParser'
 // export * from './baseEntities'
 // export * from './parsers'
 // export * from './modules'
+
+type HTMLParserOptions = Partial<{
+  //xml, xmlns, xlink
+  attrNamespaceAdjustmentMap: Record<string, string>
+  attrNamespaceAdjustmentMapStrict: Record<string, string>
+  svgTagNameAdjustmentMap: Record<string, string>
+  svgAttrNameAdjustmentMap: Record<string, string>
+  mathmlAttrNameAdjustmentMap: Record<string, string>
+}>
+
+const htmlParserOptionsMini: HTMLParserOptions = {
+  attrNamespaceAdjustmentMap: {
+    xmlns: XMLNS_NAMESPACE,
+  },
+  mathmlAttrNameAdjustmentMap: {
+    definitionurl: 'definitionURL',
+  },
+}
 
 export type SourceSupportedType =
   | 'application/mathml+xml'
@@ -21,8 +39,4 @@ export type NamespaceMap = {
 
 export type TypeMap = {
   [type: string]: ChildNode
-}
-
-export function getStackedTagRegExp(tagName: string): RegExp {
-  return getStackedTokenRegExp(`</${tagName}[^>]*>`, tagName)
 }
