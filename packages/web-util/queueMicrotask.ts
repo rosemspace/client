@@ -4,9 +4,9 @@ const nativeCode = (name: string): string =>
 let promise: Promise<void>
 
 const createQueueMicrotaskViaPromises: () => (
-  microtask: Function
-) => void = (): ((microtask: Function) => void) => {
-  return (microtask: Function): void => {
+  microtask: VoidFunction
+) => void = (): ((microtask: VoidFunction) => void) => {
+  return (microtask: VoidFunction): void => {
     ;(promise || (promise = Promise.resolve()))
       .then(() => microtask())
       .catch((err) =>
@@ -20,10 +20,10 @@ const createQueueMicrotaskViaPromises: () => (
 }
 
 const createQueueMicrotaskViaMutationObserver: () => (
-  microtask: Function
-) => void = (): ((microtask: Function) => void) => {
+  microtask: VoidFunction
+) => void = (): ((microtask: VoidFunction) => void) => {
   let i = 0
-  let microtaskQueue: Function[] = []
+  let microtaskQueue: VoidFunction[] = []
   const observer: MutationObserver = new MutationObserver((): void => {
     microtaskQueue.forEach((microtask) => microtask())
     microtaskQueue = []
@@ -32,7 +32,7 @@ const createQueueMicrotaskViaMutationObserver: () => (
 
   observer.observe(node, { characterData: true })
 
-  return (microtask: Function): void => {
+  return (microtask: VoidFunction): void => {
     microtaskQueue.push(microtask)
 
     // Trigger a mutation observer callback, which is a microtask.
@@ -46,7 +46,7 @@ const createQueueMicrotaskViaMutationObserver: () => (
  * Note: since Promise polyfills are popular but not all support microtasks,
  * we check for native implementation rather than a polyfill.
  */
-const qm: (microtask: Function) => void =
+const qm: (microtask: VoidFunction) => void =
   typeof globalThis.queueMicrotask === 'function' &&
   globalThis.queueMicrotask.toString() === nativeCode('queueMicrotask')
     ? globalThis.queueMicrotask.bind(globalThis)

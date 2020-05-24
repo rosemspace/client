@@ -6,5 +6,7 @@ export default interface CSSEasingDeclaration {
   readonly endEventName: string
   delays: number[]
   durations: number[]
+  maxDelay: number
+  maxDuration: number
   timeout: number
 }

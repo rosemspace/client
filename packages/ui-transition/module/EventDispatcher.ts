@@ -64,10 +64,15 @@ export default class EventDispatcher implements Module<EventDispatcherDetail> {
     >,
     next: () => void
   ): void {
-    this.eventInit.detail = stageDispatcher.detail
-    stageDispatcher.currentTarget.dispatchEvent(
-      new CustomEvent(`${this.stageName}-cancelled`, this.eventInit)
-    )
+    // requestAnimationFrame(() => {
+    // requestAnimationFrame(() => {
+    // stageDispatcher.queueMutationTask(() => {
+      this.eventInit.detail = stageDispatcher.detail
+      stageDispatcher.currentTarget.dispatchEvent(
+        new CustomEvent(`${this.stageName}-cancelled`, this.eventInit)
+      )
+    // })
+    // })
     next()
   }
 

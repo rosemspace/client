@@ -4,10 +4,17 @@ function remove<T>(array: T[], item: T): boolean {
   return !!~index && !!array.splice(index, 1)
 }
 
-export default new (class DOMScheduler {
-  private readonly reads: Function[] = []
+// const fastDomStrict = require('fastdom/fastdom-strict')
+// import fastdom from 'fastdom'
+// fastdom.extend(fastDomStrict)
+// export default fastDomStrict
 
-  private readonly writes: Function[] = []
+export default new (class DOMScheduler {
+  private frameId = 0
+
+  public reads: Function[] = []
+
+  public writes: Function[] = []
 
   private scheduled = false
 
@@ -21,10 +28,14 @@ export default new (class DOMScheduler {
    *
    * @param {Array} tasks
    */
-  runTasks(tasks: Function[]) {
+  runTasks(tasks: Function[], time: number) {
     let task
     //todo improve performance
-    while ((task = tasks.shift())) task()
+    while ((task = tasks.shift())) task(time)
+
+    // for (const task of tasks) {
+    //   task()
+    // }
   }
 
   measure<T extends Function>(task: T): T {
@@ -45,30 +56,36 @@ export default new (class DOMScheduler {
     return remove(this.reads, task) || remove(this.writes, task)
   }
 
+  cancel() {
+    cancelAnimationFrame(this.frameId)
+  }
+
   protected scheduleFlush() {
     if (!this.scheduled) {
       this.scheduled = true
-      requestAnimationFrame(() => {
-        this.flush()
+      this.frameId = requestAnimationFrame((time) => {
+        this.flush(time)
       })
     }
   }
 
-  protected flush() {
-    const reads = this.reads.slice()
-    const writes = this.writes.slice()
+  protected flush(time: number) {
+    const reads = this.reads
+    const writes = this.writes
     let error: Error | undefined
 
-    this.reads.length = 0
-    this.writes.length = 0
-    this.scheduled = false
+    // this.reads = []
+    // this.writes = []
+    // this.scheduled = false
 
     try {
-      this.runTasks(reads)
-      this.runTasks(writes)
+      this.runTasks(reads, time)
+      this.runTasks(writes, time)
     } catch (e) {
       error = e
     }
+
+    this.scheduled = false
 
     // If the batch errored we may still have tasks queued
     if (reads.length || writes.length) {

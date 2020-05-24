@@ -12,7 +12,7 @@ export default class ShowBeforeStart implements Module<ShowBeforeStartDetail> {
     >,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask('remove display none', (): void => {
+    stageDispatcher.queueMutationTask((): void => {
       stageDispatcher.target.style.setProperty('display', '')
     })
     next()

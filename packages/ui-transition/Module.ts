@@ -1,10 +1,11 @@
 import StageDispatcher, { StageDispatcherDetail } from './StageDispatcher'
 
 export enum PhaseEnum {
-  BeforeStageChange = 'beforeStageChange',
+  BeforeStageChange = 'beforeStageChange', //todo beforeSwitch
   BeforeStart = 'beforeStart',
   Start = 'start',
   AfterEnd = 'afterEnd',
+  Skipped = 'skipped',
   Cancelled = 'cancelled',
 }
 
@@ -13,6 +14,7 @@ export type Phase =
   | PhaseEnum.BeforeStart
   | PhaseEnum.Start
   | PhaseEnum.AfterEnd
+  | PhaseEnum.Skipped
   | PhaseEnum.Cancelled
 
 export type PhaseHook<
@@ -28,6 +30,7 @@ export default interface Module<
   beforeStart?: PhaseHook<U & T>
   start?: PhaseHook<U & T>
   afterEnd?: PhaseHook<U & T>
+  skipped?: PhaseHook<U & T>
   cancelled?: PhaseHook<U & T>
   getDetail(): U
 }

@@ -39,39 +39,30 @@ export default class AutoSizeEnter extends AutoSize {
     //   detail.target.style.setProperty(size, `${detail[size]}px`)
     // })
     if (stageDispatcher.running) {
-      stageDispatcher.queueMutationTask(
-        'AutoSizeEnter Start mutation while running',
-        (): void => {
-          this.sizeList.forEach((size: Size) => {
-            stageDispatcher.target.style.setProperty(
-              size,
-              `${stageDispatcher.detail[size]}px`
-            )
-          })
-        }
-      )
+      stageDispatcher.queueMutationTask((): void => {
+        this.sizeList.forEach((size: Size) => {
+          stageDispatcher.target.style.setProperty(
+            size,
+            `${stageDispatcher.detail[size]}px`
+          )
+        })
+      })
     } else {
-      stageDispatcher.queueMeasureTask(
-        'AutoSizeEnter Start measure',
-        (): void => {
-          this.sizeList.forEach((size: Size) => {
-            stageDispatcher.detail[size] =
-              stageDispatcher.target[SIZE_INDEX_SCROLL_SIZE_MAP[size]]
-          })
-        }
-      )
-      stageDispatcher.queueMutationTask(
-        'AutoSizeEnter Start mutation',
-        (): void => {
-          this.sizeList.forEach((size: Size) => {
-            stageDispatcher.target.style.setProperty(
-              size,
-              `${stageDispatcher.detail[size]}px`
-            )
-          })
-          stageDispatcher.target.style.setProperty('box-sizing', 'content-box')
-        }
-      )
+      stageDispatcher.queueMeasureTask((): void => {
+        this.sizeList.forEach((size: Size) => {
+          stageDispatcher.detail[size] =
+            stageDispatcher.target[SIZE_INDEX_SCROLL_SIZE_MAP[size]]
+        })
+      })
+      stageDispatcher.queueMutationTask((): void => {
+        this.sizeList.forEach((size: Size) => {
+          stageDispatcher.target.style.setProperty(
+            size,
+            `${stageDispatcher.detail[size]}px`
+          )
+        })
+        stageDispatcher.target.style.setProperty('box-sizing', 'content-box')
+      })
     }
 
     next()
@@ -81,7 +72,7 @@ export default class AutoSizeEnter extends AutoSize {
     stageDispatcher: StageDispatcher<StageDispatcherDetail & AutoSizeDetail>,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask('AutoSizeEnter AfterEnd', (): void => {
+    stageDispatcher.queueMutationTask((): void => {
       stageDispatcher.target.style.setProperty('box-sizing', '')
       this.removeSizeStyles(stageDispatcher.target)
     })

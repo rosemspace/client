@@ -21,7 +21,9 @@ import SFCLoaderPlugin from '@rosemlabs/sfc-loader/SFCLoaderPlugin'
 const isProduction: boolean = 'production' === process.env.NODE_ENV
 const dir = (path: string): string => resolve(__dirname, path)
 
-const jsEntry: string = dir('packages/html-parser/test.ts')
+// const jsEntry: string = dir('packages/html-parser/test.ts')
+// const htmlEntry: string = dir('packages/html-parser/index.html')
+const jsEntry: string = dir('packages/battle-city/index.ts')
 const htmlEntry: string = dir('packages/battle-city/index.html')
 
 const babelLoader = {
@@ -135,18 +137,18 @@ export default {
           // },
         ],
       },
-      // {
-      //   test: /\.html$/,
-      //   exclude: /node_modules/,
-      //   use: [
-      //     {
-      //       loader: 'html-loader',
-      //       options: {
-      //         // minimize: true,
-      //       },
-      //     },
-      //   ],
-      // },
+      {
+        test: /\.html$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'html-loader',
+            options: {
+              // minimize: true,
+            },
+          },
+        ],
+      },
       {
         test: /\.(p(ost)?)?css$/,
         // resourceQuery: /^\?sfc&block=style&lang=css/,
@@ -235,12 +237,12 @@ export default {
   },
   plugins: [
     // new VueLoaderPlugin(),
-    new SFCLoaderPlugin({
-      fileExtension: 'sfc',
-      // blockLangMap: {
-      //   i18n: 'json',
-      // }
-    }),
+    // new SFCLoaderPlugin({
+    //   fileExtension: 'sfc',
+    //   // blockLangMap: {
+    //   //   i18n: 'json',
+    //   // }
+    // }),
     /* config.plugin('define') */
     new DefinePlugin({
       'process.env': {
@@ -265,6 +267,10 @@ export default {
     new HotModuleReplacementPlugin(),
     /* config.plugin('progress') */
     new ProgressPlugin(),
+    new HtmlWebpackPlugin({
+      template: dir('packages/site/documentation.html'),
+      title: 'Rosem | Documentation',
+    }),
     /* config.plugin('html-index') */
     new HtmlWebpackPlugin({
       // templateParameters: function () { /* omitted long function */ },
@@ -274,7 +280,6 @@ export default {
       //   'index'
       // ],
       template: htmlEntry,
-      filename: 'index.html',
       title: 'Rosem | Home Page',
     }),
     // new ForkTsCheckerWebpackPlugin(

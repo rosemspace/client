@@ -1,7 +1,7 @@
 import { NodeName, NodeType } from '@rosemlabs/dom-api'
 import { SourceSupportedType } from './index'
 import { ElementAttrMap } from './modules'
-import Token from './token'
+import Token from './Token'
 
 export interface VNode<
   T extends NodeType = NodeType,

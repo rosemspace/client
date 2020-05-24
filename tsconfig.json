@@ -1,44 +1,46 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "outDir": "dist",
-    "sourceMap": true,
-    "module": "esnext",
-    "target": "esnext",
+    // ES2015 - esm
+//    "module": "ES2015",
+    "module": "ESNext",
+    "target": "ESNext",
     "moduleResolution": "node",
+    "sourceMap": true,
     "strict": true,
 //    "composite": true,
-    "importHelpers": true,
-//    "noImplicitThis": true, // for vue
-    "noImplicitAny": true,
+//    "importHelpers": true,
 //    "noUnusedLocals": true,
 //    "noUnusedParameters": true,
-    "strictNullChecks": true,
     "preserveConstEnums": true,
     "resolveJsonModule": true,
+//    "forceConsistentCasingInFileNames": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "esModuleInterop": true,
+//    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
 //    "declaration": true,
 //    "declarationMap": true,
     "jsx": "preserve",
-    "lib": ["dom", "esnext"],
+    "lib": ["dom"],
     "types": [
       "jest",
       "node"
     ],
-    "rootDir": ".",
     "paths": {
       "@rosemlabs/*": ["packages/*"]
     }
   },
 //  "references": [],
+  // first way
   "include": [
-    "packages/**/*.ts",
-    "packages/**/*.tsx",
+    // .ts, .tsx, .d.ts, [.js, .jsx] if allowJs is set to true
+    "packages/**/*",
     "packages/**/*.sfc",
     "packages/**/*.glsl"
+//    "packages/ui-transition/*"
   ],
   "exclude": [
     "dist",

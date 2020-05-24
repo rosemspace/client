@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "@rosemlabs/dom-api": "^0.0.1",
-    "@rosemlabs/regexp-util": "^0.0.1",
     "camelcase": "^5.3.1"
   },
   "devDependencies": {

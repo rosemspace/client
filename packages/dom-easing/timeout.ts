@@ -2,7 +2,7 @@ import {
   CSS_EASING_DEFAULT_TIMEOUT,
   CSS_EASING_VALUES_SEPARATOR,
 } from './CSSEasingDeclaration'
-import { convertSStringToMs } from '@rosemlabs/time-util'
+import convertSStringToMs from './convertSStringToMs'
 
 export function getTimeouts(timeoutsString: string): number[] {
   return (timeoutsString || CSS_EASING_DEFAULT_TIMEOUT)
@@ -14,15 +14,10 @@ export function getMaxTimeout(
   delays: number[],
   durations: number[] = []
 ): number {
-  if (delays.length < durations.length) {
-    // if one delay set for all transitions
-    delays.fill(delays[0], 0, durations.length)
-  }
-
-  return Math.max.apply(
-    null,
-    durations.map((duration, index): number => {
-      return duration + delays[index]
+  return Math.max(
+    ...durations.map((duration, index): number => {
+      // Repeat delays for rest properties
+      return duration + delays[index % delays.length]
     })
   )
 }

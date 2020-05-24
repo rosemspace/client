@@ -1,3 +1,4 @@
+import toggle from '@rosemlabs/ui-transition/test'
 import Transition from './Transition'
 
 export default {
@@ -35,14 +36,15 @@ export default {
       .morph-enter, .morph-leave-to, .morph-leave-done {
         border-radius: 50%;
         /*width: 0;*/
-        height: 0;
+        /*height: 0;*/
         border-width: 0;
         margin: 0;
         padding: 0;
         background-color: green;
       }
     `
-    document.body.appendChild(style)
+    // document.body.appendChild(style)
+    return this
   },
 
   test() {
@@ -73,6 +75,22 @@ export default {
   },
 
   test2() {
+    // @ts-ignore
+    window.toggle = toggle
+    const btn = document.querySelector('button') as HTMLElement
+    btn.addEventListener('click', toggle)
+  },
+
+  test2_() {
+    // document.body.addEventListener('click', () => {
+    //   globalThis.requestAnimationFrame(() => {
+    //     globalThis.document.body.style.background = '#fff'
+    //     globalThis.requestAnimationFrame(() => {
+    //       console.log(globalThis.getComputedStyle(globalThis.document.body).transform)
+    //       globalThis.document.body.style.background = 'red'
+    //     })
+    //   })
+    // })
     // this.init()
     const el: HTMLElement | SVGSVGElement | null = document.querySelector(
       '#app'
@@ -82,25 +100,45 @@ export default {
       return
     }
 
-    let ul = document.createElement('ul')
-    ul.classList.add('list')
-    let li1 = document.createElement('li')
-    let li2 = li1.cloneNode()
-    let li3 = li1.cloneNode()
-    li1.textContent = 'List item 1'
-    li2.textContent = 'List item 2'
-    li3.textContent = 'List item 3'
-    ul.appendChild(li1)
-    ul.appendChild(li2)
-    ul.appendChild(li3)
-    el.appendChild(ul)
-    let square = document.createElement('div')
-    square.classList.add('square')
-    el.appendChild(square)
-    let btn = document.createElement('button')
-    btn.textContent = 'toggle'
-    el.prepend(btn)
+    const ul = document.querySelector('ul') as HTMLElement
+    const btn = document.querySelector('button') as HTMLElement
+    // let ul = document.createElement('ul')
+    // ul.classList.add('list')
+    // let li1 = document.createElement('li')
+    // let li2 = li1.cloneNode()
+    // let li3 = li1.cloneNode()
+    // li1.textContent = 'List item 1'
+    // li2.textContent = 'List item 2'
+    // li3.textContent = 'List item 3'
+    // ul.appendChild(li1)
+    // ul.appendChild(li2)
+    // ul.appendChild(li3)
+    // el.appendChild(ul)
+    // let square = document.createElement('div')
+    // square.classList.add('square')
+    // el.appendChild(square)
+    // let btn = document.createElement('button')
+    // btn.textContent = 'toggle'
+    // el.prepend(btn)
 
+    ul.addEventListener('transitionrun', (e) => {
+      console.info('RUN', e.propertyName, e.timeStamp, e.elapsedTime)
+    })
+    ul.addEventListener('transitionstart', (e) => {
+      console.info('START', e.propertyName, e.timeStamp, e.elapsedTime)
+    })
+    ul.addEventListener('transitioncancel', (e) => {
+      console.info('CANCELED', e.propertyName, e.timeStamp, e.elapsedTime)
+    })
+    ul.addEventListener('transitionend', (e) => {
+      console.warn('END', e.propertyName, e.timeStamp, e.elapsedTime)
+    })
+    // ul.addEventListener('enter-cancelled', (e) => {
+    //   console.info('CUSTOM CANCELED enter')
+    // })
+    // ul.addEventListener('leave-cancelled', (e) => {
+    //   console.info('CUSTOM CANCELED leave')
+    // })
     const transition = new Transition(ul, {
       name: 'morph',
       stageIndex: 1,
@@ -114,6 +152,19 @@ export default {
     btn.addEventListener('click', async () => {
       await transition.toggle()
     })
+    setTimeout(async () => {
+      // function an(time: number) {
+      //   console.log(time)
+      //   transition.toggle()
+      //   requestAnimationFrame(an)
+      // }
+      // requestAnimationFrame(an)
+      // for (let i = 0; i < 100; ++i) {
+      //   console.log(i)
+      //   // transition.toggle()
+      //   btn.click()
+      // }
+    }, 2000)
 
     // let i = 100;
     //
@@ -126,3 +177,5 @@ export default {
     console.log(transition)
   },
 }
+  .init()
+  .test2()

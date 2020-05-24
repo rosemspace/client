@@ -19,6 +19,8 @@ export default function getComputedTransition({
     ),
     delays,
     durations,
+    maxDelay: Math.max(...delays),
+    maxDuration: Math.max(...durations),
     timeout: getMaxTimeout(delays, durations),
   }
 }

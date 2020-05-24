@@ -66,7 +66,7 @@ const defaultMotionOptions: Required<Omit<
   delay: 300,
   duration: 300,
   precision: Infinity,
-  timingFunction: bounceInOut,
+  timingFunction: bounceIn,
   // reverse: false,
   params: [],
 }
@@ -136,18 +136,20 @@ export default class Motion {
     this.pause()
     this.running = true
     this.lowestFps = 0
-    this.animationId = requestAnimationFrame((time: number): void => {
-      this.startTime = time
-      this.timePassed = this.progress = 0
-      this.oscillation = [0] //todo need?
-      this.emit('start', this.getData())
-      this.computeFrame(time)
-    })
+    this.animationId = globalThis.requestAnimationFrame(
+      (time: number): void => {
+        this.startTime = time
+        this.timePassed = this.progress = 0
+        this.oscillation = [0] //todo need?
+        this.emit('start', this.getData())
+        this.computeFrame(time)
+      }
+    )
   }
 
   pause() {
     if (this.running) {
-      cancelAnimationFrame(this.animationId)
+      globalThis.cancelAnimationFrame(this.animationId)
       this.running = false
       this.emit('cancelled', this.getData())
     }
@@ -169,7 +171,7 @@ export default class Motion {
 
     if (timePassed < this.duration) {
       this.timePassed = timePassed
-      this.animationId = requestAnimationFrame((time: number) =>
+      this.animationId = globalThis.requestAnimationFrame((time: number) =>
         this.computeFrame(time)
       )
     } else {

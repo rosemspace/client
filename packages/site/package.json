@@ -36,7 +36,6 @@
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.26",
     "@fortawesome/free-solid-svg-icons": "5.12.0",
-    "@fortawesome/vue-fontawesome": "0.1.8",
     "axios": "0.19.0",
     "lodash": "^4.17.15",
     "nanoid": "^2.1.7",
@@ -51,7 +50,7 @@
     "file-loader": "^5.0.2",
     "html-loader": "^1.0.0-alpha.0",
     "markdownlint-cli": "^0.20.0",
-    "postcss-loader": "^3.0.0",
+    "postcss-loader": "~3.0.0",
     "postcss-preset-env": "^6.7.0",
     "stylelint": "^12.0.1",
     "stylelint-config-css-modules": "^2.1.0",

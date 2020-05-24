@@ -12,8 +12,12 @@ export default class HideAfterEnd implements Module<HideAfterEndDetail> {
     >,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask('set display none', (): void => {
-      stageDispatcher.target.style.setProperty('display', 'none')
+    stageDispatcher.queueMutationTask((): void => {
+      // debugger
+      // setTimeout(() => {
+      // stageDispatcher.target.style.setProperty('display', 'none')
+      stageDispatcher.target.style.display = 'none'
+      // }, 1000)
     })
     next()
   }

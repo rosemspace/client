@@ -10,7 +10,18 @@ module.exports = (/*context, options*/) => {
   // }
 
   return {
-    // presets,
+    // presets: [
+    //   [
+    //     '@babel/preset-env',
+    //     {
+    //       corejs: 3,
+    //       useBuiltIns: 'usage',
+    //       // Don't need to convert es modules for tree shaking support
+    //       modules: false,
+    //       shippedProposals: true,
+    //     },
+    //   ],
+    // ],
     plugins: [
       // Stage 1
       '@babel/plugin-proposal-export-default-from',

@@ -1,4 +1,4 @@
-import isPlainObject from 'lodash/isPlainObject'
+import { isPlainObject } from 'lodash'
 import { AutoSizeDetail, Size } from './module/AutoSize'
 import AutoSizeEnter from './module/AutoSizeEnter'
 import AutoSizeLeave from './module/AutoSizeLeave'
@@ -111,6 +111,7 @@ export default class Transition extends StageDispatcher<TransitionDetail> {
     const enterStage = new Stage('enter', enterDuration)
 
     if (this.options.hideAfterLeave) {
+      leaveStage.addModule(new HideAfterEnd())
       enterStage.addModule(new ShowBeforeStart())
     }
 
@@ -122,10 +123,10 @@ export default class Transition extends StageDispatcher<TransitionDetail> {
         autoSize = autoSize === true ? ['width', 'height'] : [autoSize]
       }
 
-      if (autoSize.length) {
-        leaveStage.addModule(new AutoSizeLeave())
-        enterStage.addModule(new AutoSizeEnter())
-      }
+      // if (autoSize.length) {
+      //   leaveStage.addModule(new AutoSizeLeave())
+      //   enterStage.addModule(new AutoSizeEnter())
+      // }
     }
 
     if (this.options.css) {
@@ -148,10 +149,6 @@ export default class Transition extends StageDispatcher<TransitionDetail> {
           doneClass: this.options.enterDoneClass,
         })
       )
-    }
-
-    if (this.options.hideAfterLeave) {
-      leaveStage.addModule(new HideAfterEnd())
     }
 
     if (this.options.events) {

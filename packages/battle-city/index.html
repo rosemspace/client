@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link rel="icon" href="/favicon.ico">
+<!--  <link rel="icon" href="/favicon.ico">-->
   <title><%= htmlWebpackPlugin.options.title %></title>
   <style>
     html, body {
@@ -21,12 +21,56 @@
       height: 100%;
     }
   </style>
+  <style>
+  .box {
+    width: 200px;
+    height: 200px;;
+    background: blue;
+    transition: all 1s;
+  }
+  .list {padding: 15px 30px;margin: 10px;/*width: 100px;height: 20px;*/background: yellow;
+    /*transition: all 1.5s;*/
+  }
+  /*.list {padding: 0;margin: 0;}*/
+  .list > li {padding: 10px 20px;}
+  .square {width: 50px; height: 50px; background: orange;}
+
+  .fade-enter-active, .fade-leave-active {
+    transition: all .5s;
+  }
+  .fade-enter, .fade-leave-to, .fade-leave-done {
+    opacity: 0;
+    height: 0;
+  }
+  .fade-enter-to {
+    /*height: auto;*/
+  }
+  .fade-enter-done {
+    /*height: auto;*/
+  }
+
+  .morph-enter-active, .morph-leave-active {
+    transition: all 1.5s;
+  }
+  .morph-enter, .morph-leave-to, .morph-leave-done {
+    /*border-radius: 50%;*/
+    /*width: 0;*/
+    /*height: 0;*/
+    /*border-width: 0;*/
+    /*margin: 0;*/
+    /*padding: 0;*/
+    background-color: green;
+    /*transition: border-radius 1.5s, background-color 1.5s;*/
+  }
+  </style>
 </head>
 <body>
 <noscript>
   <strong>We're sorry but <span><%= htmlWebpackPlugin.options.title.split('|')[0].trim() %></span> application doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
 </noscript>
-<div id="app"></div>
+<!--<div id="app">-->
+<!--  <div id="app"><button>toggle</button><ul class="list"><li>List item 1</li><li>List item 2</li><li>List item 3</li></ul><div class="square"></div></div>-->
+<!--</div>-->
 <canvas id="canvas" width="640" height="320">Your browser does not seem to support HTML5 canvas.</canvas>
 <!--
 Serves a polyfill with only the browser features

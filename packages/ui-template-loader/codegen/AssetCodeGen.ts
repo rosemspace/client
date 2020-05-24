@@ -3,24 +3,29 @@ import { BlankModule } from '@rosemlabs/html-parser-old'
 import { Attr } from '@rosemlabs/html-parser-old/nodes'
 import { ATTR_SYNTAX_KEYWORDS } from '../index'
 
-const transformAssetUrls: { [tagName: string]: string[] } = {
-  video: ['src', 'poster'],
-  source: ['src', 'srcset'],
-  script: ['src'],
-  link: ['href'],
+export const transformAssetUrls: { [tagName: string]: string[] } = {
+  audio: ['src'],
+  embed: ['src'],
   img: ['src', 'srcset'],
   image: ['xlink:href', 'href'],
-  use: ['xlink:href', 'href'],
+  input: ['src'],
+  link: ['href'], //todo only for stylesheets
+  object: ['data'],
+  script: ['src'],
+  source: ['src', 'srcset'],
+  track: ['src'],
+  use: ['xlink:href', 'href'], //todo only for external resource
+  video: ['src', 'poster'],
 }
-const modulePathRegExp: RegExp = /^[.~@]|^import:|^[^/#]/i
-const modulePathRemovePrefixRegExp: RegExp = /^~\/?|^import:/i
+const modulePathRegExp = /^[.~@]|^import:|^[^/#]/i
+const modulePathRemovePrefixRegExp = /^~\/?|^import:/i
 
 function urlToRequire(url: string) {
   const { hash, path }: UrlWithStringQuery = parse(url)
 
   return `require("${hash ? `${path}")+"${hash}"` : `${url}")`}`
 }
-//todo enableJavaScriptURLs
+//todo an option enableJavaScriptURLs
 export default class AssetCodeGen extends BlankModule {
   attribute<T extends Attr>(attr: T): void {
     const ownerElementTagName: string = attr.ownerElement.nameLowerCased

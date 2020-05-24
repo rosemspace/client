@@ -22,6 +22,10 @@
   },
   "dependencies": {
     "@rosemlabs/dom-scheduler": "^0.0.1",
-    "@rosemlabs/dom-easing": "^0.0.1"
+    "@rosemlabs/dom-easing": "^0.0.1",
+    "fastdom": "^1.0.9"
+  },
+  "devDependencies": {
+    "fastdom": "^1.0.9"
   }
 }

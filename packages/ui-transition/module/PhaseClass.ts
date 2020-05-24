@@ -33,30 +33,34 @@ export default class PhaseClass<
   get fromClass(): string {
     return (
       this.options.fromClass ||
-      PhaseClass.CLASS_PREFIX_FROM + this.name + PhaseClass.CLASS_SUFFIX_FROM
+      (this.options.fromClass =
+        PhaseClass.CLASS_PREFIX_FROM + this.name + PhaseClass.CLASS_SUFFIX_FROM)
     )
   }
 
   get activeClass(): string {
     return (
       this.options.activeClass ||
-      PhaseClass.CLASS_PREFIX_ACTIVE +
+      (this.options.activeClass =
+        PhaseClass.CLASS_PREFIX_ACTIVE +
         this.name +
-        PhaseClass.CLASS_SUFFIX_ACTIVE
+        PhaseClass.CLASS_SUFFIX_ACTIVE)
     )
   }
 
   get toClass(): string {
     return (
       this.options.toClass ||
-      PhaseClass.CLASS_PREFIX_TO + this.name + PhaseClass.CLASS_SUFFIX_TO
+      (this.options.toClass =
+        PhaseClass.CLASS_PREFIX_TO + this.name + PhaseClass.CLASS_SUFFIX_TO)
     )
   }
 
   get doneClass(): string {
     return (
       this.options.doneClass ||
-      PhaseClass.CLASS_PREFIX_DONE + this.name + PhaseClass.CLASS_SUFFIX_DONE
+      (this.options.doneClass =
+        PhaseClass.CLASS_PREFIX_DONE + this.name + PhaseClass.CLASS_SUFFIX_DONE)
     )
   }
 
@@ -64,12 +68,11 @@ export default class PhaseClass<
     stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask(
-      `PhaseClass beforeStageChange ${this.doneClass}`,
-      (): void => {
-        stageDispatcher.target.classList.remove(this.doneClass)
-      }
-    )
+    // console.log('beforeStageChange')
+    stageDispatcher.queueMutationTask((): void => {
+      stageDispatcher.target.classList.remove(this.doneClass)
+      // console.log('beforeStageChange scheduled')
+    })
     next()
   }
 
@@ -77,13 +80,25 @@ export default class PhaseClass<
     stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask(
-      `PhaseClass beforeStart ${this.fromClass + ` ${stageDispatcher.stageIndex} ` + this.activeClass}`,
-      (): void => {
-        stageDispatcher.target.classList.remove(this.toClass, this.doneClass)
-        stageDispatcher.target.classList.add(this.fromClass, this.activeClass)
-      }
-    )
+    // console.log('beforeStart')
+    stageDispatcher.queueMutationTask((): void => {
+      stageDispatcher.target.classList.remove(this.toClass, this.doneClass)
+      stageDispatcher.target.classList.add(this.fromClass, this.activeClass)
+      // console.log('beforeStart scheduled')
+    })
+    next()
+  }
+
+  //todo skipped() hook (cancel for beforeStart)
+  skipped(
+    stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
+    next: () => void
+  ): void {
+    console.log('skipped', performance.now())
+    stageDispatcher.queueMutationTask((): void => {
+      stageDispatcher.target.classList.remove(this.fromClass, this.activeClass)
+      console.log('skipped scheduled', performance.now())
+    })
     next()
   }
 
@@ -91,9 +106,11 @@ export default class PhaseClass<
     stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask('PhaseClass start', (): void => {
+    console.log('start', performance.now())
+    stageDispatcher.queueMutationTask((): void => {
       stageDispatcher.target.classList.remove(this.fromClass)
       stageDispatcher.target.classList.add(this.toClass)
+      console.log('start scheduled', performance.now())
     })
     next()
   }
@@ -102,9 +119,11 @@ export default class PhaseClass<
     stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask('PhaseClass AfterEnd', (): void => {
+    console.log('afterEnd', performance.now())
+    stageDispatcher.queueMutationTask((): void => {
       stageDispatcher.target.classList.remove(this.activeClass, this.toClass)
       stageDispatcher.target.classList.add(this.doneClass)
+      console.log('afterEnd scheduled', performance.now())
     })
     next()
   }
@@ -113,12 +132,14 @@ export default class PhaseClass<
     stageDispatcher: StageDispatcher<StageDispatcherDetail & PhaseClassDetail>,
     next: () => void
   ): void {
-    stageDispatcher.queueMutationTask('PhaseClass cancelled', (): void => {
+    console.log('cancelled', performance.now())
+    stageDispatcher.queueMutationTask((): void => {
       stageDispatcher.target.classList.remove(
-        this.fromClass,
+        // this.fromClass,
         this.activeClass,
         this.toClass
       )
+      console.log('cancelled scheduled', performance.now())
     })
     next()
   }

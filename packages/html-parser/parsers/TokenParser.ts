@@ -1,7 +1,7 @@
 import { ErrorCode } from '../errors'
 import { EventMap } from '../EventEmitter'
-import Token from '../Token'
 import Tokenizer, { CommonEventMap, HookMap, Module } from '../Tokenizer'
+import Token from '../Token'
 
 export interface TokenIdentifier {
   readonly pattern: RegExp

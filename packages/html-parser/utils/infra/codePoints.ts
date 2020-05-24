@@ -47,3 +47,19 @@ export const endsWithASCIIWhitespaceRegExp = new RegExp(
 
 // eslint-disable-next-line no-control-regex
 export const startsWithControlCharExcSpaceAndNullRegExp = /^[\x01-\x08\x0B\x0E-\x1F\x7F-\x9F]+/u
+
+export const asciiDigitSeq = `0-9`
+
+export const asciiUpperHexDigitSeq = `${asciiDigitSeq}A-F`
+
+export const asciiLowerHexDigitSeq = `${asciiDigitSeq}a-f`
+
+export const asciiHexDigitSeq = `${asciiDigitSeq}A-Fa-f`
+
+export const asciiUpperAlphaSeq = `A-Z`
+
+export const asciiLowerAlphaSeq = `a-z`
+
+export const asciiAlphaSeq = `${asciiUpperAlphaSeq}${asciiLowerAlphaSeq}`
+
+export const asciiAlphanumericSeq = `${asciiDigitSeq}${asciiAlphaSeq}`

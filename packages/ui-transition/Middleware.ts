@@ -21,12 +21,9 @@ export class Middleware<T extends StageDispatcherDetail>
 
   process(stageDispatcher: StageDispatcher<T>, phase: Phase): void {
     if (null != this.module[phase]) {
-      stageDispatcher.queueMeasureTask(
-        `middleware measure get detail`,
-        (): void => {
-          stageDispatcher.assignDetail(this.module.getDetail())
-        }
-      )
+      // stageDispatcher.queueMeasureTask((): void => {
+      //   stageDispatcher.assignDetail(this.module.getDetail())
+      // })
       ;(this.module[phase] as PhaseHook<T>)(stageDispatcher, () => {
         this.successor.process(stageDispatcher, phase)
       })
