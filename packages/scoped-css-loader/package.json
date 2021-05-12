@@ -21,7 +21,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "postcss": "^7.0.25",
+    "postcss": "^8.2.10",
     "postcss-selector-parser": "^6.0.2"
   }
 }
